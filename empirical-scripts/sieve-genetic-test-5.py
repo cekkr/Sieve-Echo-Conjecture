@@ -345,6 +345,8 @@ class GeneticFeatureEvolver:
             'ga_feature_cache': GA_FEATURE_CACHE
         }
         
+        # FIX: Definire include_patterns o rimuovere il controllo
+        include_patterns = True  # <-- AGGIUNGERE QUESTA LINEA
         if include_patterns and 'REPETEND_PATTERNS' in globals():
             checkpoint_data['repetend_patterns'] = REPETEND_PATTERNS
         
@@ -352,6 +354,7 @@ class GeneticFeatureEvolver:
             pickle.dump(checkpoint_data, f)
         
         logger.log(f"Enhanced checkpoint saved to {filename} (with {len(REPETEND_PATTERNS)} patterns)")
+
 
 
     def _crossover(self, p1, p2):
@@ -520,7 +523,7 @@ class SieveEchoExplorer:
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
-    def save_neural_model(model, optimizer, accuracy_info, input_dim):
+    def save_neural_model(self, model, optimizer, accuracy_info, input_dim):  # <-- AGGIUNGERE 'self'
         """Save the trained neural network model"""
         model_path = 'sieve_echo_neural_model.pt'
         torch.save({
@@ -545,12 +548,15 @@ class SieveEchoExplorer:
         if 'pattern_uniqueness' in self.results:
             res = self.results['pattern_uniqueness']
             logger.result(f"Uniqueness: {res['collisions']} collisions in {res['tested']} numbers.")
+        
         if 'pattern_inheritance' in self.results:
             res = self.results['pattern_inheritance']
             logger.result(f"Inheritance: {res['crt_compliance']*100:.1f}% CRT compliance over {res['tested']} semiprimes.")
+        
         if 'genetic_best' in self.results:
             logger.result("\n--- Genetic Discovery Final Summary ---")
             self._interpret_best_individual(self.results['genetic_best']['individual'])
+        
         if 'neural_training' in self.results:
             res = self.results['neural_training']
             logger.result(f"Neural Net: Reached {res['final_accuracy']:.3f} accuracy predicting ω(n).")        
@@ -568,10 +574,15 @@ class SieveEchoExplorer:
                 conclusions.append("✗ Pattern uniqueness violated in some cases")
         
         if 'pattern_inheritance' in self.results:
-            if abs(self.results['pattern_inheritance']['mean_period_ratio'] - 1.0) < 0.1:
-                conclusions.append("✓ Composite patterns follow CRT inheritance")
+            # FIX: Usare 'mean_ratio' invece di 'mean_period_ratio'
+            # E aggiungere controllo se la chiave esiste
+            if 'mean_ratio' in self.results['pattern_inheritance']:
+                if abs(self.results['pattern_inheritance']['mean_ratio'] - 1.0) < 0.1:
+                    conclusions.append("✓ Composite patterns follow CRT inheritance")
+                else:
+                    conclusions.append("? Pattern inheritance shows unexpected behavior")
             else:
-                conclusions.append("? Pattern inheritance shows unexpected behavior")
+                logger.log("WARNING: 'mean_ratio' not found in pattern_inheritance results", "WARNING")
         
         if 'genetic_best' in self.results:
             if self.results['genetic_best']['fitness'] > 0.5:
