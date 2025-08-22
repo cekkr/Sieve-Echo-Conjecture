@@ -31,6 +31,29 @@ This library, which we'll call **"Evolvo,"** is designed to be the engine for ge
     *   Use your genetic algorithm or Q-learning model to generate algorithms in the specified list format. The `AlgorithmGenerator` (the `Calculon` class) is the perfect tool for this, as it ensures any generated algorithm is valid.
     *   Pass each generated algorithm to your evaluator instance to get its score.
     *   Use this score to guide the evolution or learning process.
+
+### Where is it born: 
+
+The original script wasn't trying to calculate a single, predefined algorithm. Instead, its purpose is to **discover or "evolve" a novel algorithm capable of predicting the distribution of prime numbers**.
+
+The entire project is based on a simple probability formula:
+$notPrimePredictProb = (\frac{1}{n}*(1-notPrimePredictProb))+notPrimePredictProb$
+
+The core problem it's trying to solve is: "Can we create a formula that, for any given number *n*, can accurately determine if *n* is prime, based only on statistical data from the primes that came before it?"
+
+The system does this by providing a set of basic tools to a Q-learning agent:
+
+*   **Constants and Variables**: The algorithm has access to pre-calculated statistical values that describe the distribution of primes up to the current number being tested (`step`). These include:
+    *   `#primeProb`: The actual, measured probability that a number is prime so far (`numPrimes / step`).
+    *   `#predictedPrimeProb`: The algorithm's running prediction of the prime probability, based on a formula from the README.
+    *   `#ifPrimePredictPrimeProb`: What the predicted probability would become if the *current* number turns out to be prime.
+    *   `#lastPrime`: How many numbers have been seen since the last prime was found.
+    *   Other values like `#i`, `#step`, and `#quanto` (1 / step).
+*   **Basic Operations**: The agent can combine these variables using simple arithmetic (`ADD`, `SUB`, `MUL`, `DIV`) and logical (`GT`, `GET`, `CMP`, `NOT`) operations.
+*   **The Goal**: The agent's task is to generate a sequence of these operations (an algorithm) that ultimately sets a boolean variable (`b$`, which is `$isPrime` in the code's cycle) to `True` if the number is prime and `False` if it is not.
+
+In essence, the script is a genetic programming environment designed to find a mathematical formula that can distinguish prime numbers from composite numbers with the highest possible accuracy over a given range.
+
 """
 
 import math
