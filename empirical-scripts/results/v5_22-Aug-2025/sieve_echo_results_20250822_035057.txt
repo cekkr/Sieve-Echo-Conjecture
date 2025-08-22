@@ -1,0 +1,321 @@
+Sieve Echo Conjecture - Results Summary | Started: 2025-08-22 03:50:57.920932
+
+[03:50:58] Pattern Uniqueness (base 10): Tested 4998 numbers, found 0 collisions.
+[03:50:58] ✓ PATTERN UNIQUENESS CONFIRMED for tested range.
+[03:53:18] Pattern Inheritance: Mean period ratio=1.0000 (CRT compliant: 100.0%)
+[04:34:09] NEW BEST at generation 0: fitness=0.9287
+[04:34:09]   Active features (15): ['n', 'base', 'skew', 'unique_digits', 'digit_entropy']...
+[04:34:09]   Strategy: 23 bases, agg=mean, norm=minmax
+[04:35:13] NEW BEST at generation 1: fitness=0.9742
+[04:35:13]   Active features (14): ['n', 'mean', 'std', 'kurtosis', 'digit_entropy']...
+[04:35:13]   Strategy: 11 bases, agg=max, norm=minmax
+[04:36:16] NEW BEST at generation 2: fitness=1.0083
+[04:36:16]   Active features (11): ['n', 'std', 'kurtosis', 'digit_entropy', 'autocorr_lag1']...
+[04:36:16]   Strategy: 20 bases, agg=max, norm=zscore
+[04:37:09] NEW BEST at generation 3: fitness=1.0285
+[04:37:09]   Active features (11): ['n', 'length', 'skew', 'kurtosis', 'transition_entropy']...
+[04:37:09]   Strategy: 26 bases, agg=max, norm=minmax
+[04:38:03] NEW BEST at generation 4: fitness=1.0663
+[04:38:03]   Active features (10): ['n', 'length', 'std', 'digit_entropy', 'autocorr_lag2']...
+[04:38:03]   Strategy: 19 bases, agg=max, norm=minmax
+[04:38:48] NEW BEST at generation 5: fitness=1.1057
+[04:38:48]   Active features (6): ['n', 'length', 'autocorr_decay', 'spectral_peak_count', 'run_count']...
+[04:38:48]   Strategy: 19 bases, agg=max, norm=minmax
+[04:39:31] NEW BEST at generation 6: fitness=1.1256
+[04:39:31]   Active features (4): ['n', 'length', 'autocorr_decay', 'spectral_peak_count']...
+[04:39:31]   Strategy: 22 bases, agg=max, norm=minmax
+[04:40:09] NEW BEST at generation 7: fitness=1.1306
+[04:40:09]   Active features (4): ['n', 'length', 'run_count', 'multiplicative_order']...
+[04:40:09]   Strategy: 21 bases, agg=max, norm=minmax
+[04:41:16] NEW BEST at generation 9: fitness=1.1403
+[04:41:16]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:41:16]   Strategy: 20 bases, agg=max, norm=minmax
+[04:42:14] NEW BEST at generation 11: fitness=1.1403
+[04:42:14]   Active features (3): ['n', 'kurtosis', 'multiplicative_order']...
+[04:42:14]   Strategy: 20 bases, agg=max, norm=minmax
+[04:42:41] NEW BEST at generation 12: fitness=1.1403
+[04:42:41]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:42:41]   Strategy: 20 bases, agg=max, norm=minmax
+[04:43:07] NEW BEST at generation 13: fitness=1.1404
+[04:43:07]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:43:07]   Strategy: 20 bases, agg=max, norm=minmax
+[04:43:35] NEW BEST at generation 14: fitness=1.1404
+[04:43:35]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:43:35]   Strategy: 20 bases, agg=max, norm=minmax
+[04:44:32] NEW BEST at generation 16: fitness=1.1404
+[04:44:32]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:44:32]   Strategy: 19 bases, agg=max, norm=minmax
+[04:44:59] NEW BEST at generation 17: fitness=1.1406
+[04:44:59]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:44:59]   Strategy: 20 bases, agg=max, norm=minmax
+[04:45:26] NEW BEST at generation 18: fitness=1.1406
+[04:45:26]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:45:26]   Strategy: 20 bases, agg=max, norm=minmax
+[04:45:53] NEW BEST at generation 19: fitness=1.1407
+[04:45:53]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:45:53]   Strategy: 19 bases, agg=max, norm=minmax
+[04:46:21] NEW BEST at generation 20: fitness=1.1408
+[04:46:21]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:46:21]   Strategy: 19 bases, agg=max, norm=minmax
+[04:46:47] NEW BEST at generation 21: fitness=1.1411
+[04:46:47]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:46:47]   Strategy: 19 bases, agg=max, norm=minmax
+[04:47:12] NEW BEST at generation 22: fitness=1.1413
+[04:47:12]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:47:12]   Strategy: 18 bases, agg=max, norm=minmax
+[04:47:42] NEW BEST at generation 23: fitness=1.1414
+[04:47:42]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:47:42]   Strategy: 18 bases, agg=max, norm=minmax
+[04:48:33] NEW BEST at generation 25: fitness=1.1415
+[04:48:33]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:48:33]   Strategy: 19 bases, agg=max, norm=minmax
+[04:48:58] NEW BEST at generation 26: fitness=1.1417
+[04:48:58]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:48:58]   Strategy: 18 bases, agg=max, norm=minmax
+[04:49:52] NEW BEST at generation 28: fitness=1.1418
+[04:49:52]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:49:52]   Strategy: 18 bases, agg=max, norm=minmax
+[04:50:42] NEW BEST at generation 30: fitness=1.1419
+[04:50:42]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:50:42]   Strategy: 18 bases, agg=max, norm=minmax
+[04:51:37] NEW BEST at generation 32: fitness=1.1419
+[04:51:37]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:51:37]   Strategy: 18 bases, agg=max, norm=minmax
+[04:52:03] NEW BEST at generation 33: fitness=1.1420
+[04:52:03]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:52:03]   Strategy: 18 bases, agg=max, norm=minmax
+[04:52:55] NEW BEST at generation 35: fitness=1.1420
+[04:52:55]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:52:55]   Strategy: 18 bases, agg=max, norm=minmax
+[04:53:21] NEW BEST at generation 36: fitness=1.1421
+[04:53:21]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:53:21]   Strategy: 17 bases, agg=max, norm=minmax
+[04:54:37] NEW BEST at generation 39: fitness=1.1421
+[04:54:37]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:54:37]   Strategy: 18 bases, agg=max, norm=minmax
+[04:55:01] NEW BEST at generation 40: fitness=1.1422
+[04:55:01]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:55:01]   Strategy: 16 bases, agg=max, norm=minmax
+[04:55:25] NEW BEST at generation 41: fitness=1.1422
+[04:55:25]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:55:25]   Strategy: 16 bases, agg=max, norm=minmax
+[04:57:02] NEW BEST at generation 45: fitness=1.1423
+[04:57:02]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:57:02]   Strategy: 16 bases, agg=max, norm=minmax
+[04:57:50] NEW BEST at generation 47: fitness=1.1423
+[04:57:50]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:57:50]   Strategy: 16 bases, agg=max, norm=minmax
+[04:59:23] NEW BEST at generation 51: fitness=1.1424
+[04:59:23]   Active features (3): ['n', 'length', 'kurtosis']...
+[04:59:23]   Strategy: 16 bases, agg=max, norm=minmax
+[05:00:32] NEW BEST at generation 54: fitness=1.1424
+[05:00:32]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:00:32]   Strategy: 15 bases, agg=max, norm=minmax
+[05:00:54] NEW BEST at generation 55: fitness=1.1426
+[05:00:54]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:00:54]   Strategy: 15 bases, agg=max, norm=minmax
+[05:05:44] NEW BEST at generation 68: fitness=1.1427
+[05:05:44]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:05:44]   Strategy: 13 bases, agg=max, norm=minmax
+[05:06:06] NEW BEST at generation 69: fitness=1.1427
+[05:06:06]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:06:06]   Strategy: 13 bases, agg=max, norm=minmax
+[05:08:12] NEW BEST at generation 75: fitness=1.1427
+[05:08:12]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:08:12]   Strategy: 13 bases, agg=max, norm=minmax
+[05:09:36] NEW BEST at generation 79: fitness=1.1427
+[05:09:36]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:09:36]   Strategy: 12 bases, agg=max, norm=minmax
+[05:09:55] NEW BEST at generation 80: fitness=1.1427
+[05:09:55]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:09:55]   Strategy: 12 bases, agg=max, norm=minmax
+[05:13:26] NEW BEST at generation 91: fitness=1.1428
+[05:13:26]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:13:26]   Strategy: 11 bases, agg=max, norm=minmax
+[05:15:39] NEW BEST at generation 98: fitness=1.1428
+[05:15:39]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:15:39]   Strategy: 10 bases, agg=max, norm=minmax
+[05:15:56] NEW BEST at generation 99: fitness=1.1428
+[05:15:56]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:15:56]   Strategy: 11 bases, agg=max, norm=minmax
+[05:17:43] NEW BEST at generation 105: fitness=1.1429
+[05:17:43]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:17:43]   Strategy: 11 bases, agg=max, norm=minmax
+[05:18:36] NEW BEST at generation 108: fitness=1.1429
+[05:18:36]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:18:36]   Strategy: 11 bases, agg=max, norm=minmax
+[05:19:47] NEW BEST at generation 112: fitness=1.1429
+[05:19:47]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:19:47]   Strategy: 10 bases, agg=max, norm=minmax
+[05:20:57] NEW BEST at generation 116: fitness=1.1429
+[05:20:57]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:20:57]   Strategy: 10 bases, agg=max, norm=minmax
+[05:21:31] NEW BEST at generation 118: fitness=1.1429
+[05:21:31]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:21:31]   Strategy: 10 bases, agg=max, norm=minmax
+[05:22:53] NEW BEST at generation 123: fitness=1.1429
+[05:22:53]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:22:53]   Strategy: 10 bases, agg=max, norm=minmax
+[05:24:00] NEW BEST at generation 127: fitness=1.1429
+[05:24:00]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:24:00]   Strategy: 10 bases, agg=max, norm=minmax
+[05:30:34] NEW BEST at generation 151: fitness=1.1429
+[05:30:34]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:30:34]   Strategy: 10 bases, agg=max, norm=minmax
+[05:32:28] NEW BEST at generation 158: fitness=1.1429
+[05:32:28]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:32:28]   Strategy: 10 bases, agg=max, norm=minmax
+[05:36:06] NEW BEST at generation 171: fitness=1.1429
+[05:36:06]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:36:06]   Strategy: 10 bases, agg=max, norm=minmax
+[05:36:55] NEW BEST at generation 174: fitness=1.1429
+[05:36:55]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:36:55]   Strategy: 10 bases, agg=max, norm=minmax
+[05:42:08] NEW BEST at generation 193: fitness=1.1429
+[05:42:08]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:42:08]   Strategy: 10 bases, agg=max, norm=minmax
+[05:43:49] NEW BEST at generation 199: fitness=1.1429
+[05:43:49]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:43:49]   Strategy: 10 bases, agg=max, norm=minmax
+[05:51:28] NEW BEST at generation 227: fitness=1.1430
+[05:51:28]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:51:28]   Strategy: 10 bases, agg=max, norm=minmax
+[05:52:36] NEW BEST at generation 231: fitness=1.1430
+[05:52:36]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:52:36]   Strategy: 10 bases, agg=max, norm=minmax
+[05:53:43] NEW BEST at generation 235: fitness=1.1430
+[05:53:43]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:53:43]   Strategy: 10 bases, agg=max, norm=minmax
+[05:57:01] NEW BEST at generation 247: fitness=1.1430
+[05:57:01]   Active features (3): ['n', 'length', 'kurtosis']...
+[05:57:01]   Strategy: 10 bases, agg=max, norm=minmax
+[06:07:43] NEW BEST at generation 286: fitness=1.1430
+[06:07:43]   Active features (3): ['n', 'length', 'kurtosis']...
+[06:07:43]   Strategy: 10 bases, agg=max, norm=minmax
+[06:20:52] NEW BEST at generation 334: fitness=1.1430
+[06:20:52]   Active features (3): ['n', 'length', 'kurtosis']...
+[06:20:52]   Strategy: 10 bases, agg=max, norm=minmax
+[06:36:20] NEW BEST at generation 390: fitness=1.1430
+[06:36:20]   Active features (3): ['n', 'length', 'kurtosis']...
+[06:36:20]   Strategy: 10 bases, agg=max, norm=minmax
+[06:36:37] NEW BEST at generation 391: fitness=1.1430
+[06:36:37]   Active features (3): ['n', 'length', 'kurtosis']...
+[06:36:37]   Strategy: 10 bases, agg=max, norm=minmax
+[06:53:23] NEW BEST at generation 451: fitness=1.1430
+[06:53:23]   Active features (3): ['n', 'length', 'kurtosis']...
+[06:53:23]   Strategy: 10 bases, agg=max, norm=minmax
+[07:04:58] NEW BEST at generation 493: fitness=1.1431
+[07:04:58]   Active features (3): ['n', 'length', 'kurtosis']...
+[07:04:58]   Strategy: 10 bases, agg=max, norm=minmax
+[07:42:32] NEW BEST at generation 630: fitness=1.1431
+[07:42:32]   Active features (3): ['n', 'length', 'kurtosis']...
+[07:42:32]   Strategy: 10 bases, agg=max, norm=minmax
+[08:01:09] NEW BEST at generation 698: fitness=1.1431
+[08:01:09]   Active features (3): ['n', 'length', 'kurtosis']...
+[08:01:09]   Strategy: 10 bases, agg=max, norm=minmax
+[08:03:22] NEW BEST at generation 706: fitness=1.1431
+[08:03:22]   Active features (3): ['n', 'length', 'kurtosis']...
+[08:03:22]   Strategy: 10 bases, agg=max, norm=minmax
+[08:13:17] NEW BEST at generation 742: fitness=1.1431
+[08:13:17]   Active features (3): ['n', 'length', 'kurtosis']...
+[08:13:17]   Strategy: 10 bases, agg=max, norm=minmax
+[08:28:20] NEW BEST at generation 797: fitness=1.1431
+[08:28:20]   Active features (3): ['n', 'length', 'kurtosis']...
+[08:28:20]   Strategy: 10 bases, agg=max, norm=minmax
+[08:32:44] NEW BEST at generation 813: fitness=1.1431
+[08:32:44]   Active features (3): ['n', 'length', 'kurtosis']...
+[08:32:44]   Strategy: 10 bases, agg=max, norm=minmax
+[08:47:59] NEW BEST at generation 870: fitness=1.1431
+[08:47:59]   Active features (3): ['n', 'length', 'kurtosis']...
+[08:47:59]   Strategy: 10 bases, agg=max, norm=minmax
+[09:12:04] NEW BEST at generation 963: fitness=1.1431
+[09:12:04]   Active features (3): ['n', 'length', 'kurtosis']...
+[09:12:04]   Strategy: 10 bases, agg=max, norm=minmax
+[09:13:41] NEW BEST at generation 969: fitness=1.1432
+[09:13:41]   Active features (3): ['n', 'length', 'kurtosis']...
+[09:13:41]   Strategy: 10 bases, agg=max, norm=minmax
+[10:03:22] NEW BEST at generation 1161: fitness=1.1432
+[10:03:22]   Active features (3): ['n', 'length', 'kurtosis']...
+[10:03:22]   Strategy: 10 bases, agg=max, norm=minmax
+[10:19:11] NEW BEST at generation 1222: fitness=1.1432
+[10:19:11]   Active features (3): ['n', 'length', 'kurtosis']...
+[10:19:11]   Strategy: 10 bases, agg=max, norm=minmax
+[10:23:21] NEW BEST at generation 1238: fitness=1.1432
+[10:23:21]   Active features (3): ['n', 'length', 'kurtosis']...
+[10:23:21]   Strategy: 10 bases, agg=max, norm=minmax
+[10:23:53] NEW BEST at generation 1240: fitness=1.1432
+[10:23:53]   Active features (3): ['n', 'length', 'kurtosis']...
+[10:23:53]   Strategy: 10 bases, agg=max, norm=minmax
+[10:40:47] NEW BEST at generation 1305: fitness=1.1432
+[10:40:47]   Active features (3): ['n', 'length', 'kurtosis']...
+[10:40:47]   Strategy: 10 bases, agg=max, norm=minmax
+[10:41:49] NEW BEST at generation 1309: fitness=1.1432
+[10:41:49]   Active features (3): ['n', 'length', 'kurtosis']...
+[10:41:49]   Strategy: 10 bases, agg=max, norm=minmax
+[15:33:23] NEW BEST at generation 2376: fitness=1.1432
+[15:33:23]   Active features (3): ['n', 'length', 'kurtosis']...
+[15:33:23]   Strategy: 10 bases, agg=max, norm=minmax
+[15:44:55] NEW BEST at generation 2418: fitness=1.1432
+[15:44:55]   Active features (3): ['n', 'length', 'kurtosis']...
+[15:44:55]   Strategy: 10 bases, agg=max, norm=minmax
+[18:06:40] NEW BEST at generation 2935: fitness=1.1432
+[18:06:40]   Active features (3): ['n', 'length', 'kurtosis']...
+[18:06:40]   Strategy: 10 bases, agg=max, norm=minmax
+[18:11:06] NEW BEST at generation 2951: fitness=1.1433
+[18:11:06]   Active features (3): ['n', 'length', 'kurtosis']...
+[18:11:06]   Strategy: 10 bases, agg=max, norm=minmax
+[18:17:41] NEW BEST at generation 2975: fitness=1.1433
+[18:17:41]   Active features (3): ['n', 'length', 'kurtosis']...
+[18:17:41]   Strategy: 11 bases, agg=max, norm=minmax
+[19:51:13] Total runtime: 16.00 hours
+[19:51:13] Uniqueness: 0 collisions in 4998 numbers.
+[19:51:13] Inheritance: 100.0% CRT compliance over 171 semiprimes.
+[19:51:13] 
+--- Genetic Discovery Final Summary ---
+[19:51:13] Optimal strategy relies on these key features (ranked by importance):
+[19:51:13]   1. kurtosis (weight: 1.000)
+[19:51:13]   2. recurring_2grams (weight: 0.650)
+[19:51:13]   3. n (weight: 0.064)
+[19:51:13]   4. length (weight: 0.045)
+[19:51:13] Base Strategy: Use 11 primes from 5 to 229.
+[19:51:13] Data Strategy: Aggregate features via 'max', normalize with 'minmax'. PCA used: True.
+[19:51:13] ✓ Patterns appear to uniquely encode n
+[19:51:13] ✓ Composite patterns follow CRT inheritance
+[19:51:13] ✓ Pattern features correlate strongly with factorization
+[19:51:13] 
+The Sieve Echo Conjecture is STRONGLY SUPPORTED by empirical evidence.
+[19:51:22] Final GA checkpoint saved (generation 3317)
+[19:51:33] Pattern cache saved to sieve_echo_pattern_cache.pkl (42350 features, 43150 patterns)
+[19:51:33] 
+Final results saved to:
+[19:51:33]   - JSON: sieve_echo_final_results.json
+[19:51:33]   - Pickle: sieve_echo_final_results.pkl
+[19:51:33]   - Pattern cache: sieve_echo_pattern_cache.pkl
+[19:51:33]   - Detailed log: sieve_echo_log_20250822_035057.txt
+[19:51:33]   - Results summary: sieve_echo_results_20250822_035057.txt
+[19:51:33] Total runtime: 16.01 hours
+[19:51:33] Uniqueness: 0 collisions in 4998 numbers.
+[19:51:33] Inheritance: 100.0% CRT compliance over 171 semiprimes.
+[19:51:33] 
+--- Genetic Discovery Final Summary ---
+[19:51:33] Optimal strategy relies on these key features (ranked by importance):
+[19:51:33]   1. kurtosis (weight: 1.000)
+[19:51:33]   2. recurring_2grams (weight: 0.650)
+[19:51:33]   3. n (weight: 0.064)
+[19:51:33]   4. length (weight: 0.045)
+[19:51:33] Base Strategy: Use 11 primes from 5 to 229.
+[19:51:33] Data Strategy: Aggregate features via 'max', normalize with 'minmax'. PCA used: True.
+[19:51:33] ✓ Patterns appear to uniquely encode n
+[19:51:33] ✓ Composite patterns follow CRT inheritance
+[19:51:33] ✓ Pattern features correlate strongly with factorization
+[19:51:33] 
+The Sieve Echo Conjecture is STRONGLY SUPPORTED by empirical evidence.
+[19:52:10] Final GA checkpoint saved (generation 3317)
+[19:52:38] Pattern cache saved to sieve_echo_pattern_cache.pkl (42350 features, 43150 patterns)
+[19:52:38] 
+Final results saved to:
+[19:52:38]   - JSON: sieve_echo_final_results.json
+[19:52:38]   - Pickle: sieve_echo_final_results.pkl
+[19:52:38]   - Pattern cache: sieve_echo_pattern_cache.pkl
+[19:52:38]   - Detailed log: sieve_echo_log_20250822_035057.txt
+[19:52:38]   - Results summary: sieve_echo_results_20250822_035057.txt

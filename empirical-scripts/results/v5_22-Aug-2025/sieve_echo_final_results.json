@@ -1,0 +1,101 @@
+{
+  "pattern_uniqueness": {
+    "tested": 4998,
+    "collisions": 0
+  },
+  "pattern_inheritance": {
+    "tested": 171,
+    "mean_ratio": 1.0,
+    "crt_compliance": 1.0
+  },
+  "genetic_best": {
+    "fitness": 1.1432518742111866,
+    "individual": {
+      "id": 5057260,
+      "birth_generation": 2974,
+      "parent1_id": 5144235,
+      "parent2_id": 3033296,
+      "feature_weights": {
+        "valid": 0.5108636341331381,
+        "n": 0.06446292889084812,
+        "base": 1,
+        "length": 0.044617013481803566,
+        "mean": 1,
+        "std": 0.6533012422513877,
+        "skew": 0.6185477740665816,
+        "kurtosis": 1,
+        "unique_digits": 0.6755384319005959,
+        "digit_entropy": 0.41506402432589956,
+        "transition_entropy": 0.9915946794236977,
+        "mean_jump": 0.5054191216965661,
+        "max_jump": 0.7731049036124207,
+        "autocorr_lag1": 0.4678044361189963,
+        "autocorr_lag2": 0.46739818456310667,
+        "autocorr_decay": 0.8574654721209316,
+        "spectral_peak_count": 1,
+        "dominant_freq": 0.1367637168324402,
+        "spectral_entropy": 1,
+        "spectral_energy_concentration": 0.9000281523801313,
+        "lempel_ziv": 0.6603981760317919,
+        "run_count": 0.3443347845179405,
+        "longest_run": 1,
+        "recurring_2grams": 0.6496143204073859,
+        "recurring_3grams": 0.6675328434919217,
+        "multiplicative_order": 0.8487762211414378
+      },
+      "feature_active": {
+        "valid": false,
+        "n": true,
+        "base": false,
+        "length": true,
+        "mean": false,
+        "std": false,
+        "skew": false,
+        "kurtosis": true,
+        "unique_digits": false,
+        "digit_entropy": false,
+        "transition_entropy": false,
+        "mean_jump": false,
+        "max_jump": false,
+        "autocorr_lag1": false,
+        "autocorr_lag2": false,
+        "autocorr_decay": false,
+        "spectral_peak_count": false,
+        "dominant_freq": false,
+        "spectral_entropy": false,
+        "spectral_energy_concentration": false,
+        "lempel_ziv": false,
+        "run_count": false,
+        "longest_run": false,
+        "recurring_2grams": true,
+        "recurring_3grams": false,
+        "multiplicative_order": false
+      },
+      "bases": [
+        5,
+        11,
+        41,
+        59,
+        89,
+        101,
+        103,
+        131,
+        191,
+        211,
+        229
+      ],
+      "aggregation": "max",
+      "normalization": "minmax",
+      "use_pca": true,
+      "pca_components": 3,
+      "fitness": 1.1432518742111866
+    }
+  },
+  "metadata": {
+    "runtime_hours": 16.009848859376376,
+    "max_n": 50000,
+    "ga_generations": 3317,
+    "pattern_count": 42350,
+    "repetend_count": 43150
+  }
+}
