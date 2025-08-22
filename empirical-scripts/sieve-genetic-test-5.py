@@ -57,6 +57,9 @@ class Config:
     results_file: str = f"sieve_echo_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     stop_file: str = "STOP_SIEVE_ECHO"
 
+PREPARE_TEST_DATA = 20000 # def: 5000
+MAX_PRIME_RANGE = 5000 # def: 1000
+
 CONFIG = Config()
 
 class Logger:
@@ -91,7 +94,7 @@ class GPUPatternAnalyzer:
     def __init__(self, cache_size: int, device: str):
         self.cache = {}
         self.cache_size = cache_size
-        self.prime_list = list(primerange(2, 1000))
+        self.prime_list = list(primerange(2, MAX_PRIME_RANGE))
         self.device = torch.device(device)
         logger.log(f"Initialized GPUPatternAnalyzer on device: {self.device}")
 
@@ -482,7 +485,7 @@ class SieveEchoExplorer:
         if 'genetic_best' not in self.results: logger.log("No GA result available, skipping NN training."); return
         best_ind = self.results['genetic_best']['individual']
         logger.log(f"Training NN with features from best GA individual (fitness: {self.results['genetic_best']['fitness']:.4f})")
-        data = self._prepare_test_data(min(20000, self.config.max_n), 5000)
+        data = self._prepare_test_data(min(20000, self.config.max_n), PREPARE_TEST_DATA)
         X, y_omega, y_primes = [], [], []
         evolver = self.genetic_evolver # Use an instance to call the method
         for i, (n, factors) in enumerate(data):
