@@ -286,7 +286,13 @@ class NDRPatternAnalyzer:
         return torch.tensor(pattern, dtype=torch.float32, device=self.device) / base
 
     def extract_ndr_features(self, n: int, bases: List[int] = None) -> Dict:
-        if bases is None: bases = self.prime_list[:30]
+        if bases is None: 
+            # Use prime bases that are smaller than n
+            bases = [p for p in self.prime_list if p < n and p <= 30]
+            if not bases:
+                # Fallback to small primes if n is very small
+                bases = [2, 3, 5, 7] if n > 7 else [2, 3] if n > 3 else [2] if n > 2 else []
+        
         all_features = []
         valid_bases = []
         for base in bases:
@@ -366,16 +372,27 @@ class PrimeProbabilityPredictor:
     """Implements the prime probability prediction formula from the paper."""
     def __init__(self):
         self.not_prime_prob = 0.5
+        self.history = []  # Add history tracking
+        
     def update(self, n: int, is_prime: bool):
         if n > 1:
-            # Formula simplifies to a weighted average: P_new = P_old * (1 - 1/n) + 1 * (1/n)
-            # It slowly converges towards 1 (not prime).
             self.not_prime_prob = self.not_prime_prob * (1 - 1/n) + (1/n)
+            self.history.append((n, is_prime, self.not_prime_prob))
+            
     def predict(self, n: int) -> float:
         """Predicts probability that n is NOT prime."""
         if n > 1:
             return self.not_prime_prob * (1 - 1/n) + (1/n)
         return 1.0
+        
+    def get_accuracy(self, last_n: int = 100) -> float:
+        """Get prediction accuracy for the last n predictions"""
+        if not self.history:
+            return 0.0
+        recent = self.history[-last_n:]
+        correct = sum(1 for n, is_p, prob in recent 
+                     if (prob > 0.5 and not is_p) or (prob <= 0.5 and is_p))
+        return correct / len(recent) if recent else 0.0
 
 class EvolvoNDREvaluator(BaseEvaluator):
     """Evaluator for Evolvo to predict ω(n) from NDR features."""
@@ -625,13 +642,13 @@ class SieveEchoExplorer:
                 ndr = self.analyzer.compute_ndr(pattern, base)
                 if len(ndr) > 0:
                     # Calculate NDR entropy
-                    fft = np.fft.fft(ndr)
-                    power = np.abs(fft)**2
-                    if np.sum(power) > 1e-9:
-                        p = power / np.sum(power)
+                    fft = torch.fft.fft(ndr)
+                    power = torch.abs(fft)**2
+                    if torch.sum(power) > 1e-9:
+                        p = power / torch.sum(power)
                         p = p[p > 1e-10]
-                        entropy = -np.sum(p * np.log(p)) if len(p) > 0 else 0
-                        ndr_entropies.append(entropy)
+                        entropy = -torch.sum(p * torch.log(p)) if len(p) > 0 else 0
+                        ndr_entropies.append(float(entropy))
             
             if ndr_entropies:
                 omega_n = len(factorint(n))
@@ -775,19 +792,24 @@ class SieveEchoExplorer:
     def run_genetic_discovery(self):
         logger.log("Running genetic discovery to find optimal feature weights...")
         test_data = []
-        sample_range = range(10, min(2000, self.config.max_n))
+        sample_range = list(range(10, min(2000, self.config.max_n)))
         sample_numbers = random.sample(sample_range, min(len(sample_range), 500))
+        
         for i, n in enumerate(sample_numbers):
             logger.progress(i + 1, len(sample_numbers), "Preparing GA data")
             features = self.analyzer.extract_ndr_features(n)
-            if features.get('valid', False): test_data.append((n, len(factorint(n)), features))
-        if len(test_data) < 50: logger.log("Insufficient data for genetic evolution"); return
-        logger.log(f"Prepared {len(test_data)} test samples for genetic discovery.")
+            if features.get('valid', False): 
+                test_data.append((n, len(factorint(n)), features))
+        
+        logger.progress(len(sample_numbers), len(sample_numbers), "Done")
+        logger.log(f"Generated {len(test_data)} valid samples out of {len(sample_numbers)} total")
+        
+        if len(test_data) < 50: 
+            logger.log(f"Insufficient data for genetic evolution (only {len(test_data)} valid samples)", "WARNING")
+            return
+            
+        logger.log(f"Starting genetic evolution with {len(test_data)} test samples...")
         self.genetic_evolver.evolve(test_data, self.start_time)
-        if self.genetic_evolver.best_individual:
-            self.results['genetic_best'] = {'fitness': self.genetic_evolver.best_fitness,
-                                           'individual': self.genetic_evolver.best_individual,
-                                           'generation': self.genetic_evolver.generation}
 
     def run_evolvo_evolution(self):
         """Use Evolvo to evolve algorithms for ω(n) prediction."""
