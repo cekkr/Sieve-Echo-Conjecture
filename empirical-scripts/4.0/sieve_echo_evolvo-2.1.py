@@ -149,7 +149,7 @@ else:
 # Configuration
 @dataclass
 class Config:
-    max_n: int = 200000
+    max_n: int = 50000
     population_size: int = 10000
     generations: int = 20000
     mutation_rate: float = 0.2
@@ -1269,7 +1269,7 @@ def main():
     
     parser = argparse.ArgumentParser(description='Sieve Echo Conjecture - Enhanced Framework v4.0')
     parser.add_argument('--hours', type=float, default=24.0, help='Runtime hours')
-    parser.add_argument('--max_n', type=int, default=100000, help='Maximum n to test')
+    parser.add_argument('--max_n', type=int, default=50000, help='Maximum n to test')
     parser.add_argument('--checkpoint', type=str, help='Resume from checkpoint file')
     
     args = parser.parse_args()
