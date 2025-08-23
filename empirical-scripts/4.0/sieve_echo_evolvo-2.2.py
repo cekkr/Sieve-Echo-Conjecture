@@ -246,127 +246,229 @@ class Logger:
 logger = Logger(CONFIG.log_file, CONFIG.results_file)
 
 class NDRPatternAnalyzer:
+    """
+    NDR (Normalized Digit Representation) Pattern Analyzer
+    Replaces theta terminology to avoid LLM confusion while maintaining the same mathematical framework
+    """
     def __init__(self, cache_size: int, device: torch.device):
         self.cache = {}
         self.cache_size = cache_size
         self.prime_list = list(primerange(2, 5000))
         self.device = device
+        self.ndr_patterns = {}  # Store NDR patterns for analysis
         logger.log(f"Initialized NDR Pattern Analyzer on device: {self.device}")
 
     def compute_repetend_multibase(self, n: int, bases: List[int] = None, max_length: int = 10000) -> Dict[int, List[int]]:
+        """Compute repetend patterns across multiple bases"""
         if bases is None:
-            bases = list(range(2, min(CONFIG.max_bases_to_test + 1, n)))
+            # Only use bases that are smaller than n and coprime to n
+            bases = [b for b in range(2, min(17, n)) if math.gcd(n, b) == 1]
+        
         results = {}
         for base in bases:
-            if n > 1 and math.gcd(n, base) == 1:
+            if base < n and math.gcd(n, base) == 1:
                 pattern = self.compute_repetend(n, base, max_length)
                 if pattern:
                     results[base] = pattern
         return results
 
     def compute_repetend(self, n: int, base: int, max_length: int = 10000) -> List[int]:
+        """Compute the repeating decimal pattern for 1/n in given base"""
         cache_key = (n, base)
-        if cache_key in self.cache: return self.cache[cache_key]
-        if n <= 1 or math.gcd(n, base) != 1: return []
-
-        remainder, digits, seen = 1, [], {}
-        while remainder not in seen and len(digits) < max_length:
+        if cache_key in self.cache:
+            return self.cache[cache_key]
+        
+        if n <= 1 or base <= 1 or math.gcd(n, base) != 1:
+            return []
+        
+        remainder = 1
+        digits = []
+        seen = {}
+        
+        while remainder != 0 and remainder not in seen and len(digits) < max_length:
             seen[remainder] = len(digits)
-            remainder, digit = divmod(remainder * base, n)
+            remainder *= base
+            digit = remainder // n
             digits.append(digit)
-
-        result = digits[seen.get(remainder, 0):] if remainder in seen else digits
-        if len(self.cache) >= self.cache_size: self.cache.pop(next(iter(self.cache)))
+            remainder = remainder % n
+        
+        # Extract the repeating part
+        if remainder in seen:
+            result = digits[seen[remainder]:]
+        else:
+            result = digits
+        
+        # Update cache
+        if len(self.cache) >= self.cache_size:
+            self.cache.pop(next(iter(self.cache)))
         self.cache[cache_key] = result
+        
+        # Store NDR pattern
+        if result:
+            ndr_key = (n, base)
+            self.ndr_patterns[ndr_key] = self.compute_ndr(result, base)
+        
         return result
 
     def compute_ndr(self, pattern: List[int], base: int) -> torch.Tensor:
+        """
+        Convert pattern to NDR (Normalized Digit Representation)
+        NDR_d = d/base for each digit d
+        """
         if not pattern or base <= 1:
             return torch.tensor([], dtype=torch.float32, device=self.device)
         return torch.tensor(pattern, dtype=torch.float32, device=self.device) / base
 
     def extract_ndr_features(self, n: int, bases: List[int] = None) -> Dict:
-        if bases is None: 
-            # Use prime bases that are smaller than n
-            bases = [p for p in self.prime_list if p < n and p <= 30]
-            if not bases:
-                # Fallback to small primes if n is very small
-                bases = [2, 3, 5, 7] if n > 7 else [2, 3] if n > 3 else [2] if n > 2 else []
+        """Extract features from NDR patterns across multiple bases"""
+        if n <= 2:
+            return {'valid': False, 'n': n}
+        
+        if bases is None:
+            # Use small primes that are less than n
+            potential_bases = [p for p in self.prime_list if p < n][:10]  # Limit to 10 bases for speed
+            # If we don't have enough primes, use small integers
+            if len(potential_bases) < 3:
+                potential_bases = [b for b in range(2, min(n, 12)) if math.gcd(n, b) == 1]
+            bases = potential_bases
+        
+        if not bases:
+            return {'valid': False, 'n': n}
         
         all_features = []
         valid_bases = []
+        
         for base in bases:
-            if base >= n or math.gcd(n, base) != 1: continue
+            if base >= n or math.gcd(n, base) != 1:
+                continue
+            
             pattern = self.compute_repetend(n, base)
-            if not pattern: continue
+            if not pattern or len(pattern) < 2:  # Need at least 2 elements for meaningful features
+                continue
+            
             ndr = self.compute_ndr(pattern, base)
-            if len(ndr) == 0: continue
+            if len(ndr) < 2:
+                continue
+            
             features = self._extract_single_base_features(ndr, n, base)
-            if features['valid']:
+            if features.get('valid', False):
                 all_features.append(features)
                 valid_bases.append(base)
-
-        if not all_features: return {'valid': False, 'n': n}
+        
+        if not all_features:
+            return {'valid': False, 'n': n}
+        
+        # Aggregate features across bases
         aggregated = self._aggregate_multibase_features(all_features)
-        aggregated.update({'n': n, 'num_valid_bases': len(valid_bases), 'bases_used': valid_bases})
+        aggregated['n'] = n
+        aggregated['num_valid_bases'] = len(valid_bases)
+        aggregated['bases_used'] = valid_bases
+        aggregated['valid'] = True
+        
         return aggregated
 
     def _extract_single_base_features(self, ndr: torch.Tensor, n: int, base: int) -> Dict:
-        if len(ndr) < 4: return {'valid': False}
-
-        # FFT and Power Spectrum on GPU
-        fft = torch.fft.fft(ndr)
-        power_spectrum = torch.abs(fft)**2
-        power_spectrum = power_spectrum[:len(power_spectrum)//2]
-
-        # Normalized Power Spectrum for Entropy on GPU
-        total_power = torch.sum(power_spectrum)
-        if total_power > 1e-9:
-            p = power_spectrum / total_power
-            p = p[p > 1e-10]
-            ndr_entropy = -torch.sum(p * torch.log(p)) if len(p) > 0 else 0.0
-        else:
-            ndr_entropy = 0.0
-
-        # Skew and Kurtosis (using CPU via SciPy as torch lacks direct equivalents)
-        ndr_cpu = ndr.cpu().numpy()
-        skew_val = safe_float(stats.skew(ndr_cpu))
-        kurt_val = safe_float(stats.kurtosis(ndr_cpu))
-
+        """Extract features from a single NDR pattern"""
+        if len(ndr) < 2:
+            return {'valid': False}
+        
         try:
-            tot = safe_int(totient(n))
-            order_ratio = safe_float(len(ndr) / tot) if tot > 0 else 0.0
-        except Exception:
-            order_ratio = 0.0
-
-        return {
-            'valid': True,
-            'base': safe_int(base),
-            'length': safe_int(len(ndr)),
-            'ndr_entropy': safe_float(ndr_entropy),
-            'mean': safe_float(torch.mean(ndr)),
-            'std': safe_float(torch.std(ndr)),
-            'skew': skew_val,
-            'kurtosis': kurt_val,
-            'unique_values': safe_int(len(torch.unique(ndr))),
-            'multiplicative_order': safe_int(len(ndr)),
-            'order_ratio': order_ratio
-        }
+            # Move to CPU for numpy operations if needed
+            ndr_cpu = ndr.cpu().numpy() if ndr.is_cuda else ndr.numpy()
+            
+            # Compute FFT for entropy calculation
+            fft = np.fft.fft(ndr_cpu)
+            power_spectrum = np.abs(fft)**2
+            
+            # Use only positive frequencies
+            power_spectrum = power_spectrum[:len(power_spectrum)//2] if len(power_spectrum) > 1 else power_spectrum
+            
+            # Normalize power spectrum for entropy
+            total_power = np.sum(power_spectrum)
+            if total_power > 1e-9:
+                p = power_spectrum / total_power
+                p = p[p > 1e-10]  # Remove zeros for log
+                ndr_entropy = -np.sum(p * np.log(p)) if len(p) > 0 else 0.0
+            else:
+                ndr_entropy = 0.0
+            
+            # Calculate statistics
+            mean_val = float(np.mean(ndr_cpu))
+            std_val = float(np.std(ndr_cpu))
+            
+            # Calculate skew and kurtosis only if we have enough data points
+            if len(ndr_cpu) > 3:
+                skew_val = float(stats.skew(ndr_cpu))
+                kurt_val = float(stats.kurtosis(ndr_cpu))
+            else:
+                skew_val = 0.0
+                kurt_val = 0.0
+            
+            # Calculate totient ratio
+            try:
+                tot = int(totient(n))
+                order_ratio = float(len(ndr) / tot) if tot > 0 else 0.0
+            except:
+                order_ratio = 0.0
+            
+            features = {
+                'valid': True,
+                'base': int(base),
+                'length': int(len(ndr)),
+                'ndr_entropy': float(ndr_entropy),
+                'mean': mean_val,
+                'std': std_val,
+                'skew': skew_val,
+                'kurtosis': kurt_val,
+                'unique_values': int(len(np.unique(ndr_cpu))),
+                'multiplicative_order': int(len(ndr)),
+                'order_ratio': order_ratio
+            }
+            
+            return features
+            
+        except Exception as e:
+            logger.log(f"Error extracting features for n={n}, base={base}: {e}", "DEBUG", False)
+            return {'valid': False}
 
     def _aggregate_multibase_features(self, features_list: List[Dict]) -> Dict:
-        aggregated = {'valid': True}
-        feature_names = ['ndr_entropy', 'kurtosis', 'length', 'mean', 'std', 'skew', 'unique_values', 'order_ratio']
+        """Aggregate features across multiple bases"""
+        if not features_list:
+            return {'valid': False}
+        
+        aggregated = {}
+        
+        # Key features to aggregate
+        feature_names = ['ndr_entropy', 'kurtosis', 'length', 'mean', 'std', 
+                        'skew', 'unique_values', 'order_ratio']
+        
         for fname in feature_names:
-            values = [safe_float(f[fname]) for f in features_list if fname in f]
+            values = []
+            for f in features_list:
+                if fname in f and f[fname] is not None:
+                    try:
+                        val = float(f[fname])
+                        if np.isfinite(val):
+                            values.append(val)
+                    except:
+                        continue
+            
             if values:
                 values_np = np.array(values, dtype=np.float64)
-                aggregated[f'{fname}_mean'] = safe_float(np.mean(values_np))
-                aggregated[f'{fname}_std'] = safe_float(np.std(values_np))
-                aggregated[f'{fname}_max'] = safe_float(np.max(values_np))
-                aggregated[f'{fname}_min'] = safe_float(np.min(values_np))
+                aggregated[f'{fname}_mean'] = float(np.mean(values_np))
+                aggregated[f'{fname}_std'] = float(np.std(values_np))
+                aggregated[f'{fname}_max'] = float(np.max(values_np))
+                aggregated[f'{fname}_min'] = float(np.min(values_np))
             else:
-                aggregated.update({f'{fname}_mean': 0.0, f'{fname}_std': 0.0, f'{fname}_max': 0.0, f'{fname}_min': 0.0})
+                # Provide default values if no valid data
+                aggregated[f'{fname}_mean'] = 0.0
+                aggregated[f'{fname}_std'] = 0.0
+                aggregated[f'{fname}_max'] = 0.0
+                aggregated[f'{fname}_min'] = 0.0
+        
+        aggregated['valid'] = True
         return aggregated
+
 
 class PrimeProbabilityPredictor:
     """Implements the prime probability prediction formula from the paper."""
@@ -639,50 +741,87 @@ class SieveEchoExplorer:
             ndr_entropies = []
             
             for base, pattern in patterns.items():
+                if not pattern:
+                    continue
+                    
                 ndr = self.analyzer.compute_ndr(pattern, base)
                 if len(ndr) > 0:
                     # Calculate NDR entropy
-                    fft = torch.fft.fft(ndr)
-                    power = torch.abs(fft)**2
-                    if torch.sum(power) > 1e-9:
-                        p = power / torch.sum(power)
-                        p = p[p > 1e-10]
-                        entropy = -torch.sum(p * torch.log(p)) if len(p) > 0 else 0
-                        ndr_entropies.append(float(entropy))
+                    ndr_cpu = ndr.cpu().numpy() if ndr.is_cuda else ndr.numpy()
+                    
+                    try:
+                        fft = np.fft.fft(ndr_cpu)
+                        power = np.abs(fft)**2
+                        total_power = np.sum(power)
+                        
+                        if total_power > 1e-9:
+                            p = power / total_power
+                            p = p[p > 1e-10]
+                            entropy = -np.sum(p * np.log(p)) if len(p) > 0 else 0
+                            ndr_entropies.append(float(entropy))
+                    except Exception as e:
+                        logger.log(f"Error calculating entropy for n={n}, base={base}: {e}", "DEBUG", False)
+                        continue
             
             if ndr_entropies:
                 omega_n = len(factorint(n))
-                avg_entropy = np.mean(ndr_entropies)
+                avg_entropy = float(np.mean(ndr_entropies))
                 results.append({
                     'n': n,
                     'omega': omega_n,
                     'avg_ndr_entropy': avg_entropy,
-                    'is_prime': isprime(n)
+                    'is_prime': isprime(n),
+                    'num_bases': len(ndr_entropies)
                 })
                 
-                logger.log(f"n={n}: ω(n)={omega_n}, <H_NDR>={avg_entropy:.4f}")
+                logger.log(f"n={n}: ω(n)={omega_n}, <H_NDR>={avg_entropy:.4f} (from {len(ndr_entropies)} bases)")
         
         # Fit the law: <H_NDR> = α * log(ω) + β
         if len(results) > 5:
-            omega_values = np.array([r['omega'] for r in results if r['omega'] > 0])
-            entropy_values = np.array([r['avg_ndr_entropy'] for r in results if r['omega'] > 0])
-            log_omega = np.log(omega_values)
+            # Filter results with valid omega values
+            valid_results = [r for r in results if r['omega'] > 0 and r['avg_ndr_entropy'] > 0]
             
-            if np.std(log_omega) > 0:
-                coeffs = np.polyfit(log_omega, entropy_values, 1)
-                alpha_emp, beta_emp = coeffs
+            if len(valid_results) > 3:
+                omega_values = np.array([r['omega'] for r in valid_results])
+                entropy_values = np.array([r['avg_ndr_entropy'] for r in valid_results])
                 
-                logger.result(f"Empirical Law: <H_NDR> = {alpha_emp:.4f} * log(ω) + {beta_emp:.4f}")
-                logger.result(f"Theoretical: α = {CONFIG.alpha_theoretical:.4f}, β = {CONFIG.beta_theoretical:.4f}")
-                logger.result(f"Alpha error: {abs(alpha_emp - CONFIG.alpha_theoretical):.4f}")
-                logger.result(f"Beta error: {abs(beta_emp - CONFIG.beta_theoretical):.4f}")
+                # Use log(omega + 1) to handle omega=1 cases
+                log_omega = np.log(omega_values + 0.1)
                 
-                self.results['multibase_law'] = {
-                    'alpha_empirical': alpha_emp,
-                    'beta_empirical': beta_emp,
-                    'alpha_theoretical': CONFIG.alpha_theoretical,
-                    'beta_theoretical': CONFIG.beta_theoretical
-                }
+                if np.std(log_omega) > 0 and np.std(entropy_values) > 0:
+                    try:
+                        coeffs = np.polyfit(log_omega, entropy_values, 1)
+                        alpha_emp, beta_emp = float(coeffs[0]), float(coeffs[1])
+                        
+                        # Calculate R-squared
+                        fitted = alpha_emp * log_omega + beta_emp
+                        residuals = entropy_values - fitted
+                        ss_res = np.sum(residuals**2)
+                        ss_tot = np.sum((entropy_values - np.mean(entropy_values))**2)
+                        r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
+                        
+                        logger.result(f"Empirical Law: <H_NDR> = {alpha_emp:.4f} * log(ω) + {beta_emp:.4f}")
+                        logger.result(f"R-squared: {r_squared:.4f}")
+                        logger.result(f"Theoretical: α = {CONFIG.alpha_theoretical:.4f}, β = {CONFIG.beta_theoretical:.4f}")
+                        logger.result(f"Alpha error: {abs(alpha_emp - CONFIG.alpha_theoretical):.4f}")
+                        logger.result(f"Beta error: {abs(beta_emp - CONFIG.beta_theoretical):.4f}")
+                        
+                        self.results['multibase_law'] = {
+                            'alpha_empirical': alpha_emp,
+                            'beta_empirical': beta_emp,
+                            'alpha_theoretical': CONFIG.alpha_theoretical,
+                            'beta_theoretical': CONFIG.beta_theoretical,
+                            'r_squared': r_squared,
+                            'num_samples': len(valid_results)
+                        }
+                    except Exception as e:
+                        logger.log(f"Error fitting law: {e}", "ERROR")
+                else:
+                    logger.log("Insufficient variance in data for fitting", "WARNING")
+            else:
+                logger.log(f"Too few valid results ({len(valid_results)}) for fitting", "WARNING")
+        else:
+            logger.log(f"Too few results ({len(results)}) for analysis", "WARNING")
 
     def test_prime_probability(self):
         """Test the prime probability prediction formula"""
@@ -811,61 +950,212 @@ class SieveEchoExplorer:
         logger.log(f"Starting genetic evolution with {len(test_data)} test samples...")
         self.genetic_evolver.evolve(test_data, self.start_time)
 
+    def run_genetic_discovery(self):
+    """Run genetic algorithm to discover optimal features"""
+    logger.log("Running genetic discovery to find optimal feature weights...")
+    
+    # Prepare test data with NDR features
+    test_data = []
+    sample_range = list(range(10, min(2000, self.config.max_n)))
+    sample_numbers = random.sample(sample_range, min(len(sample_range), 500))
+    
+    valid_count = 0
+    invalid_count = 0
+    
+    for i, n in enumerate(sample_numbers):
+        logger.progress(i + 1, len(sample_numbers), f"Preparing GA data (valid: {valid_count})")
+        
+        features = self.analyzer.extract_ndr_features(n)
+        if features.get('valid', False):
+            omega_n = len(factorint(n))
+            test_data.append((n, omega_n, features))
+            valid_count += 1
+        else:
+            invalid_count += 1
+    
+    logger.progress(len(sample_numbers), len(sample_numbers), "Done")
+    logger.log(f"Generated {valid_count} valid samples out of {len(sample_numbers)} total")
+    logger.log(f"Invalid samples: {invalid_count}")
+    
+    if len(test_data) < 50:
+        logger.log(f"Insufficient data for genetic evolution (only {len(test_data)} valid samples)", "WARNING")
+        # Try to generate more data with larger numbers
+        logger.log("Attempting to generate more samples with larger n values...")
+        
+        for n in range(100, min(1000, self.config.max_n), 10):
+            features = self.analyzer.extract_ndr_features(n)
+            if features.get('valid', False):
+                omega_n = len(factorint(n))
+                test_data.append((n, omega_n, features))
+                if len(test_data) >= 50:
+                    break
+        
+        if len(test_data) < 50:
+            logger.log("Still insufficient data after extended search", "ERROR")
+            return
+    
+    logger.log(f"Starting genetic evolution with {len(test_data)} test samples...")
+    self.genetic_evolver.evolve(test_data, self.start_time)
+    
+    if self.genetic_evolver.best_individual:
+        self.results['genetic_best'] = {
+            'fitness': self.genetic_evolver.best_fitness,
+            'individual': self.genetic_evolver.best_individual,
+            'generation': self.genetic_evolver.generation
+        }
+
+    def validate_three_features(self):
+        """Specifically validate that three features suffice"""
+        logger.log("Validating three-feature sufficiency...")
+        
+        # Prepare test data
+        test_data = []
+        limit = min(1000, self.config.max_n)
+        valid_count = 0
+        
+        for n in range(10, limit):
+            if n % 100 == 0:
+                logger.progress(n, limit, f"Extracting features (valid: {valid_count})")
+            
+            features = self.analyzer.extract_ndr_features(n)
+            if features.get('valid', False):
+                omega_n = len(factorint(n))
+                test_data.append((n, omega_n, features))
+                valid_count += 1
+        
+        logger.progress(limit-10, limit-10, "Done extracting features")
+        logger.log(f"Extracted {valid_count} valid feature sets")
+        
+        if len(test_data) < 50:
+            logger.log(f"Insufficient data for three-feature validation (only {len(test_data)} samples)", "WARNING")
+            return
+        
+        # Test with only three features
+        X_three = []
+        y_omega = []
+        
+        for n, omega_n, features in test_data:
+            # Use theoretical weights
+            kurtosis = features.get('kurtosis_mean', 0) * 1.000
+            length = features.get('length_mean', 0) * 0.045  
+            n_val = n * 0.064
+            
+            X_three.append([kurtosis, length, n_val])
+            y_omega.append(omega_n)
+        
+        X_three = np.array(X_three)
+        y_omega = np.array(y_omega)
+        
+        # Calculate correlation
+        summary = np.sum(X_three, axis=1)
+        if np.std(summary) > 0 and np.std(y_omega) > 0:
+            corr = abs(np.corrcoef(summary, y_omega)[0, 1])
+            logger.result(f"Three-feature correlation with ω(n): {corr:.4f}")
+            
+            self.results['three_features'] = {
+                'correlation': corr,
+                'features': ['kurtosis', 'length', 'n'],
+                'weights': [1.000, 0.045, 0.064],
+                'sample_size': len(test_data)
+            }
+        else:
+            logger.log("Insufficient variance in data for correlation calculation", "WARNING")
+
     def run_evolvo_evolution(self):
-        """Use Evolvo to evolve algorithms for ω(n) prediction."""
+        """Use Evolvo to evolve algorithms for ω(n) prediction"""
         if not self.evolvo_available:
             logger.log("Evolvo engine not available, skipping algorithm evolution.", "WARNING")
             return
-
+        
         logger.log("Running Evolvo genetic programming to find a formula for ω(n)...")
-
+        
         # Prepare test data
         test_data = []
-        sample_range = range(10, min(1000, self.config.max_n))
+        sample_range = list(range(10, min(1000, self.config.max_n)))
         sample_numbers = random.sample(sample_range, min(len(sample_range), 200))
+        
+        valid_count = 0
         for i, n in enumerate(sample_numbers):
-            logger.progress(i + 1, len(sample_numbers), "Preparing Evolvo data")
+            logger.progress(i + 1, len(sample_numbers), f"Preparing Evolvo data (valid: {valid_count})")
             features = self.analyzer.extract_ndr_features(n)
             if features.get('valid', False):
                 test_data.append((n, len(factorint(n)), features))
-        if len(test_data) < 50:
-            logger.log("Insufficient data for Evolvo evolution.", "WARNING"); return
-        logger.log(f"Prepared {len(test_data)} test samples for Evolvo.")
-
-        evaluator = EvolvoNDREvaluator(self.evolvo_config, self.instruction_set, test_data)
-        generator = AlgorithmGenerator(self.evolvo_config, self.instruction_set)
-
-        # Basic Genetic Programming Loop
-        population = [generator.generate_random_algorithm(max_len=10) for _ in range(CONFIG.evolvo_population)]
-        best_algo, best_score = None, float('inf')
-
-        for gen in range(CONFIG.evolvo_generations):
-            scores = [evaluator.evaluate(algo) for algo in population]
-            
-            # Find best of this generation
-            min_score_idx = np.argmin(scores)
-            if scores[min_score_idx] < best_score:
-                best_score = scores[min_score_idx]
-                best_algo = population[min_score_idx]
-                logger.result(f"Evolvo Gen {gen}: New best formula found! Score (MSE): {best_score:.4f}")
-                logger.result(f"  -> Formula: {best_algo}")
-
-            # Selection (Tournament)
-            sorted_pop = [x for _, x in sorted(zip(scores, population), key=lambda pair: pair[0])]
-            elites = sorted_pop[:int(0.1 * CONFIG.evolvo_population)]
-            
-            # Crossover and Mutation
-            new_pop = elites[:]
-            while len(new_pop) < CONFIG.evolvo_population:
-                p1, p2 = random.choice(elites), random.choice(elites)
-                child = generator.crossover(p1, p2)
-                if random.random() < 0.3:
-                    child = generator.mutate(child)
-                new_pop.append(child)
-            population = new_pop
+                valid_count += 1
         
-        logger.result(f"Evolvo evolution finished. Best overall score: {best_score:.4f}")
-        self.results['evolvo_best'] = {'algorithm': str(best_algo), 'score': best_score}
+        logger.progress(len(sample_numbers), len(sample_numbers), "Done")
+        logger.log(f"Generated {valid_count} valid samples for Evolvo")
+        
+        if len(test_data) < 50:
+            logger.log(f"Insufficient data for Evolvo evolution ({len(test_data)} samples).", "WARNING")
+            return
+        
+        logger.log(f"Prepared {len(test_data)} test samples for Evolvo.")
+        
+        try:
+            from evolvo_engine import AlgorithmGenerator
+            
+            evaluator = EvolvoNDREvaluator(self.evolvo_config, self.instruction_set, test_data)
+            generator = AlgorithmGenerator(self.evolvo_config, self.instruction_set)
+            
+            # Basic Genetic Programming Loop
+            population = [generator.generate_random_algorithm(max_len=10) for _ in range(100)]  # Smaller population
+            best_algo, best_score = None, float('inf')
+            
+            for gen in range(500):  # Fewer generations for testing
+                scores = []
+                for algo in population:
+                    try:
+                        score = evaluator.evaluate(algo)
+                        scores.append(score)
+                    except:
+                        scores.append(float('inf'))
+                
+                # Find best of this generation
+                min_score_idx = np.argmin(scores)
+                if scores[min_score_idx] < best_score:
+                    best_score = scores[min_score_idx]
+                    best_algo = population[min_score_idx]
+                    logger.result(f"Evolvo Gen {gen}: New best formula found! Score (MSE): {best_score:.4f}")
+                    if gen % 50 == 0:
+                        logger.result(f"  -> Formula: {best_algo[:3]}...")  # Show first 3 instructions
+                
+                # Selection and evolution
+                sorted_indices = np.argsort(scores)
+                elites = [population[i] for i in sorted_indices[:10]]
+                
+                # Create new population
+                new_pop = elites[:]
+                while len(new_pop) < 100:
+                    p1, p2 = random.choice(elites), random.choice(elites)
+                    child = generator.crossover(p1, p2)
+                    if random.random() < 0.3:
+                        child = generator.mutate(child)
+                    new_pop.append(child)
+                population = new_pop
+                
+                # Early stopping if score is good enough
+                if best_score < 0.1:
+                    logger.result(f"Evolvo converged early at generation {gen}")
+                    break
+            
+            logger.result(f"Evolvo evolution finished. Best overall score: {best_score:.4f}")
+            self.results['evolvo_best'] = {'algorithm': str(best_algo), 'score': best_score}
+            
+        except ImportError:
+            logger.log("AlgorithmGenerator not found in evolvo_engine", "WARNING")
+            # Fallback: test a simple algorithm
+            evaluator = EvolvoNDREvaluator(self.evolvo_config, self.instruction_set, test_data)
+            test_algorithm = [
+                ['d$', 0, 'MUL', 'd#', 1, 'd#', 2],  # omega_prediction = kurtosis * length
+                ['d$', 0, 'ADD', 'd$', 0, 'd#', 3],  # omega_prediction += n
+            ]
+            
+            try:
+                score = evaluator.evaluate(test_algorithm)
+                logger.result(f"Evolvo test algorithm score: {score:.4f}")
+                self.results['evolvo_test'] = {'algorithm': str(test_algorithm), 'score': score}
+            except Exception as e:
+                logger.log(f"Evolvo evaluation failed: {e}", "ERROR")
 
     def generate_final_report(self):
         """Generate comprehensive final report"""
