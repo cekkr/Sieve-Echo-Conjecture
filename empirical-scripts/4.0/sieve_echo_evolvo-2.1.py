@@ -151,7 +151,7 @@ else:
 class Config:
     max_n: int = 200000
     population_size: int = 10000
-    generations: int = 10000
+    generations: int = 20000
     mutation_rate: float = 0.2
     crossover_rate: float = 0.7
     elite_size: int = 10
@@ -167,6 +167,8 @@ class Config:
     golden_ratio: float = 1.6180339887498948482
     alpha_theoretical: float = -1/1.6180339887498948482**2 + 0.019  # -1/φ² + δ
     beta_theoretical: float = 5 - 1/15  # Exactly 4.9333...
+
+SAMPLE_LEN = 10000
 
 CONFIG = Config()
 
@@ -1054,7 +1056,7 @@ class SieveEchoExplorer:
         # Prepare test data with NDR features
         test_data = []
         sample_range = range(10, min(5000, self.config.max_n))
-        if len(sample_range) < 1000:
+        if len(sample_range) < SAMPLE_LEN:
             sample_numbers = list(sample_range)
         else:
             sample_numbers = random.sample(sample_range, 1000)
