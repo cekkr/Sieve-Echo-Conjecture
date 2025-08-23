@@ -171,8 +171,8 @@ class Config:
     golden_ratio: float = 1.6180339887498948482
     alpha_theoretical: float = -1 / (1.6180339887498948482**2) + 0.019
     beta_theoretical: float = 5 - (1 / 15)
-    evolvo_generations: int = 50
-    evolvo_population: int = 100
+    evolvo_generations: int = 5000
+    evolvo_population: int = 1000
 
 SAMPLE_LEN = 10000
 
