@@ -35,6 +35,23 @@ except ImportError:
     print("WARNING: evolvo_engine not found. Formula discovery will be limited.")
     EVOLVO_AVAILABLE = False
 
+ Helper functions for MathematicalConstantsLibrary to ensure picklability
+# These replace the unpicklable lambda functions from the original code.
+def _prime_density_formula(n):
+    return 1 / math.log(n) if n > 1 else 0
+
+def _mertens_product_formula(n):
+    return math.exp(-0.5772156649015329) * math.log(n) if n > 1 else 0
+
+def _hardy_ramanujan_formula(n):
+    return math.log(math.log(n)) if n > math.e else 0
+    
+# prime_probability is identical to prime_density, can reuse the function
+# but we define it separately for clarity, matching the original keys.
+def _prime_probability_formula(n):
+    return 1 / math.log(n) if n > 1 else 0
+
+
 class MathematicalConstantsLibrary:
     """Library of known mathematical constants and formulas for pattern matching"""
     def __init__(self):
@@ -78,13 +95,14 @@ class MathematicalConstantsLibrary:
         }
         
         # Known prime-related formulas
+        # MODIFIED: Replaced lambdas with references to top-level functions
         self.prime_formulas = {
-            'prime_density': lambda n: 1 / math.log(n) if n > 1 else 0,
-            'mertens_product': lambda n: math.exp(-0.5772156649015329) * math.log(n) if n > 1 else 0,
-            'hardy_ramanujan': lambda n: math.log(math.log(n)) if n > math.e else 0,
-            'prime_probability': lambda n: 1 / math.log(n) if n > 1 else 0,
+            'prime_density': _prime_density_formula,
+            'mertens_product': _mertens_product_formula,
+            'hardy_ramanujan': _hardy_ramanujan_formula,
+            'prime_probability': _prime_probability_formula,
         }
-
+    
     def find_closest_constant(self, value: float, tolerance: float = 0.01) -> Optional[str]:
         """Find if a value matches any known constant within tolerance"""
         for name, const in {**self.constants, **self.expressions}.items():
@@ -716,6 +734,14 @@ class ParallelGeneticOptimizer:
                                                        reverse=True)[:5]:
                     print(f"  {formula_name}: correlation = {correlation:.4f}")
 
+# Configuration
+@dataclass
+class Config:
+    max_n: int = 10000
+    population_size: int = 400  # Per island
+    runtime_hours: float = 24
+    device: torch.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 # Main execution function
 def run_enhanced_evolver(runtime_hours: float = 1.0, max_n: int = 10000):
     """Run the enhanced evolver system"""
@@ -723,15 +749,9 @@ def run_enhanced_evolver(runtime_hours: float = 1.0, max_n: int = 10000):
     print("ENHANCED SIEVE ECHO EVOLVER v5.0")
     print("="*80)
     
-    # Configuration
-    @dataclass
-    class Config:
-        max_n: int = max_n
-        population_size: int = 400  # Per island
-        runtime_hours: float = runtime_hours
-        device: torch.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
     config = Config()
+    config.runtime_hours = runtime_hours
+    config.max_n = max_n
     
     # Initialize components
     ndr_computer = EfficientNDRComputer()
@@ -791,7 +811,7 @@ def run_enhanced_evolver(runtime_hours: float = 1.0, max_n: int = 10000):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Enhanced Sieve Echo Evolver')
-    parser.add_argument('--hours', type=float, default=1.0, help='Runtime in hours')
+    parser.add_argument('--hours', type=float, default=24.0, help='Runtime in hours')
     parser.add_argument('--max_n', type=int, default=10000, help='Maximum n to test')
     args = parser.parse_args()
     
