@@ -159,7 +159,7 @@ class Config:
     generations: int = 1000
     mutation_rate: float = 0.3
     crossover_rate: float = 0.5
-    elite_size: int = 250
+    elite_size: int = 100
     checkpoint_interval: int = 100
     device: torch.device = field(default_factory=get_device)
     runtime_hours: float = 24.0
