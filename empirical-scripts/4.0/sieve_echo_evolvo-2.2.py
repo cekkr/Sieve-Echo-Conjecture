@@ -532,8 +532,269 @@ class EnhancedGeneticEvolver:
         self.best_fitness = -1.0
         self.generation = 0
         self.theoretical_validation = {'alpha': [], 'beta': [], 'three_feature_fitness': []}
-        logger.log("Initialized Enhanced Genetic Evolver")
+        
+        # Adaptive exploration parameters
+        self.stagnation_counter = 0
+        self.last_improvement_gen = 0
+        self.mutation_rate_base = config.mutation_rate
+        self.mutation_rate_current = config.mutation_rate
+        self.fitness_history = []
+        self.diversity_threshold = 0.1
+        self.temperature = 1.0  # For simulated annealing
+        self.exploration_mode = False
+        
+        # Early stopping parameters
+        self.patience = 50  # Stop after 50 generations without improvement
+        self.min_improvement = 0.0001  # Minimum fitness improvement to count
+        
+        logger.log("Initialized Enhanced Genetic Evolver with Adaptive Exploration")
 
+    def calculate_population_diversity(self) -> float:
+        """Calculate diversity of the population based on feature weights"""
+        if len(self.population) < 2:
+            return 1.0
+        
+        # Extract feature weight vectors
+        weight_vectors = []
+        for ind in self.population:
+            vec = [ind['feature_weights'].get(f, 0) for f in ['kurtosis', 'length', 'n', 'ndr_entropy']]
+            weight_vectors.append(vec)
+        
+        # Calculate pairwise distances
+        distances = []
+        for i in range(len(weight_vectors)):
+            for j in range(i+1, len(weight_vectors)):
+                dist = np.linalg.norm(np.array(weight_vectors[i]) - np.array(weight_vectors[j]))
+                distances.append(dist)
+        
+        return np.mean(distances) if distances else 0.0
+
+    def adaptive_mutation_rate(self) -> float:
+        """Adjust mutation rate based on stagnation"""
+        # Increase mutation when stagnant
+        stagnation_factor = 1 + (self.stagnation_counter / 10)
+        
+        # Decrease mutation when making progress
+        if self.stagnation_counter == 0:
+            stagnation_factor = 0.8
+        
+        # Clamp between reasonable bounds
+        rate = self.mutation_rate_base * stagnation_factor
+        return min(0.8, max(0.1, rate))
+
+    def inject_diversity(self, num_new: int = None):
+        """Inject new random individuals to increase diversity"""
+        if num_new is None:
+            num_new = max(10, int(self.config.population_size * 0.1))
+        
+        logger.log(f"Injecting {num_new} new random individuals for diversity")
+        
+        for _ in range(num_new):
+            # Create completely new individual
+            new_ind = self.create_individual()
+            
+            # Make some individuals extreme
+            if random.random() < 0.3:
+                # Create an extreme individual
+                for feature in new_ind['feature_weights']:
+                    if random.random() < 0.5:
+                        new_ind['feature_weights'][feature] *= random.uniform(2, 10)
+                    else:
+                        new_ind['feature_weights'][feature] *= random.uniform(0.01, 0.5)
+            
+            # Remove worst individual and add new one
+            if len(self.population) >= self.config.population_size:
+                self.population.pop()
+            self.population.append(new_ind)
+
+    def should_accept_worse(self, new_fitness: float, old_fitness: float) -> bool:
+        """Simulated annealing: occasionally accept worse solutions"""
+        if new_fitness >= old_fitness:
+            return True
+        
+        if self.temperature <= 0:
+            return False
+        
+        # Probability of accepting worse solution
+        delta = old_fitness - new_fitness
+        probability = np.exp(-delta / self.temperature)
+        
+        return random.random() < probability
+
+    def evolve(self, test_data: List[Tuple[int, int, Dict]], start_time: float):
+        if not self.population:
+            logger.log("Initializing population with diversity...")
+            self.population = [self.create_individual() for _ in range(self.config.population_size)]
+            # Make initial population more diverse
+            for i in range(0, len(self.population), 5):
+                self.population[i]['use_three_features_only'] = True
+            for i in range(1, len(self.population), 5):
+                self.population[i]['use_three_features_only'] = False
+
+        for gen in range(self.generation, self.config.generations):
+            elapsed_h = (time.time() - start_time) / 3600
+            if elapsed_h > self.config.runtime_hours or os.path.exists(self.config.stop_file):
+                logger.log("Stopping evolution due to time limit or stop file.", "WARNING")
+                break
+
+            gen_start_time = time.time()
+            logger.log(f"\n{'='*60}\nGENERATION {gen} (Elapsed: {elapsed_h:.2f} hrs)\n{'='*60}")
+            
+            # Update adaptive parameters
+            self.mutation_rate_current = self.adaptive_mutation_rate()
+            self.temperature = max(0.01, self.temperature * 0.995)  # Cool down
+            
+            # Calculate current diversity
+            diversity = self.calculate_population_diversity()
+            logger.log(f"Population diversity: {diversity:.4f}, Mutation rate: {self.mutation_rate_current:.3f}")
+            
+            # Inject diversity if population is too homogeneous
+            if diversity < self.diversity_threshold and gen > 20:
+                logger.log(f"Low diversity detected ({diversity:.4f}), entering exploration mode")
+                self.exploration_mode = True
+                self.inject_diversity()
+                self.temperature = min(1.0, self.temperature * 2)  # Reheat for more exploration
+
+            # Evaluate fitness
+            for ind in self.population:
+                ind['fitness'] = self.evaluate_fitness(ind, test_data)
+
+            self.population.sort(key=lambda x: x['fitness'], reverse=True)
+            
+            # Track improvement
+            current_best = self.population[0]['fitness']
+            improvement = current_best - self.best_fitness
+            
+            if improvement > self.min_improvement:
+                self.best_fitness = current_best
+                self.best_individual = self.population[0].copy()
+                self.stagnation_counter = 0
+                self.last_improvement_gen = gen
+                self.exploration_mode = False
+                
+                logger.result(f"NEW BEST at gen {gen}: fitness={self.best_fitness:.4f} (↑{improvement:.4f})")
+                self._log_individual_details(self.best_individual)
+            else:
+                self.stagnation_counter += 1
+                
+            self.fitness_history.append(current_best)
+            
+            # Check for early stopping
+            if self.stagnation_counter >= self.patience:
+                logger.log(f"Early stopping: No improvement for {self.patience} generations", "WARNING")
+                logger.log(f"Best fitness achieved: {self.best_fitness:.4f} at generation {self.last_improvement_gen}")
+                break
+            
+            # Adaptive restart if stuck for too long
+            if self.stagnation_counter > self.patience * 2:
+                logger.log("Performing adaptive restart - keeping elite and regenerating population", "WARNING")
+                elite = self.population[:10]
+                self.population = elite + [self.create_individual() for _ in range(self.config.population_size - 10)]
+                self.stagnation_counter = 0
+                self.temperature = 0.5  # Moderate temperature for restart
+            
+            # Create next generation
+            new_pop = []
+            
+            # Elitism with variation
+            elite_size = self.config.elite_size
+            if self.exploration_mode:
+                elite_size = max(10, elite_size // 2)  # Keep fewer elites when exploring
+            
+            new_pop.extend(self.population[:elite_size])
+            
+            # Fill rest of population
+            while len(new_pop) < self.config.population_size:
+                if random.random() < 0.1 and self.stagnation_counter > 10:
+                    # Add completely new individual when stagnant
+                    child = self.create_individual()
+                else:
+                    # Standard genetic operations
+                    p1 = self._tournament_select(size=max(3, 7 - self.stagnation_counter // 10))
+                    
+                    if random.random() < self.config.crossover_rate:
+                        p2 = self._tournament_select()
+                        child = self._crossover(p1, p2)
+                    else:
+                        child = p1.copy()
+                    
+                    # Apply mutation with adaptive rate
+                    if random.random() < self.mutation_rate_current:
+                        child = self._mutate(child, strength=1 + self.stagnation_counter / 20)
+                
+                new_pop.append(child)
+            
+            self.population = new_pop
+            self.generation = gen + 1
+            
+            # Log progress
+            gen_time = time.time() - gen_start_time
+            logger.log(f"Gen {gen} completed in {gen_time:.2f}s | Best: {self.best_fitness:.4f} | "
+                      f"Stagnation: {self.stagnation_counter}/{self.patience}")
+            
+            # Save checkpoint periodically
+            if gen > 0 and gen % self.config.checkpoint_interval == 0:
+                self.save_checkpoint(gen)
+            
+            # Print fitness trend
+            if len(self.fitness_history) >= 10:
+                recent_trend = self.fitness_history[-10:]
+                trend = "↑" if recent_trend[-1] > recent_trend[0] else "→"
+                logger.log(f"Fitness trend (last 10 gen): {trend} "
+                          f"[{min(recent_trend):.4f} - {max(recent_trend):.4f}]")
+
+    def _mutate(self, ind: Dict, strength: float = 1.0) -> Dict:
+        """Enhanced mutation with variable strength"""
+        ind = ind.copy()
+        
+        # Mutate feature weights
+        for fname in ind['feature_weights']:
+            if random.random() < 0.3 * strength:
+                # Stronger mutations when strength is high
+                if random.random() < 0.1 * strength:
+                    # Occasionally make large changes
+                    ind['feature_weights'][fname] *= random.uniform(0.1, 10)
+                else:
+                    # Normal mutations
+                    ind['feature_weights'][fname] *= random.uniform(0.8, 1.2)
+        
+        # Mutate three-feature flag
+        if random.random() < 0.1 * strength:
+            ind['use_three_features_only'] = not ind['use_three_features_only']
+        
+        # Mutate bases
+        if random.random() < 0.2 * strength:
+            if len(ind['bases']) > 5 and random.random() < 0.5:
+                ind['bases'].pop(random.randrange(len(ind['bases'])))
+            else:
+                new_base = random.choice(self.analyzer.prime_list[:50])
+                if new_base not in ind['bases']:
+                    ind['bases'].append(new_base)
+            ind['bases'] = sorted(list(set(ind['bases'])))[:30]
+        
+        return ind
+
+    def _log_individual_details(self, ind: Dict):
+        """Log details of an individual"""
+        if ind['use_three_features_only']:
+            logger.result(f"  Using THREE-FEATURE model. Weights: "
+                         f"k={ind['feature_weights']['kurtosis']:.3f}, "
+                         f"l={ind['feature_weights']['length']:.3f}, "
+                         f"n={ind['feature_weights']['n']:.3f}")
+        else:
+            logger.result(f"  Using full feature set with {len(ind['feature_weights'])} features")
+        
+        if ind.get('alpha_estimate') is not None:
+            logger.result(f"  α={ind['alpha_estimate']:.4f} (theoretical={CONFIG.alpha_theoretical:.4f}), "
+                         f"β={ind['beta_estimate']:.4f} (theoretical={CONFIG.beta_theoretical:.4f})")
+            
+            # Track theoretical validation
+            self.theoretical_validation['alpha'].append(ind['alpha_estimate'])
+            self.theoretical_validation['beta'].append(ind['beta_estimate'])
+            if ind['use_three_features_only']:
+                self.theoretical_validation['three_feature_fitness'].append(ind['fitness'])
+
+    # Keep the existing methods unchanged
     def create_individual(self) -> Dict:
         return {'id': random.randint(1000000, 9999999),
                 'feature_weights': {'kurtosis': random.uniform(0.8, 1.2),
@@ -545,8 +806,9 @@ class EnhancedGeneticEvolver:
                 'use_three_features_only': random.random() > 0.3,
                 'bases': sorted(random.sample(self.analyzer.prime_list[:1000], random.randint(5, 500))),
                 'fitness': 0.0, 'alpha_estimate': None, 'beta_estimate': None}
-
+    
     def evaluate_fitness(self, individual: Dict, test_data: List[Tuple[int, int, Dict]]) -> float:
+        # [Keep the existing evaluate_fitness method unchanged]
         active_features = ['kurtosis', 'length', 'n'] if individual['use_three_features_only'] else list(individual['feature_weights'].keys())
         X_data, y_omega_data, y_entropy_data = [], [], []
         for n, omega_n, features in test_data:
@@ -564,7 +826,6 @@ class EnhancedGeneticEvolver:
 
         if len(X_data) < 20: return 0.0
 
-        # --- Vectorized Correlation on GPU ---
         X = torch.tensor(X_data, dtype=torch.float32, device=self.config.device)
         y_omega = torch.tensor(y_omega_data, dtype=torch.float32, device=self.config.device)
         summary = torch.sum(X, dim=1)
@@ -575,7 +836,6 @@ class EnhancedGeneticEvolver:
         omega_corr = torch.sum(vx * vy) / (torch.sqrt(torch.sum(vx**2)) * torch.sqrt(torch.sum(vy**2)))
         omega_corr = safe_float(torch.abs(omega_corr))
 
-        # --- α and β Estimation (CPU) ---
         y_entropy_np = np.array(y_entropy_data, dtype=np.float64)
         y_omega_np = np.array(y_omega_data, dtype=np.float64)
         constant_bonus = 0.0
@@ -593,83 +853,20 @@ class EnhancedGeneticEvolver:
         fitness = omega_corr + 0.5 * constant_bonus
         if individual['use_three_features_only']: fitness *= 1.2
         return fitness
-
-    def evolve(self, test_data: List[Tuple[int, int, Dict]], start_time: float):
-        # ... (rest of evolve, _crossover, _mutate, _tournament_select, save_checkpoint are identical to original)
-        if not self.population:
-            logger.log("Initializing population...")
-            self.population = [self.create_individual() for _ in range(self.config.population_size)]
-
-        for gen in range(self.generation, self.config.generations):
-            elapsed_h = (time.time() - start_time) / 3600
-            if elapsed_h > self.config.runtime_hours or os.path.exists(self.config.stop_file):
-                logger.log("Stopping evolution.", "WARNING")
-                if os.path.exists(self.config.stop_file): os.remove(self.config.stop_file)
-                break
-
-            gen_start_time = time.time()
-            logger.log(f"\n{'='*60}\nGENERATION {gen} (Elapsed: {elapsed_h:.2f} hrs)\n{'='*60}")
-
-            for ind in self.population:
-                ind['fitness'] = self.evaluate_fitness(ind, test_data)
-
-            self.population.sort(key=lambda x: x['fitness'], reverse=True)
-
-            if self.population[0]['fitness'] > self.best_fitness:
-                self.best_fitness = self.population[0]['fitness']
-                self.best_individual = self.population[0].copy()
-                logger.result(f"NEW BEST at gen {gen}: fitness={self.best_fitness:.4f}")
-                if self.best_individual['use_three_features_only']:
-                    logger.result(f"  Using THREE-FEATURE model. Weights: "
-                                  f"k={self.best_individual['feature_weights']['kurtosis']:.3f}, "
-                                  f"l={self.best_individual['feature_weights']['length']:.3f}, "
-                                  f"n={self.best_individual['feature_weights']['n']:.3f}")
-                if self.best_individual['alpha_estimate'] is not None:
-                    logger.result(f"  α={self.best_individual['alpha_estimate']:.4f} (th={CONFIG.alpha_theoretical:.4f}), "
-                                  f"β={self.best_individual['beta_estimate']:.4f} (th={CONFIG.beta_theoretical:.4f})")
-                    self.theoretical_validation['alpha'].append(self.best_individual['alpha_estimate'])
-                    self.theoretical_validation['beta'].append(self.best_individual['beta_estimate'])
-                    self.theoretical_validation['three_feature_fitness'].append(
-                        self.best_fitness if self.best_individual['use_three_features_only'] else 0)
-
-            new_pop = self.population[:self.config.elite_size]
-            while len(new_pop) < self.config.population_size:
-                p1, p2 = self._tournament_select(), self._tournament_select()
-                child = self._crossover(p1, p2) if random.random() < self.config.crossover_rate else self._tournament_select().copy()
-                new_pop.append(self._mutate(child))
-            self.population = new_pop
-            self.generation = gen + 1
-            logger.log(f"Generation {gen} completed in {time.time() - gen_start_time:.2f}s. Best fitness: {self.best_fitness:.4f}")
-
-            if gen > 0 and gen % self.config.checkpoint_interval == 0: self.save_checkpoint(gen)
     
     def _crossover(self, p1: Dict, p2: Dict) -> Dict:
         child = self.create_individual()
-        child['feature_weights'] = {k: random.choice([p1['feature_weights'][k], p2['feature_weights'][k]]) for k in p1['feature_weights']}
+        child['feature_weights'] = {k: random.choice([p1['feature_weights'][k], p2['feature_weights'][k]]) 
+                                   for k in p1['feature_weights']}
         child['use_three_features_only'] = random.choice([p1['use_three_features_only'], p2['use_three_features_only']])
         child['bases'] = sorted(list(set(p1['bases']) | set(p2['bases'])))[:30]
         return child
-
-    def _mutate(self, ind: Dict) -> Dict:
-        if random.random() < self.config.mutation_rate:
-            for fname in ind['feature_weights']:
-                if random.random() < 0.2:
-                    ind['feature_weights'][fname] *= random.uniform(0.8, 1.2)
-            if random.random() < 0.1: ind['use_three_features_only'] = not ind['use_three_features_only']
-            if random.random() < 0.2:
-                if len(ind['bases']) > 5 and random.random() < 0.5: ind['bases'].pop(random.randrange(len(ind['bases'])))
-                else: ind['bases'].append(random.choice(self.analyzer.prime_list[:50]))
-                ind['bases'] = sorted(list(set(ind['bases'])))[:30]
-        return ind
-
+    
     def _tournament_select(self, size: int = 5) -> Dict:
         return max(random.sample(self.population, min(size, len(self.population))), key=lambda x: x['fitness'])
-
+    
     def save_checkpoint(self, generation: int):
         filename = f"sieve_echo_evolvo_checkpoint_gen{generation}.pkl"
-        # Move population to CPU before pickling
-        cpu_pop = []
-        # No tensors in population, so this part is not needed. Kept for reference.
         checkpoint_data = {'generation': generation, 'best_individual': self.best_individual,
                            'best_fitness': self.best_fitness, 'population': self.population,
                            'theoretical_validation': self.theoretical_validation, 'config': self.config}
