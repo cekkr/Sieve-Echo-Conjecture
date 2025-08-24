@@ -951,58 +951,58 @@ class SieveEchoExplorer:
         self.genetic_evolver.evolve(test_data, self.start_time)
 
     def run_genetic_discovery(self):
-    """Run genetic algorithm to discover optimal features"""
-    logger.log("Running genetic discovery to find optimal feature weights...")
-    
-    # Prepare test data with NDR features
-    test_data = []
-    sample_range = list(range(10, min(2000, self.config.max_n)))
-    sample_numbers = random.sample(sample_range, min(len(sample_range), 500))
-    
-    valid_count = 0
-    invalid_count = 0
-    
-    for i, n in enumerate(sample_numbers):
-        logger.progress(i + 1, len(sample_numbers), f"Preparing GA data (valid: {valid_count})")
-        
-        features = self.analyzer.extract_ndr_features(n)
-        if features.get('valid', False):
-            omega_n = len(factorint(n))
-            test_data.append((n, omega_n, features))
-            valid_count += 1
-        else:
-            invalid_count += 1
-    
-    logger.progress(len(sample_numbers), len(sample_numbers), "Done")
-    logger.log(f"Generated {valid_count} valid samples out of {len(sample_numbers)} total")
-    logger.log(f"Invalid samples: {invalid_count}")
-    
-    if len(test_data) < 50:
-        logger.log(f"Insufficient data for genetic evolution (only {len(test_data)} valid samples)", "WARNING")
-        # Try to generate more data with larger numbers
-        logger.log("Attempting to generate more samples with larger n values...")
-        
-        for n in range(100, min(1000, self.config.max_n), 10):
+        """Run genetic algorithm to discover optimal features"""
+        logger.log("Running genetic discovery to find optimal feature weights...")
+
+        # Prepare test data with NDR features
+        test_data = []
+        sample_range = list(range(10, min(2000, self.config.max_n)))
+        sample_numbers = random.sample(sample_range, min(len(sample_range), 500))
+
+        valid_count = 0
+        invalid_count = 0
+
+        for i, n in enumerate(sample_numbers):
+            logger.progress(i + 1, len(sample_numbers), f"Preparing GA data (valid: {valid_count})")
+
             features = self.analyzer.extract_ndr_features(n)
             if features.get('valid', False):
                 omega_n = len(factorint(n))
                 test_data.append((n, omega_n, features))
-                if len(test_data) >= 50:
-                    break
-        
+                valid_count += 1
+            else:
+                invalid_count += 1
+
+        logger.progress(len(sample_numbers), len(sample_numbers), "Done")
+        logger.log(f"Generated {valid_count} valid samples out of {len(sample_numbers)} total")
+        logger.log(f"Invalid samples: {invalid_count}")
+
         if len(test_data) < 50:
-            logger.log("Still insufficient data after extended search", "ERROR")
-            return
-    
-    logger.log(f"Starting genetic evolution with {len(test_data)} test samples...")
-    self.genetic_evolver.evolve(test_data, self.start_time)
-    
-    if self.genetic_evolver.best_individual:
-        self.results['genetic_best'] = {
-            'fitness': self.genetic_evolver.best_fitness,
-            'individual': self.genetic_evolver.best_individual,
-            'generation': self.genetic_evolver.generation
-        }
+            logger.log(f"Insufficient data for genetic evolution (only {len(test_data)} valid samples)", "WARNING")
+            # Try to generate more data with larger numbers
+            logger.log("Attempting to generate more samples with larger n values...")
+
+            for n in range(100, min(1000, self.config.max_n), 10):
+                features = self.analyzer.extract_ndr_features(n)
+                if features.get('valid', False):
+                    omega_n = len(factorint(n))
+                    test_data.append((n, omega_n, features))
+                    if len(test_data) >= 50:
+                        break
+
+            if len(test_data) < 50:
+                logger.log("Still insufficient data after extended search", "ERROR")
+                return
+
+        logger.log(f"Starting genetic evolution with {len(test_data)} test samples...")
+        self.genetic_evolver.evolve(test_data, self.start_time)
+
+        if self.genetic_evolver.best_individual:
+            self.results['genetic_best'] = {
+                'fitness': self.genetic_evolver.best_fitness,
+                'individual': self.genetic_evolver.best_individual,
+                'generation': self.genetic_evolver.generation
+            }
 
     def validate_three_features(self):
         """Specifically validate that three features suffice"""
