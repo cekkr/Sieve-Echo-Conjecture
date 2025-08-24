@@ -35,7 +35,7 @@ except ImportError:
     print("WARNING: evolvo_engine not found. Formula discovery will be limited.")
     EVOLVO_AVAILABLE = False
 
- Helper functions for MathematicalConstantsLibrary to ensure picklability
+# Helper functions for MathematicalConstantsLibrary to ensure picklability
 # These replace the unpicklable lambda functions from the original code.
 def _prime_density_formula(n):
     return 1 / math.log(n) if n > 1 else 0
@@ -359,11 +359,25 @@ class ParallelGeneticOptimizer:
         
         # Adaptive parameters
         self.generation = 0
-        self.mutation_schedule = lambda g: 0.3 * (0.95 ** (g / 100))  # Decay
-        self.crossover_schedule = lambda g: 0.7 + 0.2 * math.sin(g / 10)  # Oscillate
+        # --- MODIFICATION START ---
+        # REMOVED: Unpicklable lambda assignments
+        # self.mutation_schedule = lambda g: 0.3 * (0.95 ** (g / 100))  # Decay
+        # self.crossover_schedule = lambda g: 0.7 + 0.2 * math.sin(g / 10)  # Oscillate
+        # --- MODIFICATION END ---
         
         # Formula discovery via Evolvo
         self.init_evolvo()
+
+    # --- MODIFICATION START ---
+    # ADDED: These methods replace the lambdas, making the class picklable.
+    def _get_mutation_rate(self, g: int) -> float:
+        """Decaying mutation rate schedule."""
+        return 0.3 * (0.95 ** (g / 100))
+
+    def _get_crossover_rate(self, g: int) -> float:
+        """Oscillating crossover rate schedule."""
+        return 0.7 + 0.2 * math.sin(g / 10)
+    # --- MODIFICATION END ---
         
     def init_evolvo(self):
         """Initialize Evolvo for formula discovery"""
@@ -527,9 +541,11 @@ class ParallelGeneticOptimizer:
         for gen in range(generations):
             self.generation = gen
             
-            # Update adaptive parameters
-            mutation_rate = self.mutation_schedule(gen)
-            crossover_rate = self.crossover_schedule(gen)
+            # --- MODIFICATION START ---
+            # Update adaptive parameters by calling the new methods
+            mutation_rate = self._get_mutation_rate(gen)
+            crossover_rate = self._get_crossover_rate(gen)
+            # --- MODIFICATION END ---
             
             print(f"\nGeneration {gen} | Mutation: {mutation_rate:.3f} | Crossover: {crossover_rate:.3f}")
             
