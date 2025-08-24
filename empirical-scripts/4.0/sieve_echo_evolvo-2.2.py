@@ -154,16 +154,16 @@ def get_device() -> torch.device:
 # Configuration
 @dataclass
 class Config:
-    max_n: int = 50000
-    population_size: int = 5000 # Reduced for faster generations on CPU
-    generations: int = 10000
-    mutation_rate: float = 0.2
-    crossover_rate: float = 0.7
-    elite_size: int = 10
+    max_n: int = 100000
+    population_size: int = 10000 # Reduced for faster generations on CPU
+    generations: int = 1000
+    mutation_rate: float = 0.3
+    crossover_rate: float = 0.5
+    elite_size: int = 250
     checkpoint_interval: int = 100
     device: torch.device = field(default_factory=get_device)
     runtime_hours: float = 24.0
-    pattern_cache_size: int = 1000000
+    pattern_cache_size: int = 10000000
     log_file: str = f"sieve_echo_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     results_file: str = f"sieve_echo_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     stop_file: str = "STOP_SIEVE_ECHO"
@@ -171,8 +171,8 @@ class Config:
     golden_ratio: float = 1.6180339887498948482
     alpha_theoretical: float = -1 / (1.6180339887498948482**2) + 0.019
     beta_theoretical: float = 5 - (1 / 15)
-    evolvo_generations: int = 5000
-    evolvo_population: int = 1000
+    evolvo_generations: int = 1000
+    evolvo_population: int = 10000
 
 SAMPLE_LEN = 10000
 
@@ -543,7 +543,7 @@ class EnhancedGeneticEvolver:
                                     'skew': random.uniform(0, 0.3),
                                     'order_ratio': random.uniform(0, 0.3)},
                 'use_three_features_only': random.random() > 0.3,
-                'bases': sorted(random.sample(self.analyzer.prime_list[:50], random.randint(5, 30))),
+                'bases': sorted(random.sample(self.analyzer.prime_list[:1000], random.randint(5, 500))),
                 'fitness': 0.0, 'alpha_estimate': None, 'beta_estimate': None}
 
     def evaluate_fitness(self, individual: Dict, test_data: List[Tuple[int, int, Dict]]) -> float:
@@ -1299,8 +1299,8 @@ def main():
     """Main entry point"""
     import argparse
     parser = argparse.ArgumentParser(description='Sieve Echo Conjecture - Enhanced Framework v4.1')
-    parser.add_argument('--hours', type=float, default=8.0, help='Runtime hours')
-    parser.add_argument('--max_n', type=int, default=20000, help='Maximum n to test')
+    parser.add_argument('--hours', type=float, default=24.0, help='Runtime hours')
+    parser.add_argument('--max_n', type=int, default=50000, help='Maximum n to test')
     parser.add_argument('--checkpoint', type=str, help='Resume from checkpoint file')
     args = parser.parse_args()
 
