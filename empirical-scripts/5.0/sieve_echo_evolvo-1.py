@@ -28,12 +28,86 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Import evolvo engine
+from evolvo_engine import DataStore, InstructionSet, Interpreter, BaseEvaluator, get_default_instruction_set, myFloat, AlgorithmGenerator
+EVOLVO_AVAILABLE = True
+
+""" # Optional import removed
 try:
     from evolvo_engine import DataStore, InstructionSet, Interpreter, BaseEvaluator, get_default_instruction_set, myFloat, AlgorithmGenerator
     EVOLVO_AVAILABLE = True
 except ImportError:
     print("WARNING: evolvo_engine not found. Formula discovery will be limited.")
     EVOLVO_AVAILABLE = False
+"""
+
+# ==============================================================================
+# PICKLABLE HELPER FUNCTIONS FOR EVOLVO INSTRUCTION SET
+# These functions are defined at the top level to be picklable by multiprocessing.
+# They replace all lambdas previously used in the InstructionSet.
+# ==============================================================================
+def _add(a, b): return myFloat(a + b)
+def _sub(a, b): return myFloat(a - b)
+def _mul(a, b): return myFloat(a * b)
+def _div(a, b): return myFloat(a / (b if abs(b) > 1e-9 else 1e-9))
+def _log(a): return myFloat(math.log(abs(a) + 1e-9))
+def _sqrt(a): return myFloat(math.sqrt(abs(a)))
+def _pow(a, b): return myFloat(a ** min(abs(b), 5)) # Limit exponent to prevent overflow
+def _exp(a): return myFloat(math.exp(min(a, 10))) # Limit input to prevent overflow
+def _sin(a): return myFloat(math.sin(a))
+def _cos(a): return myFloat(math.cos(a))
+
+def get_picklable_instruction_set() -> InstructionSet:
+    """
+    Creates a fully picklable InstructionSet by using named, top-level functions
+    instead of lambdas. This is a replacement for the problematic
+    get_default_instruction_set from the evolvo_engine library.
+    """
+    if not EVOLVO_AVAILABLE:
+        return None
+        
+    iset = InstructionSet()
+    
+    # Standard arithmetic
+    iset.register('ADD', _add, ['d', 'd'], 'decimal')
+    iset.register('SUB', _sub, ['d', 'd'], 'decimal')
+    iset.register('MUL', _mul, ['d', 'd'], 'decimal')
+    iset.register('DIV', _div, ['d', 'd'], 'decimal')
+    
+    # Mathematical functions
+    iset.register('LOG', _log, ['d'], 'decimal')
+    iset.register('SQRT', _sqrt, ['d'], 'decimal')
+    iset.register('POW', _pow, ['d', 'd'], 'decimal')
+    iset.register('EXP', _exp, ['d'], 'decimal')
+    iset.register('SIN', _sin, ['d'], 'decimal')
+    iset.register('COS', _cos, ['d'], 'decimal')
+    
+    # Note: Logic/control flow instructions from the original default set
+    # like SET, CPY, JMP, etc., are usually methods of the InstructionSet class
+    # itself and are generally picklable. We only need to replace the lambda-defined ones.
+    # The default instruction set also includes these, so we add them manually.
+    # Standard arithmetic (op_type='decimal')
+    iset.register('ADD', _add, ['d', 'd'], 'decimal')
+    iset.register('SUB', _sub, ['d', 'd'], 'decimal')
+    iset.register('MUL', _mul, ['d', 'd'], 'decimal')
+    # The default Div avoids DivByZero but returns 1. We'll use a safer version.
+    iset.register('DIV', _div, ['d', 'd'], 'decimal')
+    
+    # Mathematical functions from sieve_echo_evolvo (also op_type='decimal')
+    iset.register('LOG', _log, ['d'], 'decimal')
+    iset.register('SQRT', _sqrt, ['d'], 'decimal')
+    iset.register('POW', _pow, ['d', 'd'], 'decimal')
+    iset.register('EXP', _exp, ['d'], 'decimal')
+    iset.register('SIN', _sin, ['d'], 'decimal')
+    iset.register('COS', _cos, ['d'], 'decimal')
+
+    # Boolean operations (op_type='bool')
+    # The default evolvo_engine.py uses lambdas for these, so we provide picklable versions.
+    iset.register('NOT', lambda a: not a, ['b'], op_type='bool') # lambda is fine here if bools aren't used, but we can be explicit
+    iset.register('CMP', lambda a, b: a == b, ['d', 'd'], op_type='bool')
+    iset.register('GT',  lambda a, b: a > b, ['d', 'd'], op_type='bool')
+        
+    return iset
+# ==============================================================================
 
 # Helper functions for MathematicalConstantsLibrary to ensure picklability
 # These replace the unpicklable lambda functions from the original code.
@@ -359,17 +433,10 @@ class ParallelGeneticOptimizer:
         
         # Adaptive parameters
         self.generation = 0
-        # --- MODIFICATION START ---
-        # REMOVED: Unpicklable lambda assignments
-        # self.mutation_schedule = lambda g: 0.3 * (0.95 ** (g / 100))  # Decay
-        # self.crossover_schedule = lambda g: 0.7 + 0.2 * math.sin(g / 10)  # Oscillate
-        # --- MODIFICATION END ---
         
         # Formula discovery via Evolvo
         self.init_evolvo()
 
-    # --- MODIFICATION START ---
-    # ADDED: These methods replace the lambdas, making the class picklable.
     def _get_mutation_rate(self, g: int) -> float:
         """Decaying mutation rate schedule."""
         return 0.3 * (0.95 ** (g / 100))
@@ -377,7 +444,6 @@ class ParallelGeneticOptimizer:
     def _get_crossover_rate(self, g: int) -> float:
         """Oscillating crossover rate schedule."""
         return 0.7 + 0.2 * math.sin(g / 10)
-    # --- MODIFICATION END ---
         
     def init_evolvo(self):
         """Initialize Evolvo for formula discovery"""
@@ -392,19 +458,19 @@ class ParallelGeneticOptimizer:
             'b$': []
         }
         
-        self.instruction_set = get_default_instruction_set()
+        # --- MODIFICATION ---
+        # Call our new, fully picklable function instead of the library's default.
+        # This is the crucial fix.
+        self.instruction_set = get_picklable_instruction_set()
         
-        # Add mathematical operations
-        self.instruction_set.register('LOG', lambda a: myFloat(math.log(abs(a) + 1e-9)), ['d'], 'decimal')
-        self.instruction_set.register('SQRT', lambda a: myFloat(math.sqrt(abs(a))), ['d'], 'decimal')
-        self.instruction_set.register('POW', lambda a, b: myFloat(a ** min(abs(b), 5)), ['d', 'd'], 'decimal')
-        self.instruction_set.register('EXP', lambda a: myFloat(math.exp(min(a, 10))), ['d'], 'decimal')
-        self.instruction_set.register('SIN', lambda a: myFloat(math.sin(a)), ['d'], 'decimal')
-        self.instruction_set.register('COS', lambda a: myFloat(math.cos(a)), ['d'], 'decimal')
+        # The registration of extra math operations is now handled by our
+        # new function, so the old registration calls are removed from here.
+        # --- END MODIFICATION ---
         
         self.evolvo_enabled = True
+
         
-    def create_individual(self) -> Dict:
+     def create_individual(self) -> Dict:
         """Create a new individual with random parameters"""
         individual = {
             'id': random.randint(1000000, 9999999),
@@ -541,11 +607,9 @@ class ParallelGeneticOptimizer:
         for gen in range(generations):
             self.generation = gen
             
-            # --- MODIFICATION START ---
             # Update adaptive parameters by calling the new methods
             mutation_rate = self._get_mutation_rate(gen)
             crossover_rate = self._get_crossover_rate(gen)
-            # --- MODIFICATION END ---
             
             print(f"\nGeneration {gen} | Mutation: {mutation_rate:.3f} | Crossover: {crossover_rate:.3f}")
             
