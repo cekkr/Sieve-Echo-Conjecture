@@ -51,48 +51,35 @@ def _mul(a, b): return myFloat(a * b)
 def _div(a, b): return myFloat(a / (b if abs(b) > 1e-9 else 1e-9))
 def _log(a): return myFloat(math.log(abs(a) + 1e-9))
 def _sqrt(a): return myFloat(math.sqrt(abs(a)))
-def _pow(a, b): return myFloat(a ** min(abs(b), 5)) # Limit exponent to prevent overflow
-def _exp(a): return myFloat(math.exp(min(a, 10))) # Limit input to prevent overflow
+def _pow(a, b): return myFloat(a ** min(abs(b), 5))
+def _exp(a): return myFloat(math.exp(min(a, 10)))
 def _sin(a): return myFloat(math.sin(a))
 def _cos(a): return myFloat(math.cos(a))
+
+# --- BOOLEAN OPERATIONS ---
+def _not_op(a): return not a
+def _cmp_op(a, b): return a == b
+def _gt_op(a, b): return a > b
+
 
 def get_picklable_instruction_set() -> InstructionSet:
     """
     Creates a fully picklable InstructionSet by using named, top-level functions
-    instead of lambdas. This is a replacement for the problematic
-    get_default_instruction_set from the evolvo_engine library.
+    for EVERY operation, eliminating all lambdas. This is a replacement for the
+    problematic get_default_instruction_set from the evolvo_engine library.
     """
     if not EVOLVO_AVAILABLE:
         return None
         
     iset = InstructionSet()
     
-    # Standard arithmetic
-    iset.register('ADD', _add, ['d', 'd'], 'decimal')
-    iset.register('SUB', _sub, ['d', 'd'], 'decimal')
-    iset.register('MUL', _mul, ['d', 'd'], 'decimal')
-    iset.register('DIV', _div, ['d', 'd'], 'decimal')
-    
-    # Mathematical functions
-    iset.register('LOG', _log, ['d'], 'decimal')
-    iset.register('SQRT', _sqrt, ['d'], 'decimal')
-    iset.register('POW', _pow, ['d', 'd'], 'decimal')
-    iset.register('EXP', _exp, ['d'], 'decimal')
-    iset.register('SIN', _sin, ['d'], 'decimal')
-    iset.register('COS', _cos, ['d'], 'decimal')
-    
-    # Note: Logic/control flow instructions from the original default set
-    # like SET, CPY, JMP, etc., are usually methods of the InstructionSet class
-    # itself and are generally picklable. We only need to replace the lambda-defined ones.
-    # The default instruction set also includes these, so we add them manually.
     # Standard arithmetic (op_type='decimal')
     iset.register('ADD', _add, ['d', 'd'], 'decimal')
     iset.register('SUB', _sub, ['d', 'd'], 'decimal')
     iset.register('MUL', _mul, ['d', 'd'], 'decimal')
-    # The default Div avoids DivByZero but returns 1. We'll use a safer version.
     iset.register('DIV', _div, ['d', 'd'], 'decimal')
     
-    # Mathematical functions from sieve_echo_evolvo (also op_type='decimal')
+    # Mathematical functions (op_type='decimal')
     iset.register('LOG', _log, ['d'], 'decimal')
     iset.register('SQRT', _sqrt, ['d'], 'decimal')
     iset.register('POW', _pow, ['d', 'd'], 'decimal')
@@ -100,12 +87,11 @@ def get_picklable_instruction_set() -> InstructionSet:
     iset.register('SIN', _sin, ['d'], 'decimal')
     iset.register('COS', _cos, ['d'], 'decimal')
 
-    # Boolean operations (op_type='bool')
-    # The default evolvo_engine.py uses lambdas for these, so we provide picklable versions.
-    iset.register('NOT', lambda a: not a, ['b'], op_type='bool') # lambda is fine here if bools aren't used, but we can be explicit
-    iset.register('CMP', lambda a, b: a == b, ['d', 'd'], op_type='bool')
-    iset.register('GT',  lambda a, b: a > b, ['d', 'd'], op_type='bool')
-        
+    # Boolean operations (op_type='bool') - NOW USING NAMED FUNCTIONS
+    iset.register('NOT', _not_op, ['b'], op_type='bool')
+    iset.register('CMP', _cmp_op, ['d', 'd'], op_type='bool')
+    iset.register('GT',  _gt_op, ['d', 'd'], op_type='bool')
+    
     return iset
 # ==============================================================================
 
@@ -470,7 +456,7 @@ class ParallelGeneticOptimizer:
         self.evolvo_enabled = True
 
         
-     def create_individual(self) -> Dict:
+    def create_individual(self) -> Dict:
         """Create a new individual with random parameters"""
         individual = {
             'id': random.randint(1000000, 9999999),
