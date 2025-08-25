@@ -502,7 +502,7 @@ class ModelEvolver:
         return True
     
     def evolve_population(self, population_size: int = 50, generations: int = 100,
-                         fitness_func: Callable = None) -> List[ModelGenome]:
+                         fitness_func: callable = None) -> List[ModelGenome]:
         """Main evolution loop"""
         # Initialize population
         self.population = []
