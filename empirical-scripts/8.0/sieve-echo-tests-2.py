@@ -541,7 +541,7 @@ class EvolvoFormulaDiscoverer:
         algorithm = []
         ops = list(self.instruction_set.op_types['decimal'])
         
-        for _ in range(random.randint(0, max_length)):
+        for _ in range(random.randint(1, max_length)):
             op = random.choice(ops)
             
             # Target is always omega_pred
@@ -629,16 +629,19 @@ class EvolvoFormulaDiscoverer:
         
         mutated = algorithm.copy()
         mutation_type = random.choice(['modify', 'insert', 'delete'])
-        
-        if mutation_type == 'modify' and mutated:
-            idx = random.randint(0, len(mutated) - 1)
-            mutated[idx] = self.generate_random_algorithm(1)[0]
-        elif mutation_type == 'insert':
-            idx = random.randint(0, len(mutated))
-            mutated.insert(idx, self.generate_random_algorithm(1)[0])
-        elif mutation_type == 'delete' and len(mutated) > 1:
-            idx = random.randint(0, len(mutated) - 1)
-            mutated.pop(idx)
+
+        try:
+            if mutation_type == 'modify' and mutated:
+                idx = random.randint(0, len(mutated) - 1)
+                mutated[idx] = self.generate_random_algorithm(1)[0]
+            elif mutation_type == 'insert':
+                idx = random.randint(0, len(mutated))
+                mutated.insert(idx, self.generate_random_algorithm(1)[0])
+            elif mutation_type == 'delete' and len(mutated) > 1:
+                idx = random.randint(0, len(mutated) - 1)
+                mutated.pop(idx)
+        except:
+            print("mutate: mutation failed")
         
         return mutated
 
