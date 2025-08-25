@@ -34,8 +34,8 @@ from multiprocessing import Pool, cpu_count
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # Core mathematical libraries
-from sympy import (factorint, primerange, isprime, totient, divisors, mobius, 
-                   primorial, factorial, nextprime, prevprime, prime, primepi)
+from sympy import (factorint, primerange, isprime, totient, divisors, mobius,
+                   primorial, factorial, nextprime, prevprime, prime, primepi, sqrt, log)
 from scipy import stats, signal, optimize, special, integrate
 from scipy.fft import fft, ifft, fftfreq
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
@@ -436,6 +436,11 @@ class RiemannZetaAnalyzer:
 # CRITICAL IMPROVEMENT 3: PRIME NUMBER THEOREM INTEGRATION
 # ==============================================================================
 
+def symbolic_std(values):
+    mean = sum(values) / len(values)
+    variance = sum((v - mean)**2 for v in values) / len(values)
+    return sqrt(variance)
+
 class PrimeNumberTheoremAnalyzer:
     """Test connections to Prime Number Theorem"""
     
@@ -498,10 +503,17 @@ class PrimeNumberTheoremAnalyzer:
                 if key in df_results and 'h_theta' in df_results:
                     vals = df_results[key]
                     h_vals = df_results['h_theta']
-                    if len(vals) == len(h_vals) and np.std(vals) > 0 and np.std(h_vals) > 0:
-                        corr = np.corrcoef(vals, h_vals)[0,1]
+                    if len(vals) == len(h_vals) and symbolic_std(vals) > 0 and symbolic_std(h_vals) > 0:
+                        # Rational to float conversion
+                        vals = np.array([float(v) for v in vals])
+                        h_vals = np.array([float(h) for h in h_vals])
+
+                        corr = None
+                        if vals.size > 1 and h_vals.size > 1:
+                            corr = np.corrcoef(vals, h_vals)[0, 1]
+
                         correlations[key] = corr
-            
+
             self.results = {
                 'data': results,
                 'correlations': correlations,
@@ -878,13 +890,13 @@ class ModularFormsExplorer:
             for k in same_residue[:10]:  # Limit for efficiency
                 # Simplified entropy computation
                 pattern_length = totient(k)
-                simulated_entropy = np.log(pattern_length) / np.log(k) if k > 1 else 0
+                simulated_entropy = log(pattern_length) / log(k) if k > 1 else 0
                 entropies.append(simulated_entropy)
             
             patterns[f'mod_{mod}'] = {
                 'residue': residue,
                 'mean_entropy': np.mean(entropies) if entropies else 0,
-                'std_entropy': np.std(entropies) if entropies else 0,
+                'std_entropy': symbolic_std(entropies) if entropies else 0,
                 'is_prime_residue': isprime(residue) if residue > 1 else False,
                 'is_coprime': math.gcd(residue, mod) == 1,
                 'theta_deviation': abs(theta_entropy - np.mean(entropies)) if entropies else 0
