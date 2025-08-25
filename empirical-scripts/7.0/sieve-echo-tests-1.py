@@ -1855,7 +1855,7 @@ class ComprehensiveAnalyzer:
                 vals2 = [d.get(f2, np.nan) for d in self.data]
 
                 try:
-                    vals1, vals2 = np.array(vals1), np.array(vals2)
+                    vals1, vals2 = np.array(vals1, dtype=np.float64), np.array(vals2, dtype=np.float64)
                     mask = np.isfinite(vals1) & np.isfinite(vals2)
                     if np.sum(mask) > 10:
                         corr_matrix[i, j] = np.corrcoef(np.array(vals1)[mask],
