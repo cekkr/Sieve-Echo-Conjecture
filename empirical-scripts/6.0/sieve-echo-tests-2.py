@@ -1075,6 +1075,7 @@ if TORCH_AVAILABLE:
             self.model = None
             self.scaler = StandardScaler()
         
+        # +++ METHOD WITH FIXES APPLIED +++
         def prepare_data(self, features: List[str], target: str = 'omega'):
             """Prepare data for neural network"""
             X_data = []
@@ -1084,30 +1085,44 @@ if TORCH_AVAILABLE:
                 if target not in d:
                     continue
                 
-                x = []
-                valid = True
+                x_row = []
+                valid_row = True
                 for f in features:
                     if f in d:
-                        x.append(d[f])
+                        val = d[f]
+                        # FIX 1: Ensure the value is a number before appending.
+                        # Booleans are acceptable as they can be cast to 0 or 1.
+                        if isinstance(val, (int, float, bool)):
+                            x_row.append(float(val))
+                        else:
+                            # The feature is non-numeric (e.g., a list or dict).
+                            # This entire row of data is invalid for the NN.
+                            valid_row = False
+                            break
                     else:
-                        valid = False
+                        # Feature is missing, so this row is invalid.
+                        valid_row = False
                         break
                 
-                if valid:
-                    X_data.append(x)
+                if valid_row:
+                    X_data.append(x_row)
                     y_data.append(d[target])
             
-            if not X_data:
+            if len(X_data) < 10: # Check for sufficient data
                 return None, None
             
-            X = np.array(X_data)
+            # FIX 2: Explicitly set the dtype to float when creating the array.
+            X = np.array(X_data, dtype=float)
             y = np.array(y_data)
             
-            # Remove NaN
+            # This mask should now work correctly because X is guaranteed to be numeric.
             mask = np.all(np.isfinite(X), axis=1) & np.isfinite(y)
             X = X[mask]
             y = y[mask]
             
+            if len(X) < 10: # Check again after cleaning NaNs
+                return None, None
+
             # Normalize
             X = self.scaler.fit_transform(X)
             
@@ -1115,13 +1130,30 @@ if TORCH_AVAILABLE:
         
         def train(self, features: List[str], target: str = 'omega'):
             """Train neural network"""
-            X, y = self.prepare_data(features, target)
+            
+            # --- Robust feature pre-filtering ---
+            # Ensure we only attempt to train on features that are actually numeric.
+            available_features = []
+            if not self.data:
+                logger.log("Cannot pre-filter features, data is empty.", "WARNING")
+            else:
+                # Check the type of each feature from a sample data point
+                sample_item = self.data[0]
+                for f in features:
+                    if f in sample_item and isinstance(sample_item[f], (int, float, bool)):
+                        available_features.append(f)
+            
+            if not available_features:
+                 logger.log("No valid numeric features found for neural network training", "WARNING")
+                 return None
+
+            X, y = self.prepare_data(available_features, target)
             if X is None:
-                logger.log("Insufficient data for neural network training", "WARNING")
+                logger.log("Insufficient valid data for neural network training after preparation", "WARNING")
                 return None
             
             # Create model
-            self.model = SieveEchoNet(len(features), CONFIG.nn_hidden_dim).to(self.device)
+            self.model = SieveEchoNet(len(available_features), CONFIG.nn_hidden_dim).to(self.device)
             optimizer = torch.optim.Adam(self.model.parameters(), lr=CONFIG.nn_learning_rate)
             criterion = nn.CrossEntropyLoss()
             
