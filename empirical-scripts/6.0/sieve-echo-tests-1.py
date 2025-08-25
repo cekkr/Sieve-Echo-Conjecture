@@ -172,7 +172,7 @@ warnings.filterwarnings('ignore')
 @dataclass
 class Config:
     max_n: int = 10000
-    test_bases: List[int] = field(default_factory=lambda: [2, 3, 5, 7, 10, 11, 13, 16])
+    test_bases: List[int] = field(default_factory=lambda: [2, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16])
     sample_size: int = 5000
     runtime_hours: float = 24.0
     
@@ -199,9 +199,16 @@ class Config:
     save_plots: bool = True
     save_models: bool = True
     verbose: bool = True
-    checkpoint_interval: int = 50
+    checkpoint_interval: int = 100
     
 CONFIG = Config()
+
+CONFIG.max_n = 50000
+CONFIG.sample_size = 10000
+CONFIG.runtime_hours = 48.0
+CONFIG.ga_generations = 1000
+CONFIG.evolvo_generations = 200
+CONFIG.nn_epochs = 200
 
 # ==============================================================================
 # PICKLABLE HELPER FUNCTIONS FOR EVOLVO
