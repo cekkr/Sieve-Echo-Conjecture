@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Sieve Echo Conjecture - Ultimate Empirical Discovery System
-Version 6.0 - Integrates Evolvo genetic programming, neural architecture search, 
+Version 6.1 - Integrates Evolvo genetic programming, neural architecture search, 
              and comprehensive pattern mining for maximum discovery power
 """
 
@@ -160,7 +160,7 @@ try:
     EVOLVO_AVAILABLE = True
 except ImportError:
     EVOLVO_AVAILABLE = False
-    print("WARNING: evolvo_engine not found. Genetic formula discovery will be limited.")
+    print("WARNING: evolvo_model.py not found. Genetic formula discovery will be limited.")
     myFloat = float
 
 warnings.filterwarnings('ignore')
@@ -1749,6 +1749,5 @@ def main():
     return True
 
 if __name__ == "__main__":
-    import sys
     success = main()
     sys.exit(0 if success else 1)
