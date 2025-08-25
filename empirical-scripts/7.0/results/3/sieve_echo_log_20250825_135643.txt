@@ -1,0 +1,329 @@
+Sieve Echo Ultimate Discovery System - Started 2025-08-25 13:56:43.677431
+================================================================================
+[0.0s][INFO] ================================================================================
+[0.0s][INFO] SIEVE ECHO CONJECTURE - ULTIMATE DISCOVERY SYSTEM
+[0.0s][INFO] Version 6.0 - Evolvo=True, PyTorch=True
+[0.0s][INFO] ================================================================================
+[0.0s][INFO] 
+CONFIGURATION:
+[0.0s][INFO]   Max n: 100000
+[0.0s][INFO]   Sample size: 10000
+[0.0s][INFO]   Test bases: [2, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16]
+[0.0s][INFO]   Runtime limit: 24.0 hours
+[0.0s][INFO] ================================================================================
+[0.0s][INFO] PHASE 1: DATA GENERATION
+[0.0s][INFO] ================================================================================
+[0.0s][INFO] Generating dataset for n=2 to 100000...
+[0.0s][INFO] Progress: 0/1936
+[0.0s][FINDING] LOW ENTROPY PRIME: n=2, H_θ=0.0000
+[0.1s][FINDING] LOW ENTROPY PRIME: n=3, H_θ=0.0000
+[0.1s][FINDING] PERFECT NUMBER: n=6
+[0.2s][FINDING] PERFECT NUMBER: n=28
+[0.9s][INFO] Progress: 100/1936
+[1.8s][INFO] Progress: 200/1936
+[2.8s][INFO] Progress: 300/1936
+[3.8s][INFO] Progress: 400/1936
+[4.8s][FINDING] PERFECT NUMBER: n=496
+[4.9s][INFO] Progress: 500/1936
+[6.0s][INFO] Progress: 600/1936
+[7.0s][INFO] Progress: 700/1936
+[8.1s][INFO] Progress: 800/1936
+[9.1s][INFO] Progress: 900/1936
+[10.2s][INFO] Progress: 1000/1936
+[12.2s][INFO] Progress: 1100/1936
+[14.7s][INFO] Progress: 1200/1936
+[17.9s][INFO] Progress: 1300/1936
+[21.5s][INFO] Progress: 1400/1936
+[26.0s][INFO] Progress: 1500/1936
+[30.5s][INFO] Progress: 1600/1936
+[35.2s][INFO] Progress: 1700/1936
+[39.6s][INFO] Progress: 1800/1936
+[44.2s][INFO] Progress: 1900/1936
+[46.0s][INFO] Dataset complete: 1936 numbers analyzed
+[46.0s][INFO] 
+================================================================================
+[46.0s][INFO] PHASE 2: SIEVE ECHO LAW VALIDATION
+[46.0s][INFO] ================================================================================
+[46.0s][DISCOVERY] FORMULA: sieve_echo_law: H_θ = -0.9988·log(ω) + 2.4200 (error: 0.7081)
+[46.0s][DISCOVERY] SIEVE ECHO LAW: H_θ = -0.9988·log(ω) + 2.4200
+[46.0s][RESULT] R² = 0.2919
+[46.0s][INFO] 
+================================================================================
+[46.0s][INFO] PHASE 3: GENETIC FEATURE DISCOVERY
+[46.0s][INFO] ================================================================================
+[284.5s][DISCOVERY] GENETIC: Features: kurtosis_b3, std_b10, mean_b16, is_prime_power
+[284.7s][INFO] GA gen 0: best fitness = 1.9331
+[520.9s][DISCOVERY] GENETIC: Features: std_b12, is_prime_power, is_deficient
+[750.4s][DISCOVERY] GENETIC: Features: is_prime_power, std_b15, mean_b13, length_b12
+[977.8s][DISCOVERY] GENETIC: Features: kurtosis_b5, mean_b14, omega
+[1893.7s][DISCOVERY] GENETIC: Features: mean_b10, std_b3, is_prime_power
+[2042.8s][DISCOVERY] GENETIC: Features: mean_b15, mean_b14, is_prime_power
+[2181.2s][DISCOVERY] GENETIC: Features: std_b15, std_b10, omega
+[2311.5s][DISCOVERY] GENETIC: Features: omega, std_b12, is_abundant
+[2554.5s][DISCOVERY] GENETIC: Features: skew_b12, omega, std_b10
+[2667.6s][DISCOVERY] GENETIC: Features: omega, std_b12, is_deficient
+[2775.7s][DISCOVERY] GENETIC: Features: omega, std_b10, is_deficient
+[3276.2s][DISCOVERY] GENETIC: Features: std_b10, omega, unique_digits_b2
+[3276.7s][INFO] GA gen 20: best fitness = 1.9700
+[3365.5s][DISCOVERY] GENETIC: Features: std_b10, is_prime_power, std_b12
+[3622.0s][DISCOVERY] GENETIC: Features: omega, unique_digits_b2, std_b12
+[3784.3s][DISCOVERY] GENETIC: Features: std_b15, is_prime_power, unique_digits_b2
+[3941.1s][DISCOVERY] GENETIC: Features: unique_digits_b2, is_prime_power, std_b15
+[4087.8s][DISCOVERY] GENETIC: Features: unique_digits_b2, omega, std_b12
+[4158.9s][DISCOVERY] GENETIC: Features: unique_digits_b2, omega, std_b12
+[4299.5s][DISCOVERY] GENETIC: Features: is_prime_power, std_b12, std_b10
+[4506.0s][DISCOVERY] GENETIC: Features: is_prime_power, std_b15, unique_digits_b2
+[4712.9s][DISCOVERY] GENETIC: Features: is_prime_power, std_b10, std_b12
+[4780.8s][INFO] GA gen 40: best fitness = 1.9700
+[4850.5s][DISCOVERY] GENETIC: Features: is_prime_power, std_b12, std_b10
+[4919.4s][DISCOVERY] GENETIC: Features: is_prime_power, std_b12, std_b10
+[4989.1s][DISCOVERY] GENETIC: Features: is_prime_power, std_b12, std_b10
+[5200.4s][DISCOVERY] GENETIC: Features: std_b12, std_b10, is_prime_power
+[5271.9s][DISCOVERY] GENETIC: Features: std_b10, std_b12, is_prime_power
+[5343.5s][DISCOVERY] GENETIC: Features: is_prime_power, std_b10, std_b12
+[5494.0s][DISCOVERY] GENETIC: Features: std_b10, std_b12, is_prime_power
+[5647.4s][DISCOVERY] GENETIC: Features: std_b10, std_b12, is_prime_power
+[5721.6s][DISCOVERY] GENETIC: Features: std_b10, std_b12, is_prime_power
+[5792.2s][DISCOVERY] GENETIC: Features: is_prime_power, std_b12, std_b10
+[5998.9s][DISCOVERY] GENETIC: Features: is_prime_power, std_b12, std_b10
+[6202.4s][DISCOVERY] GENETIC: Features: is_prime_power, std_b12, std_b10
+[6202.6s][INFO] GA gen 60: best fitness = 1.9700
+[6335.9s][DISCOVERY] GENETIC: Features: std_b10, std_b12, is_prime_power
+[6469.2s][DISCOVERY] GENETIC: Features: is_prime_power, std_b10, std_b12
+[6534.8s][DISCOVERY] GENETIC: Features: std_b10, is_prime_power, std_b12
+[7544.0s][INFO] GA gen 80: best fitness = 1.9700
+[7899.3s][DISCOVERY] GENETIC: Features: std_b12, std_b10, is_prime_power
+[8925.7s][DISCOVERY] GENETIC DISCOVERY: Best features for ω(n) prediction:
+[8925.7s][RESULT]   1. std_b12 (weight: 0.001)
+[8925.7s][RESULT]   2. is_prime_power (weight: -4171.558)
+[8925.7s][RESULT]   3. theta_entropy_min (weight: 0.594)
+[8925.7s][RESULT] Best fitness achieved: 1.9700
+[8925.7s][INFO] 
+================================================================================
+[8925.7s][INFO] PHASE 4: EVOLVO FORMULA DISCOVERY
+[8925.7s][INFO] ================================================================================
+[8925.7s][INFO] Evolving formula for omega...
+[8945.7s][ALGORITHM] EVOLVO: Gen 0: LOG (fitness: 0.2380)
+[8961.0s][INFO] Evolvo gen 0: best fitness = 0.2380
+[9045.5s][ALGORITHM] EVOLVO: Gen 7: MUL → DIV → SQRT (fitness: 0.2334)
+[9081.8s][INFO] Evolvo gen 10: best fitness = 0.2334
+[9090.5s][ALGORITHM] EVOLVO: Gen 12: DIV → SQRT (fitness: 0.2234)
+[9156.0s][ALGORITHM] EVOLVO: Gen 19: DIV → MUL → SQRT (fitness: 0.2213)
+[9166.7s][ALGORITHM] EVOLVO: Gen 20: DIV → SQRT (fitness: 0.1752)
+[9177.8s][INFO] Evolvo gen 20: best fitness = 0.1752
+[9286.1s][INFO] Evolvo gen 30: best fitness = 0.1752
+[9390.4s][INFO] Evolvo gen 40: best fitness = 0.1752
+[9483.5s][DISCOVERY] EVOLVO FORMULA for omega: DIV → SQRT
+[9483.5s][INFO] Evolving formula for theta_entropy_mean...
+[9503.2s][ALGORITHM] EVOLVO: Gen 0: SUB (fitness: 0.0100)
+[9518.3s][INFO] Evolvo gen 0: best fitness = 0.0100
+[9634.4s][INFO] Evolvo gen 10: best fitness = 0.0100
+[9721.7s][INFO] Evolvo gen 20: best fitness = 0.0100
+[9809.3s][INFO] Evolvo gen 30: best fitness = 0.0100
+[9897.3s][INFO] Evolvo gen 40: best fitness = 0.0100
+[9976.5s][DISCOVERY] EVOLVO FORMULA for theta_entropy_mean: SUB
+[9976.5s][INFO] Evolving formula for length_mean...
+[10011.7s][INFO] Evolvo gen 0: best fitness = 0.0100
+[10143.9s][INFO] Evolvo gen 10: best fitness = 0.0100
+[10232.4s][INFO] Evolvo gen 20: best fitness = 0.0100
+[10320.6s][INFO] Evolvo gen 30: best fitness = 0.0100
+[10408.8s][INFO] Evolvo gen 40: best fitness = 0.0100
+[10488.6s][DISCOVERY] EVOLVO FORMULA for length_mean: SUB
+[10488.6s][INFO] 
+================================================================================
+[10488.6s][INFO] PHASE 5: NEURAL NETWORK TRAINING
+[10488.6s][INFO] ================================================================================
+[10499.3s][INFO] Training neural network with 8 features
+[10500.2s][INFO] NN Epoch 0: loss=2.3042, acc=0.101
+[10500.3s][INFO] NN Epoch 20: loss=0.3149, acc=0.893
+[10500.3s][INFO] NN Epoch 40: loss=0.2139, acc=0.916
+[10500.4s][INFO] NN Epoch 60: loss=0.1940, acc=0.922
+[10500.4s][INFO] NN Epoch 80: loss=0.1841, acc=0.920
+[10500.4s][INFO] NN Epoch 100: loss=0.1822, acc=0.921
+[10500.5s][INFO] NN Epoch 120: loss=0.1742, acc=0.924
+[10500.5s][INFO] NN Epoch 140: loss=0.1699, acc=0.924
+[10500.6s][INFO] NN Epoch 160: loss=0.1654, acc=0.924
+[10500.6s][INFO] NN Epoch 180: loss=0.1619, acc=0.929
+[10500.7s][INFO] NN Epoch 200: loss=0.1603, acc=0.925
+[10500.7s][INFO] NN Epoch 220: loss=0.1597, acc=0.928
+[10500.7s][INFO] NN Epoch 240: loss=0.1544, acc=0.934
+[10500.8s][INFO] NN Epoch 260: loss=0.1443, acc=0.941
+[10500.8s][INFO] NN Epoch 280: loss=0.1414, acc=0.937
+[10500.9s][INFO] NN Epoch 300: loss=0.1358, acc=0.945
+[10500.9s][INFO] NN Epoch 320: loss=0.1293, acc=0.945
+[10500.9s][INFO] NN Epoch 340: loss=0.1314, acc=0.949
+[10501.0s][INFO] NN Epoch 360: loss=0.1228, acc=0.948
+[10501.0s][INFO] NN Epoch 380: loss=0.1166, acc=0.953
+[10501.1s][INFO] NN Epoch 400: loss=0.1116, acc=0.952
+[10501.1s][INFO] NN Epoch 420: loss=0.1130, acc=0.954
+[10501.1s][INFO] NN Epoch 440: loss=0.1078, acc=0.956
+[10501.2s][INFO] NN Epoch 460: loss=0.1095, acc=0.955
+[10501.2s][INFO] NN Epoch 480: loss=0.1226, acc=0.948
+[10501.3s][INFO] NN Epoch 500: loss=0.0972, acc=0.961
+[10501.3s][INFO] NN Epoch 520: loss=0.1019, acc=0.956
+[10501.3s][INFO] NN Epoch 540: loss=0.0860, acc=0.964
+[10501.4s][INFO] NN Epoch 560: loss=0.0938, acc=0.959
+[10501.4s][INFO] NN Epoch 580: loss=0.0922, acc=0.959
+[10501.5s][INFO] NN Epoch 600: loss=0.0843, acc=0.965
+[10501.5s][INFO] NN Epoch 620: loss=0.0799, acc=0.966
+[10501.5s][INFO] NN Epoch 640: loss=0.0716, acc=0.974
+[10501.6s][INFO] NN Epoch 660: loss=0.0697, acc=0.970
+[10501.6s][INFO] NN Epoch 680: loss=0.0789, acc=0.965
+[10501.7s][INFO] NN Epoch 700: loss=0.0703, acc=0.972
+[10501.7s][INFO] NN Epoch 720: loss=0.0782, acc=0.969
+[10501.7s][INFO] NN Epoch 740: loss=0.1110, acc=0.956
+[10501.8s][INFO] NN Epoch 760: loss=0.0619, acc=0.976
+[10501.8s][INFO] NN Epoch 780: loss=0.0696, acc=0.975
+[10501.9s][INFO] NN Epoch 800: loss=0.0567, acc=0.977
+[10501.9s][INFO] NN Epoch 820: loss=0.0630, acc=0.975
+[10501.9s][INFO] NN Epoch 840: loss=0.0686, acc=0.970
+[10502.0s][INFO] NN Epoch 860: loss=0.0547, acc=0.976
+[10502.0s][INFO] NN Epoch 880: loss=0.0557, acc=0.978
+[10502.1s][INFO] NN Epoch 900: loss=0.0478, acc=0.979
+[10502.1s][INFO] NN Epoch 920: loss=0.0577, acc=0.975
+[10502.1s][INFO] NN Epoch 940: loss=0.0611, acc=0.968
+[10502.2s][INFO] NN Epoch 960: loss=0.0404, acc=0.984
+[10502.2s][INFO] NN Epoch 980: loss=0.0545, acc=0.975
+[10502.2s][RESULT] Neural network final accuracy: 0.988
+[10502.2s][SUCCESS] ✓ Neural network successfully predicts ω(n) with 98.8% accuracy!
+[10502.2s][INFO] 
+================================================================================
+[10502.2s][INFO] PHASE 6: PATTERN MINING
+[10502.2s][INFO] ================================================================================
+[10502.3s][RESULT] CORRELATION: omega_vs_Omega = 0.7113 (conf: 95.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b10 = -0.3913 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b11 = -0.5002 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b12 = -0.3402 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b13 = -0.4859 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b14 = -0.3935 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b15 = -0.4037 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b16 = -0.4443 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b2 = -0.4124 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b3 = -0.4326 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b4 = -0.4400 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b5 = -0.4821 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_compression_ratio_b7 = -0.4891 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_deficiency = -0.4000 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_is_abundant = 0.5538 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_is_deficient = -0.5521 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_is_prime = -0.8165 (conf: 95.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_is_prime_power = -0.8430 (conf: 95.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_largest_prime_factor = -0.5453 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b10 = -0.3913 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b11 = -0.5003 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b12 = -0.3402 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b13 = -0.4860 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b14 = -0.3935 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b15 = -0.4038 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b16 = -0.4445 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b2 = -0.4124 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b3 = -0.4326 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b4 = -0.4400 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b5 = -0.4821 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_b7 = -0.4891 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_mean = -0.5444 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_length_std = -0.3360 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mean_b11 = -0.3632 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mean_b13 = -0.3182 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mean_b16 = -0.3022 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mean_b2 = -0.3052 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mean_b4 = -0.3159 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mean_b7 = -0.3115 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b10 = -0.3913 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b11 = -0.5003 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b12 = -0.3402 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b13 = -0.4860 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b14 = -0.3935 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b15 = -0.4038 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b16 = -0.4445 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b2 = -0.4124 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b3 = -0.4326 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b4 = -0.4400 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b5 = -0.4821 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_mult_order_b7 = -0.4891 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_n = -0.3925 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_radical = -0.3926 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_sigma = -0.3850 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_smallest_prime_factor = -0.5456 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_tau = 0.7676 (conf: 95.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b11 = -0.5012 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b13 = -0.4971 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b14 = -0.3227 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b15 = -0.3433 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b16 = -0.4416 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b2 = -0.3408 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b3 = -0.3956 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b4 = -0.3860 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b5 = -0.4600 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_b7 = -0.4775 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_max = -0.5826 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_mean = -0.5432 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_min = -0.4661 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_theta_entropy_std = -0.5103 (conf: 80.00%)
+[10502.3s][RESULT] CORRELATION: omega_vs_unique_digits_b11 = -0.3222 (conf: 80.00%)
+[10502.4s][RESULT] CORRELATION: omega_vs_unique_digits_b16 = -0.3223 (conf: 80.00%)
+[10502.4s][DISCOVERY] TOP CORRELATIONS WITH ω(n):
+[10502.4s][RESULT]   is_prime_power: r=-0.8430
+[10502.4s][RESULT]   is_prime: r=-0.8165
+[10502.4s][RESULT]   tau: r=0.7676
+[10502.4s][RESULT]   Omega: r=0.7113
+[10502.4s][RESULT]   theta_entropy_max: r=-0.5826
+[10502.4s][RESULT]   is_abundant: r=0.5538
+[10502.4s][RESULT]   is_deficient: r=-0.5521
+[10502.4s][RESULT]   smallest_prime_factor: r=-0.5456
+[10502.4s][RESULT]   largest_prime_factor: r=-0.5453
+[10502.4s][RESULT]   length_mean: r=-0.5444
+[10502.4s][DISCOVERY] FORMULA: scaling_entropy_vs_n: theta_entropy_mean ≈ 0.431·n^0.142 (error: 0.1824)
+[10502.4s][DISCOVERY] FORMULA: scaling_length_vs_phi: length_mean ≈ 0.532·phi^0.878 (error: 0.0880)
+[10503.3s][FINDING] EXCEPTIONAL: n=2: Extreme low entropy: 0.0000
+[10503.3s][FINDING] EXCEPTIONAL: n=3: Extreme low entropy: 0.0000
+[10503.3s][FINDING] EXCEPTIONAL: n=4: Extreme low entropy: 0.0000
+[10503.3s][FINDING] EXCEPTIONAL: n=5: Extreme low entropy: 0.2428
+[10503.3s][FINDING] EXCEPTIONAL: n=6: Extreme low entropy: 0.0000, Perfect number
+[10503.3s][FINDING] EXCEPTIONAL: n=7: Extreme low entropy: 0.1082
+[10503.3s][FINDING] EXCEPTIONAL: n=8: Extreme low entropy: 0.0000
+[10503.3s][FINDING] EXCEPTIONAL: n=9: Extreme low entropy: 0.2078
+[10503.3s][FINDING] EXCEPTIONAL: n=11: Extreme low entropy: 0.3454
+[10503.3s][FINDING] EXCEPTIONAL: n=12: Extreme low entropy: 0.0000
+[10503.3s][FINDING] EXCEPTIONAL: n=13: Extreme low entropy: 0.3653
+[10503.3s][FINDING] EXCEPTIONAL: n=14: Extreme low entropy: 0.2125
+[10503.3s][FINDING] EXCEPTIONAL: n=15: Extreme low entropy: 0.1818
+[10503.3s][FINDING] EXCEPTIONAL: n=16: Extreme low entropy: 0.3543
+[10503.3s][FINDING] EXCEPTIONAL: n=18: Extreme low entropy: 0.2129
+[10503.3s][FINDING] EXCEPTIONAL: n=20: Extreme low entropy: 0.3438
+[10503.3s][FINDING] EXCEPTIONAL: n=21: Extreme low entropy: 0.3710
+[10503.3s][FINDING] EXCEPTIONAL: n=24: Extreme low entropy: 0.0000
+[10503.3s][FINDING] EXCEPTIONAL: n=28: Perfect number
+[10503.3s][FINDING] EXCEPTIONAL: n=30: Extreme low entropy: 0.3542
+[10503.3s][INFO] 
+================================================================================
+[10503.3s][INFO] PHASE 7: VISUALIZATION
+[10503.3s][INFO] ================================================================================
+[10505.2s][INFO] Saved comprehensive visualization
+[10505.2s][INFO] 
+================================================================================
+[10505.2s][INFO] FINAL REPORT
+[10505.2s][INFO] ================================================================================
+[10505.2s][INFO] 
+================================================================================
+[10505.2s][SUCCESS] COMPREHENSIVE DISCOVERY SUMMARY
+[10505.2s][INFO] ================================================================================
+[10505.2s][RESULT] 
+DISCOVERY COUNTS:
+[10505.2s][RESULT]   Mathematical formulas: 3
+[10505.2s][RESULT]   Significant correlations: 4
+[10505.2s][RESULT]   Genetic discoveries: 37
+[10505.2s][RESULT]   Evolvo algorithms: 6
+[10505.2s][SUCCESS] 
+KEY FORMULAS DISCOVERED:
+[10505.2s][RESULT]   sieve_echo_law: H_θ = -0.9988·log(ω) + 2.4200 (error: 0.7081)
+[10505.2s][RESULT]   scaling_entropy_vs_n: theta_entropy_mean ≈ 0.431·n^0.142 (error: 0.1824)
+[10505.2s][RESULT]   scaling_length_vs_phi: length_mean ≈ 0.532·phi^0.878 (error: 0.0880)
+[10505.2s][SUCCESS] 
+✓ PARTIAL SUPPORT FOR SIEVE ECHO CONJECTURE ✓
+[10505.2s][INFO] Significant patterns discovered, further investigation needed
+[10505.2s][INFO] Results saved (3 formulas, 72 correlations)
+[10505.2s][INFO] 
+Total runtime: 2.92 hours
+[10505.2s][SUCCESS] All results saved with timestamp: 20250825_135643
+[10505.2s][INFO] Results saved (3 formulas, 72 correlations)

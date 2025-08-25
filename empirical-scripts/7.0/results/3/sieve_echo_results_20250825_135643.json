@@ -1,0 +1,1067 @@
+{
+  "findings": {},
+  "correlations": {
+    "omega_vs_Omega": {
+      "value": 0.7113410577456116,
+      "confidence": 0.95,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_compression_ratio_b10": {
+      "value": -0.39125898526888037,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1328"
+      }
+    },
+    "omega_vs_compression_ratio_b11": {
+      "value": -0.5001751788203836,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1836"
+      }
+    },
+    "omega_vs_compression_ratio_b12": {
+      "value": -0.3401955970900755,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1261"
+      }
+    },
+    "omega_vs_compression_ratio_b13": {
+      "value": -0.4858996722647956,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1853"
+      }
+    },
+    "omega_vs_compression_ratio_b14": {
+      "value": -0.3934530046356899,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1360"
+      }
+    },
+    "omega_vs_compression_ratio_b15": {
+      "value": -0.4037092521979518,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1456"
+      }
+    },
+    "omega_vs_compression_ratio_b16": {
+      "value": -0.44433202846282527,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_compression_ratio_b2": {
+      "value": -0.4124161719790347,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_compression_ratio_b3": {
+      "value": -0.4326451774747213,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1596"
+      }
+    },
+    "omega_vs_compression_ratio_b4": {
+      "value": -0.43999175070003443,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_compression_ratio_b5": {
+      "value": -0.4820894857880426,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1730"
+      }
+    },
+    "omega_vs_compression_ratio_b7": {
+      "value": -0.4890872808792073,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1790"
+      }
+    },
+    "omega_vs_deficiency": {
+      "value": -0.3999882277314307,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_is_abundant": {
+      "value": 0.553783713978378,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_is_deficient": {
+      "value": -0.5521360142954531,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_is_prime": {
+      "value": -0.8164816162975751,
+      "confidence": 0.95,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_is_prime_power": {
+      "value": -0.8429768130550866,
+      "confidence": 0.95,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_largest_prime_factor": {
+      "value": -0.5453458328758651,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_length_b10": {
+      "value": -0.39128827258737375,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1328"
+      }
+    },
+    "omega_vs_length_b11": {
+      "value": -0.5003097185405443,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1836"
+      }
+    },
+    "omega_vs_length_b12": {
+      "value": -0.3402187410345841,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1261"
+      }
+    },
+    "omega_vs_length_b13": {
+      "value": -0.4860360358730438,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1853"
+      }
+    },
+    "omega_vs_length_b14": {
+      "value": -0.393497159010834,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1360"
+      }
+    },
+    "omega_vs_length_b15": {
+      "value": -0.40376105954379987,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1456"
+      }
+    },
+    "omega_vs_length_b16": {
+      "value": -0.44454019171947196,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_length_b2": {
+      "value": -0.4124161719790347,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_length_b3": {
+      "value": -0.43264925810129706,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1596"
+      }
+    },
+    "omega_vs_length_b4": {
+      "value": -0.44000779360082376,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_length_b5": {
+      "value": -0.48210789981732505,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1730"
+      }
+    },
+    "omega_vs_length_b7": {
+      "value": -0.48912891140051395,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1790"
+      }
+    },
+    "omega_vs_length_mean": {
+      "value": -0.544446339721998,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_length_std": {
+      "value": -0.3360051940517056,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_mean_b11": {
+      "value": -0.36319681978687957,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1836"
+      }
+    },
+    "omega_vs_mean_b13": {
+      "value": -0.31817429875446374,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1853"
+      }
+    },
+    "omega_vs_mean_b16": {
+      "value": -0.30222502710977833,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_mean_b2": {
+      "value": -0.30523606731204034,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_mean_b4": {
+      "value": -0.31585380933424956,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_mean_b7": {
+      "value": -0.31148350912550427,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1790"
+      }
+    },
+    "omega_vs_mult_order_b10": {
+      "value": -0.39128827258737375,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1328"
+      }
+    },
+    "omega_vs_mult_order_b11": {
+      "value": -0.5003097185405443,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1836"
+      }
+    },
+    "omega_vs_mult_order_b12": {
+      "value": -0.3402187410345841,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1261"
+      }
+    },
+    "omega_vs_mult_order_b13": {
+      "value": -0.4860360358730438,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1853"
+      }
+    },
+    "omega_vs_mult_order_b14": {
+      "value": -0.393497159010834,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1360"
+      }
+    },
+    "omega_vs_mult_order_b15": {
+      "value": -0.40376105954379987,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1456"
+      }
+    },
+    "omega_vs_mult_order_b16": {
+      "value": -0.44454019171947196,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_mult_order_b2": {
+      "value": -0.4124161719790347,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_mult_order_b3": {
+      "value": -0.43264925810129706,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1596"
+      }
+    },
+    "omega_vs_mult_order_b4": {
+      "value": -0.44000779360082376,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_mult_order_b5": {
+      "value": -0.48210789981732505,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1730"
+      }
+    },
+    "omega_vs_mult_order_b7": {
+      "value": -0.48912891140051395,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1790"
+      }
+    },
+    "omega_vs_n": {
+      "value": -0.39254457239527163,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_radical": {
+      "value": -0.3925876454981168,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_sigma": {
+      "value": -0.38503655911047924,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_smallest_prime_factor": {
+      "value": -0.5456186647814054,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_tau": {
+      "value": 0.7676301878645931,
+      "confidence": 0.95,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_theta_entropy_b11": {
+      "value": -0.5012456946271309,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1836"
+      }
+    },
+    "omega_vs_theta_entropy_b13": {
+      "value": -0.49712683839311334,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1853"
+      }
+    },
+    "omega_vs_theta_entropy_b14": {
+      "value": -0.322679324245557,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1360"
+      }
+    },
+    "omega_vs_theta_entropy_b15": {
+      "value": -0.34329188366726926,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1456"
+      }
+    },
+    "omega_vs_theta_entropy_b16": {
+      "value": -0.44158769316352764,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_theta_entropy_b2": {
+      "value": -0.3408129811847687,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_theta_entropy_b3": {
+      "value": -0.39564590426305246,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1596"
+      }
+    },
+    "omega_vs_theta_entropy_b4": {
+      "value": -0.3859559302942746,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    },
+    "omega_vs_theta_entropy_b5": {
+      "value": -0.45997514737258294,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1730"
+      }
+    },
+    "omega_vs_theta_entropy_b7": {
+      "value": -0.47750203463436625,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1790"
+      }
+    },
+    "omega_vs_theta_entropy_max": {
+      "value": -0.5825988199146033,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_theta_entropy_mean": {
+      "value": -0.5432145620324992,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_theta_entropy_min": {
+      "value": -0.46612221947705956,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_theta_entropy_std": {
+      "value": -0.5102789666250658,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1936"
+      }
+    },
+    "omega_vs_unique_digits_b11": {
+      "value": -0.3221825821043193,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1836"
+      }
+    },
+    "omega_vs_unique_digits_b16": {
+      "value": -0.32228999888725135,
+      "confidence": 0.8,
+      "details": {
+        "sample_size": "1435"
+      }
+    }
+  },
+  "formulas": {
+    "sieve_echo_law": {
+      "formula": "H_\u03b8 = -0.9988\u00b7log(\u03c9) + 2.4200",
+      "error": 0.70807596048878,
+      "parameters": {
+        "alpha": -0.9988382229273329,
+        "beta": 2.4199686653716315,
+        "r_squared": 0.29192403951122003,
+        "alpha_theory": -0.38196601125010515,
+        "beta_theory": 4.933333333333334,
+        "alpha_match": "False",
+        "beta_match": "False",
+        "alpha_const": null,
+        "beta_const": null
+      },
+      "timestamp": 45.97992992401123
+    },
+    "scaling_entropy_vs_n": {
+      "formula": "theta_entropy_mean \u2248 0.431\u00b7n^0.142",
+      "error": 0.18244470034483917,
+      "parameters": {
+        "a": 0.431444986002318,
+        "b": 0.1415589045855669,
+        "r_squared": 0.8175552996551608
+      },
+      "timestamp": 10502.367838859558
+    },
+    "scaling_length_vs_phi": {
+      "formula": "length_mean \u2248 0.532\u00b7phi^0.878",
+      "error": 0.08796014348857384,
+      "parameters": {
+        "a": 0.5323145883143997,
+        "b": 0.8782084832852426,
+        "r_squared": 0.9120398565114262
+      },
+      "timestamp": 10502.374900102615
+    }
+  },
+  "patterns": {},
+  "anomalies": [],
+  "genetic_discoveries": [
+    {
+      "generation": 0,
+      "fitness": 1.9330977708419153,
+      "features": [
+        "kurtosis_b3",
+        "std_b10",
+        "mean_b16",
+        "is_prime_power"
+      ],
+      "description": "Features: kurtosis_b3, std_b10, mean_b16, is_prime_power"
+    },
+    {
+      "generation": 1,
+      "fitness": 1.9391975087805877,
+      "features": [
+        "std_b12",
+        "is_prime_power",
+        "is_deficient"
+      ],
+      "description": "Features: std_b12, is_prime_power, is_deficient"
+    },
+    {
+      "generation": 2,
+      "fitness": 1.9565251080158967,
+      "features": [
+        "is_prime_power",
+        "std_b15",
+        "mean_b13",
+        "length_b12"
+      ],
+      "description": "Features: is_prime_power, std_b15, mean_b13, length_b12"
+    },
+    {
+      "generation": 3,
+      "fitness": 1.9699266914978582,
+      "features": [
+        "kurtosis_b5",
+        "mean_b14",
+        "omega"
+      ],
+      "description": "Features: kurtosis_b5, mean_b14, omega"
+    },
+    {
+      "generation": 8,
+      "fitness": 1.9699353256628267,
+      "features": [
+        "mean_b10",
+        "std_b3",
+        "is_prime_power"
+      ],
+      "description": "Features: mean_b10, std_b3, is_prime_power"
+    },
+    {
+      "generation": 9,
+      "fitness": 1.9699798129438049,
+      "features": [
+        "mean_b15",
+        "mean_b14",
+        "is_prime_power"
+      ],
+      "description": "Features: mean_b15, mean_b14, is_prime_power"
+    },
+    {
+      "generation": 10,
+      "fitness": 1.969991091959596,
+      "features": [
+        "std_b15",
+        "std_b10",
+        "omega"
+      ],
+      "description": "Features: std_b15, std_b10, omega"
+    },
+    {
+      "generation": 11,
+      "fitness": 1.9699952928127875,
+      "features": [
+        "omega",
+        "std_b12",
+        "is_abundant"
+      ],
+      "description": "Features: omega, std_b12, is_abundant"
+    },
+    {
+      "generation": 13,
+      "fitness": 1.969998906037758,
+      "features": [
+        "skew_b12",
+        "omega",
+        "std_b10"
+      ],
+      "description": "Features: skew_b12, omega, std_b10"
+    },
+    {
+      "generation": 14,
+      "fitness": 1.9699997487405636,
+      "features": [
+        "omega",
+        "std_b12",
+        "is_deficient"
+      ],
+      "description": "Features: omega, std_b12, is_deficient"
+    },
+    {
+      "generation": 15,
+      "fitness": 1.969999788535511,
+      "features": [
+        "omega",
+        "std_b10",
+        "is_deficient"
+      ],
+      "description": "Features: omega, std_b10, is_deficient"
+    },
+    {
+      "generation": 20,
+      "fitness": 1.9699998483299255,
+      "features": [
+        "std_b10",
+        "omega",
+        "unique_digits_b2"
+      ],
+      "description": "Features: std_b10, omega, unique_digits_b2"
+    },
+    {
+      "generation": 21,
+      "fitness": 1.969999993873613,
+      "features": [
+        "std_b10",
+        "is_prime_power",
+        "std_b12"
+      ],
+      "description": "Features: std_b10, is_prime_power, std_b12"
+    },
+    {
+      "generation": 24,
+      "fitness": 1.969999997660884,
+      "features": [
+        "omega",
+        "unique_digits_b2",
+        "std_b12"
+      ],
+      "description": "Features: omega, unique_digits_b2, std_b12"
+    },
+    {
+      "generation": 26,
+      "fitness": 1.9699999988670307,
+      "features": [
+        "std_b15",
+        "is_prime_power",
+        "unique_digits_b2"
+      ],
+      "description": "Features: std_b15, is_prime_power, unique_digits_b2"
+    },
+    {
+      "generation": 28,
+      "fitness": 1.9699999995783508,
+      "features": [
+        "unique_digits_b2",
+        "is_prime_power",
+        "std_b15"
+      ],
+      "description": "Features: unique_digits_b2, is_prime_power, std_b15"
+    },
+    {
+      "generation": 30,
+      "fitness": 1.9699999999782205,
+      "features": [
+        "unique_digits_b2",
+        "omega",
+        "std_b12"
+      ],
+      "description": "Features: unique_digits_b2, omega, std_b12"
+    },
+    {
+      "generation": 31,
+      "fitness": 1.9699999999859557,
+      "features": [
+        "unique_digits_b2",
+        "omega",
+        "std_b12"
+      ],
+      "description": "Features: unique_digits_b2, omega, std_b12"
+    },
+    {
+      "generation": 33,
+      "fitness": 1.9699999999860491,
+      "features": [
+        "is_prime_power",
+        "std_b12",
+        "std_b10"
+      ],
+      "description": "Features: is_prime_power, std_b12, std_b10"
+    },
+    {
+      "generation": 36,
+      "fitness": 1.9699999999948739,
+      "features": [
+        "is_prime_power",
+        "std_b15",
+        "unique_digits_b2"
+      ],
+      "description": "Features: is_prime_power, std_b15, unique_digits_b2"
+    },
+    {
+      "generation": 39,
+      "fitness": 1.9699999999970694,
+      "features": [
+        "is_prime_power",
+        "std_b10",
+        "std_b12"
+      ],
+      "description": "Features: is_prime_power, std_b10, std_b12"
+    },
+    {
+      "generation": 41,
+      "fitness": 1.9699999999990339,
+      "features": [
+        "is_prime_power",
+        "std_b12",
+        "std_b10"
+      ],
+      "description": "Features: is_prime_power, std_b12, std_b10"
+    },
+    {
+      "generation": 42,
+      "fitness": 1.9699999999993016,
+      "features": [
+        "is_prime_power",
+        "std_b12",
+        "std_b10"
+      ],
+      "description": "Features: is_prime_power, std_b12, std_b10"
+    },
+    {
+      "generation": 43,
+      "fitness": 1.9699999999997164,
+      "features": [
+        "is_prime_power",
+        "std_b12",
+        "std_b10"
+      ],
+      "description": "Features: is_prime_power, std_b12, std_b10"
+    },
+    {
+      "generation": 46,
+      "fitness": 1.9699999999997693,
+      "features": [
+        "std_b12",
+        "std_b10",
+        "is_prime_power"
+      ],
+      "description": "Features: std_b12, std_b10, is_prime_power"
+    },
+    {
+      "generation": 47,
+      "fitness": 1.9699999999999087,
+      "features": [
+        "std_b10",
+        "std_b12",
+        "is_prime_power"
+      ],
+      "description": "Features: std_b10, std_b12, is_prime_power"
+    },
+    {
+      "generation": 48,
+      "fitness": 1.9699999999999611,
+      "features": [
+        "is_prime_power",
+        "std_b10",
+        "std_b12"
+      ],
+      "description": "Features: is_prime_power, std_b10, std_b12"
+    },
+    {
+      "generation": 50,
+      "fitness": 1.9699999999999809,
+      "features": [
+        "std_b10",
+        "std_b12",
+        "is_prime_power"
+      ],
+      "description": "Features: std_b10, std_b12, is_prime_power"
+    },
+    {
+      "generation": 52,
+      "fitness": 1.9699999999999924,
+      "features": [
+        "std_b10",
+        "std_b12",
+        "is_prime_power"
+      ],
+      "description": "Features: std_b10, std_b12, is_prime_power"
+    },
+    {
+      "generation": 53,
+      "fitness": 1.9699999999999953,
+      "features": [
+        "std_b10",
+        "std_b12",
+        "is_prime_power"
+      ],
+      "description": "Features: std_b10, std_b12, is_prime_power"
+    },
+    {
+      "generation": 54,
+      "fitness": 1.969999999999998,
+      "features": [
+        "is_prime_power",
+        "std_b12",
+        "std_b10"
+      ],
+      "description": "Features: is_prime_power, std_b12, std_b10"
+    },
+    {
+      "generation": 57,
+      "fitness": 1.9699999999999982,
+      "features": [
+        "is_prime_power",
+        "std_b12",
+        "std_b10"
+      ],
+      "description": "Features: is_prime_power, std_b12, std_b10"
+    },
+    {
+      "generation": 60,
+      "fitness": 1.9699999999999989,
+      "features": [
+        "is_prime_power",
+        "std_b12",
+        "std_b10"
+      ],
+      "description": "Features: is_prime_power, std_b12, std_b10"
+    },
+    {
+      "generation": 62,
+      "fitness": 1.969999999999999,
+      "features": [
+        "std_b10",
+        "std_b12",
+        "is_prime_power"
+      ],
+      "description": "Features: std_b10, std_b12, is_prime_power"
+    },
+    {
+      "generation": 64,
+      "fitness": 1.9699999999999993,
+      "features": [
+        "is_prime_power",
+        "std_b10",
+        "std_b12"
+      ],
+      "description": "Features: is_prime_power, std_b10, std_b12"
+    },
+    {
+      "generation": 65,
+      "fitness": 1.9699999999999995,
+      "features": [
+        "std_b10",
+        "is_prime_power",
+        "std_b12"
+      ],
+      "description": "Features: std_b10, is_prime_power, std_b12"
+    },
+    {
+      "generation": 85,
+      "fitness": 1.9699999999999998,
+      "features": [
+        "std_b12",
+        "std_b10",
+        "is_prime_power"
+      ],
+      "description": "Features: std_b12, std_b10, is_prime_power"
+    }
+  ],
+  "evolvo_algorithms": [
+    {
+      "algorithm": [
+        [
+          "d$",
+          0,
+          "LOG",
+          "d#",
+          5
+        ]
+      ],
+      "fitness": 0.23795264586874001,
+      "description": "Gen 0: LOG",
+      "timestamp": 8945.688841819763
+    },
+    {
+      "algorithm": [
+        [
+          "d$",
+          0,
+          "MUL",
+          "d#",
+          4,
+          "d$",
+          0
+        ],
+        [
+          "d$",
+          0,
+          "DIV",
+          "d#",
+          5,
+          "d#",
+          7
+        ],
+        [
+          "d$",
+          0,
+          "SQRT",
+          "d$",
+          0
+        ]
+      ],
+      "fitness": 0.2334035663738432,
+      "description": "Gen 7: MUL \u2192 DIV \u2192 SQRT",
+      "timestamp": 9045.476479291916
+    },
+    {
+      "algorithm": [
+        [
+          "d$",
+          0,
+          "DIV",
+          "d#",
+          5,
+          "d#",
+          7
+        ],
+        [
+          "d$",
+          0,
+          "SQRT",
+          "d$",
+          0
+        ]
+      ],
+      "fitness": 0.2234035663738432,
+      "description": "Gen 12: DIV \u2192 SQRT",
+      "timestamp": 9090.493687152863
+    },
+    {
+      "algorithm": [
+        [
+          "d$",
+          0,
+          "DIV",
+          "d#",
+          5,
+          "d#",
+          7
+        ],
+        [
+          "d$",
+          0,
+          "MUL",
+          "d#",
+          8,
+          "d$",
+          0
+        ],
+        [
+          "d$",
+          0,
+          "SQRT",
+          "d$",
+          0
+        ]
+      ],
+      "fitness": 0.22125272607657834,
+      "description": "Gen 19: DIV \u2192 MUL \u2192 SQRT",
+      "timestamp": 9156.014507055283
+    },
+    {
+      "algorithm": [
+        [
+          "d$",
+          0,
+          "DIV",
+          "d#",
+          5,
+          "d#",
+          8
+        ],
+        [
+          "d$",
+          0,
+          "SQRT",
+          "d$",
+          0
+        ]
+      ],
+      "fitness": 0.17515302222076679,
+      "description": "Gen 20: DIV \u2192 SQRT",
+      "timestamp": 9166.68217086792
+    },
+    {
+      "algorithm": [
+        [
+          "d$",
+          0,
+          "SUB",
+          "d#",
+          3,
+          "d$",
+          3
+        ]
+      ],
+      "fitness": 0.01,
+      "description": "Gen 0: SUB",
+      "timestamp": 9503.201310157776
+    }
+  ],
+  "neural_architectures": [],
+  "runtime": 10505.208297729492
+}
