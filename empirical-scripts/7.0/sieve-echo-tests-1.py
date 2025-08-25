@@ -1699,7 +1699,7 @@ class ComprehensiveAnalyzer:
             valid_data = []
             for d in self.data:
                 if feat1 in d and feat2 in d:
-                    v1, v2 = d[feat1], d[feat2]
+                    v1, v2 = np.array(d[feat1]), np.array(d[feat2])
                     if v1 > 0 and v2 > 0 and np.isfinite(v1) and np.isfinite(v2):
                         valid_data.append((v1, v2))
             
