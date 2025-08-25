@@ -2570,7 +2570,7 @@ class CoEvolutionSystem:
         
         class SimpleEvaluator:
             def __init__(self):
-                self.instruction_set = get_enhanced_picklable_instruction_set()
+                self.instruction_set = get_picklable_instruction_set()
                 self.interpreter = Interpreter(self.instruction_set)
                 self.store_config = {
                     'd#': ['n', 'entropy', 'kurtosis', 'length', 'phi', 'tau'],
