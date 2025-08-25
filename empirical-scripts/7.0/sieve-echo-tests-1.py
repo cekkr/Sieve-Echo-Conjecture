@@ -1699,9 +1699,12 @@ class ComprehensiveAnalyzer:
             valid_data = []
             for d in self.data:
                 if feat1 in d and feat2 in d:
-                    v1, v2 = np.array(d[feat1]), np.array(d[feat2])
-                    if v1 > 0 and v2 > 0 and np.isfinite(v1) and np.isfinite(v2):
-                        valid_data.append((v1, v2))
+                    try:
+                        v1, v2 = float(d[feat1]), float(d[feat2])
+                        if v1 > 0 and v2 > 0 and np.isfinite(v1) and np.isfinite(v2):
+                            valid_data.append((v1, v2))
+                    except (ValueError, TypeError) as error:
+                        print("Failed v1, v2:", error)
             
             if len(valid_data) < 50:
                 continue
@@ -1850,10 +1853,16 @@ class ComprehensiveAnalyzer:
             for j, f2 in enumerate(key_features):
                 vals1 = [d.get(f1, np.nan) for d in self.data]
                 vals2 = [d.get(f2, np.nan) for d in self.data]
-                mask = np.isfinite(vals1) & np.isfinite(vals2)
-                if np.sum(mask) > 10:
-                    corr_matrix[i, j] = np.corrcoef(np.array(vals1)[mask], 
-                                                   np.array(vals2)[mask])[0, 1]
+
+                try:
+                    vals1, vals2 = np.array(vals1), np.array(vals2)
+                    mask = np.isfinite(vals1) & np.isfinite(vals2)
+                    if np.sum(mask) > 10:
+                        corr_matrix[i, j] = np.corrcoef(np.array(vals1)[mask],
+                                                        np.array(vals2)[mask])[0, 1]
+                except (ValueError, TypeError) as error:
+                    print("Failed vals1, vals2:", error)
+
         
         im = ax6.imshow(corr_matrix, cmap='coolwarm', vmin=-1, vmax=1)
         ax6.set_xticks(range(len(key_features)))
