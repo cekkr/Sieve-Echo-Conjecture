@@ -1324,8 +1324,8 @@ if TORCH_AVAILABLE:
             if not X_data:
                 return None, None
             
-            X = np.array(X_data)
-            y = np.array(y_data)
+            X = np.array(X_data).astype(float)
+            y = np.array(y_data).astype(float)
             
             # Remove NaN
             mask = np.all(np.isfinite(X), axis=1) & np.isfinite(y)
