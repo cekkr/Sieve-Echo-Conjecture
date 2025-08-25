@@ -598,7 +598,7 @@ class EvolvoFormulaDiscoverer:
                 if len(algorithm) > CONFIG.evolvo_max_algorithm_length:
                     return float('inf')  # Penalize overly complex algorithms
                 
-                data_store = DataStore(self.data_store_config) # <<< FIX: was self.store_config
+                data_store = DataStore(self.data_store_config)
                 total_error = 0.0
                 count = 0
                 
@@ -638,34 +638,49 @@ class EvolvoFormulaDiscoverer:
                 return mse + complexity_penalty
         
         return TargetEvaluator(self.data, self.store_config, self.instruction_set, target)
-    
+
+    # +++ NEW HELPER METHOD +++
+    def _create_random_instruction(self) -> List:
+        """Helper to create a single random instruction."""
+        ops = ['ADD', 'SUB', 'MUL', 'DIV', 'LOG', 'SQRT', 'POW']
+        op = random.choice(ops)
+        
+        # Random target (always omega_pred for simplicity)
+        target = ['d$', 0]  # omega_pred
+        
+        # Random arguments
+        if op in ['LOG', 'SQRT']:
+            # Unary operation
+            arg1_type = 'd#' if random.random() < 0.7 else 'd$'
+            arg1_idx = random.randint(0, 8 if arg1_type == 'd#' else 3)
+            instruction = target + [op, arg1_type, arg1_idx]
+        else:
+            # Binary operation
+            arg1_type = 'd#' if random.random() < 0.7 else 'd$'
+            arg1_idx = random.randint(0, 8 if arg1_type == 'd#' else 3)
+            arg2_type = 'd#' if random.random() < 0.7 else 'd$'
+            arg2_idx = random.randint(0, 8 if arg2_type == 'd#' else 3)
+            instruction = target + [op, arg1_type, arg1_idx, arg2_type, arg2_idx]
+            
+        return instruction
+
+    # +++ REFACTORED METHOD +++
     def generate_random_algorithm(self, max_length: int = 10) -> List:
         """Generate a random valid algorithm"""
         algorithm = []
         
-        for _ in range(random.randint(2, max_length)):
-            # Random operation
-            ops = ['ADD', 'SUB', 'MUL', 'DIV', 'LOG', 'SQRT', 'POW']
-            op = random.choice(ops)
-            
-            # Random target (always omega_pred for simplicity)
-            target = ['d$', 0]  # omega_pred
-            
-            # Random arguments
-            if op in ['LOG', 'SQRT']:
-                # Unary operation
-                arg1_type = 'd#' if random.random() < 0.7 else 'd$'
-                arg1_idx = random.randint(0, 8 if arg1_type == 'd#' else 3)
-                instruction = target + [op, arg1_type, arg1_idx]
-            else:
-                # Binary operation
-                arg1_type = 'd#' if random.random() < 0.7 else 'd$'
-                arg1_idx = random.randint(0, 8 if arg1_type == 'd#' else 3)
-                arg2_type = 'd#' if random.random() < 0.7 else 'd$'
-                arg2_idx = random.randint(0, 8 if arg2_type == 'd#' else 3)
-                instruction = target + [op, arg1_type, arg1_idx, arg2_type, arg2_idx]
-            
-            algorithm.append(instruction)
+        # FIX: Ensure the range for randint is always valid.
+        # If max_length is 1, this becomes randint(1, 1).
+        # If max_length is 10, this is randint(2, 10), preserving original intent.
+        lower_bound = min(2, max_length) if max_length > 0 else 0
+        if max_length == 0:
+             num_instructions = 0
+        else:
+             num_instructions = random.randint(lower_bound, max_length)
+
+        for _ in range(num_instructions):
+            # REFACTOR: Use the new helper method.
+            algorithm.append(self._create_random_instruction())
         
         return algorithm
     
@@ -745,6 +760,7 @@ class EvolvoFormulaDiscoverer:
         point2 = random.randint(0, len(parent2))
         return parent1[:point1] + parent2[point2:]
     
+    # +++ REFACTORED METHOD +++
     def mutate(self, algorithm: List) -> List:
         """Mutate an algorithm"""
         if not algorithm:
@@ -758,12 +774,14 @@ class EvolvoFormulaDiscoverer:
         if mutation_type == 'modify' and mutated:
             # Modify a random instruction
             idx = random.randint(0, len(mutated) - 1)
-            mutated[idx] = self.generate_random_algorithm(1)[0]
+            # FIX: Use the new helper to create just one instruction.
+            mutated[idx] = self._create_random_instruction()
         
         elif mutation_type == 'insert':
             # Insert a new instruction
             idx = random.randint(0, len(mutated))
-            new_instruction = self.generate_random_algorithm(1)[0]
+            # FIX: Use the new helper to create just one instruction.
+            new_instruction = self._create_random_instruction()
             mutated.insert(idx, new_instruction)
         
         elif mutation_type == 'delete' and len(mutated) > 1:
