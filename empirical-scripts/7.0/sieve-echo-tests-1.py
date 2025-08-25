@@ -832,6 +832,7 @@ class EvolvoFormulaDiscoverer:
         class TargetEvaluator(BaseEvaluator):
             def __init__(self, data, store_config, instruction_set, target):
                 super().__init__(store_config, instruction_set)
+                self.store_config = store_config
                 self.data = data
                 self.target = target
             
