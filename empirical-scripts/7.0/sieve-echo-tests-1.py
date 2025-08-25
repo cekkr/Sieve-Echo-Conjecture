@@ -171,28 +171,28 @@ warnings.filterwarnings('ignore')
 
 @dataclass
 class Config:
-    max_n: int = 10000
+    max_n: int = 50000
     test_bases: List[int] = field(default_factory=lambda: [2, 3, 4, 5, 7, 10, 11, 12, 13, 14, 15, 16])
-    sample_size: int = 5000
+    sample_size: int = 10000
     runtime_hours: float = 24.0
     
     # Genetic algorithm settings
-    ga_population_size: int = 100
-    ga_generations: int = 500
-    ga_mutation_rate: float = 0.2
-    ga_crossover_rate: float = 0.7
-    ga_elite_size: int = 10
+    ga_population_size: int = 1000
+    ga_generations: int = 1000
+    ga_mutation_rate: float = 0.3
+    ga_crossover_rate: float = 0.6
+    ga_elite_size: int = 100
     
     # Evolvo settings
     evolvo_enabled: bool = EVOLVO_AVAILABLE
-    evolvo_population: int = 50
-    evolvo_generations: int = 100
-    evolvo_max_algorithm_length: int = 20
+    evolvo_population: int = 500
+    evolvo_generations: int = 1000
+    evolvo_max_algorithm_length: int = 40
     
     # Neural network settings
     nn_enabled: bool = TORCH_AVAILABLE
-    nn_hidden_dim: int = 256
-    nn_epochs: int = 100
+    nn_hidden_dim: int = 512
+    nn_epochs: int = 500
     nn_learning_rate: float = 0.001
     
     # Output settings
@@ -210,7 +210,7 @@ class Config:
     
     # Enhanced search parameters
     explore_mathematical_constants: bool = True
-    max_constant_operations: int = 3
+    max_constant_operations: int = 10
     
     # Pattern discovery
     discover_all_patterns: bool = True
@@ -225,9 +225,9 @@ CONFIG = Config()
 
 CONFIG.max_n = 50000
 CONFIG.sample_size = 10000
-CONFIG.runtime_hours = 48.0
-CONFIG.ga_generations = 1000
-CONFIG.evolvo_generations = 200
+CONFIG.runtime_hours = 24.0
+CONFIG.ga_generations = 10000
+CONFIG.evolvo_generations = 10000
 CONFIG.nn_epochs = 200
 
 # ==============================================================================
