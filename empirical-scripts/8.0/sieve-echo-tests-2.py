@@ -55,9 +55,9 @@ warnings.filterwarnings('ignore')
 class Config:
     """Global configuration for all analysis components"""
     # Data generation
-    max_n: int = 10000
-    sample_size: int = 5000
-    test_bases: List[int] = field(default_factory=lambda: [2, 3, 5, 7, 10, 11, 13, 16])
+    max_n: int = 1000000
+    sample_size: int = 10000
+    test_bases: List[int] = field(default_factory=lambda: [2, 3, 4, 5, 6, 7, 9, 10, 11, 13, 14, 15, 16])
     
     # NDR (formerly theta) analysis
     ndr_max_length: int = 10000
@@ -65,20 +65,20 @@ class Config:
     
     # Evolvo genetic algorithm settings
     evolvo_enabled: bool = True
-    evolvo_generations: int = 100
-    evolvo_population: int = 50
-    evolvo_max_algorithm_length: int = 20
+    evolvo_generations: int = 1000
+    evolvo_population: int = 1000
+    evolvo_max_algorithm_length: int = 60
     
     # Neural network settings
     nn_enabled: bool = True
-    nn_hidden_dim: int = 256
+    nn_hidden_dim: int = 512
     nn_learning_rate: float = 0.001
-    nn_epochs: int = 100
+    nn_epochs: int = 1000
     
     # Genetic algorithm settings
     ga_enabled: bool = True
-    ga_generations: int = 100
-    ga_population_size: int = 100
+    ga_generations: int = 1000
+    ga_population_size: int = 1000
     ga_elite_size: int = 10
     ga_crossover_rate: float = 0.7
     ga_mutation_rate: float = 0.3
@@ -541,7 +541,7 @@ class EvolvoFormulaDiscoverer:
         algorithm = []
         ops = list(self.instruction_set.op_types['decimal'])
         
-        for _ in range(random.randint(2, max_length)):
+        for _ in range(random.randint(0, max_length)):
             op = random.choice(ops)
             
             # Target is always omega_pred
