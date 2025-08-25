@@ -1191,6 +1191,7 @@ if TORCH_AVAILABLE:
             logger.log(f"Neural network final accuracy: {accuracy:.3f}", "RESULT")
             return accuracy
 
+
 # ==============================================================================
 # COMPREHENSIVE ANALYZER
 # ==============================================================================
@@ -1202,70 +1203,102 @@ class ComprehensiveAnalyzer:
         self.ndr_analyzer = NDRPatternAnalyzer()
         self.constants_lib = MathematicalConstantsLibrary()
         self.data = []
+        # +++ STATEFUL EVOLVERS INITIALIZED HERE +++
+        self.feature_evolver = None
+        self.formula_discoverer = None
     
+    # +++ THIS IS THE NEW CORE LOGIC +++
+    def run_discovery_loop(self):
+        """Runs the evolutionary and analysis phases in a loop until the time limit is reached."""
+        start_time = time.time()
+        runtime_seconds = CONFIG.runtime_hours * 3600
+        last_report_time = start_time
+
+        logger.log(f"Entering main discovery loop for {CONFIG.runtime_hours} hours.", "SUCCESS")
+
+        while time.time() - start_time < runtime_seconds:
+            loop_start_time = time.time()
+            
+            # --- Evolve for a chunk of generations ---
+            logger.log("\n" + "="*40, "INFO")
+            logger.log(f"Running evolutionary chunk...", "INFO")
+            logger.log("="*40, "INFO")
+
+            # 1. Evolve features
+            if self.feature_evolver:
+                logger.log("Evolving features for 50 generations...", "INFO")
+                # Run for a small number of generations per loop
+                self.feature_evolver.evolve(target='omega', generations=50)
+            
+            # 2. Evolve formulas
+            if self.formula_discoverer and CONFIG.evolvo_enabled:
+                logger.log("Evolving formulas for 20 generations...", "INFO")
+                for target in ['omega', 'theta_entropy_mean']:
+                     self.formula_discoverer.evolve_formula(target, generations=20)
+
+            # --- Periodically re-analyze and report ---
+            current_time = time.time()
+            if current_time - last_report_time > 600: # Report every 10 minutes
+                logger.log("\n" + "="*40, "INFO")
+                logger.log(f"Periodic analysis and reporting...", "INFO")
+                logger.log("="*40, "INFO")
+                
+                # Re-train neural network with latest best features
+                if CONFIG.nn_enabled and self.feature_evolver.best_individual:
+                    best_features = self.feature_evolver.best_individual['features']
+                    self.train_neural_networks(features=best_features)
+                
+                # Re-mine patterns and create new visualizations
+                self.mine_patterns()
+                if CONFIG.save_plots:
+                    self.create_visualizations()
+                
+                # Save a checkpoint
+                logger.save_all()
+                last_report_time = current_time
+
+            elapsed_loop = time.time() - loop_start_time
+            logger.log(f"Evolutionary chunk completed in {elapsed_loop:.2f}s.", "INFO")
+            remaining_time_hours = (runtime_seconds - (time.time() - start_time)) / 3600
+            logger.log(f"Estimated time remaining: {remaining_time_hours:.2f} hours.", "INFO")
+
+
     def run_complete_analysis(self):
-        """Run all analysis methods"""
+        """Master controller for the entire analysis process."""
         
-        # 1. Generate comprehensive dataset
+        # === PHASE 1: ONE-TIME SETUP ===
         logger.log("="*80, "INFO")
         logger.log("PHASE 1: DATA GENERATION", "INFO")
         logger.log("="*80, "INFO")
-        
         self.generate_dataset()
         
-        # 2. Test Sieve Echo Law
-        logger.log("\n" + "="*80, "INFO")
-        logger.log("PHASE 2: SIEVE ECHO LAW VALIDATION", "INFO")
-        logger.log("="*80, "INFO")
-        
-        self.test_sieve_echo_law()
-        
-        # 3. Run genetic feature discovery
-        logger.log("\n" + "="*80, "INFO")
-        logger.log("PHASE 3: GENETIC FEATURE DISCOVERY", "INFO")
-        logger.log("="*80, "INFO")
-        
-        self.run_genetic_discovery()
-        
-        # 4. Run Evolvo formula discovery
+        # === INITIALIZE STATEFUL EVOLVERS ===
+        self.feature_evolver = GeneticFeatureEvolver(self.data)
         if CONFIG.evolvo_enabled:
-            logger.log("\n" + "="*80, "INFO")
-            logger.log("PHASE 4: EVOLVO FORMULA DISCOVERY", "INFO")
-            logger.log("="*80, "INFO")
-            
-            self.run_evolvo_discovery()
-        
-        # 5. Train neural networks
-        if CONFIG.nn_enabled:
-            logger.log("\n" + "="*80, "INFO")
-            logger.log("PHASE 5: NEURAL NETWORK TRAINING", "INFO")
-            logger.log("="*80, "INFO")
-            
-            self.train_neural_networks()
-        
-        # 6. Mine for patterns
+            self.formula_discoverer = EvolvoFormulaDiscoverer(self.data)
+
+        # === PHASE 2: INITIAL ANALYSIS AND BASELINE ===
         logger.log("\n" + "="*80, "INFO")
-        logger.log("PHASE 6: PATTERN MINING", "INFO")
+        logger.log("PHASE 2: INITIAL ANALYSIS & BASELINE", "INFO")
         logger.log("="*80, "INFO")
-        
+        self.test_sieve_echo_law()
         self.mine_patterns()
+        if CONFIG.nn_enabled:
+            # Initial NN training with a default feature set
+            default_features = ['kurtosis_mean', 'length_mean', 'n', 'theta_entropy_mean', 'phi', 'tau', 'sigma', 'radical']
+            self.train_neural_networks(features=default_features)
+
+        # === PHASE 3: LONG-RUNNING DISCOVERY LOOP ===
+        self.run_discovery_loop()
         
-        # 7. Generate visualizations
-        if CONFIG.save_plots:
-            logger.log("\n" + "="*80, "INFO")
-            logger.log("PHASE 7: VISUALIZATION", "INFO")
-            logger.log("="*80, "INFO")
-            
-            self.create_visualizations()
-        
-        # 8. Final report
+        # === FINAL PHASE: WRAP-UP AND FINAL REPORT ===
         logger.log("\n" + "="*80, "INFO")
         logger.log("FINAL REPORT", "INFO")
         logger.log("="*80, "INFO")
-        
         self.generate_final_report()
-    
+
     def generate_dataset(self):
+        # ... (This method remains the same as your corrected version)
         """Generate comprehensive dataset"""
         logger.log(f"Generating dataset for n=2 to {CONFIG.max_n}...", "INFO")
         
@@ -1311,8 +1344,9 @@ class ComprehensiveAnalyzer:
                 logger.log(f"PERFECT NUMBER: n={n}", "FINDING")
         
         logger.log(f"Dataset complete: {len(self.data)} numbers analyzed", "INFO")
-    
+
     def test_sieve_echo_law(self):
+        # ... (This method remains the same)
         """Test the main conjecture"""
         valid_data = [d for d in self.data 
                      if 'theta_entropy_mean' in d and isinstance(d['theta_entropy_mean'], (int, float)) 
@@ -1371,50 +1405,25 @@ class ComprehensiveAnalyzer:
         if abs(beta - beta_theory) < 0.1:
             logger.log(f"✓ Beta matches 5-1/15 prediction! ({beta:.4f} ≈ {beta_theory:.4f})", "SUCCESS")
     
+    # This method is now effectively replaced by the loop, but we keep it for structure
+    # The actual evolution calls are now in run_discovery_loop
     def run_genetic_discovery(self):
-        """Run genetic algorithm for feature discovery"""
-        evolver = GeneticFeatureEvolver(self.data)
-        evolver.evolve(target='omega', generations=min(100, CONFIG.ga_generations))
-        
-        if evolver.best_individual:
-            features = evolver.best_individual['features'][:10]
-            logger.log(f"GENETIC DISCOVERY: Best features for ω(n) prediction:", "DISCOVERY")
-            for i, f in enumerate(features, 1):
-                weight = evolver.best_individual['weights'].get(f, 0)
-                logger.log(f"  {i}. {f} (weight: {weight:.3f})", "RESULT")
-            
-            logger.log(f"Best fitness achieved: {evolver.best_fitness:.4f}", "RESULT")
-    
+        pass
+
     def run_evolvo_discovery(self):
-        """Run Evolvo genetic programming"""
-        discoverer = EvolvoFormulaDiscoverer(self.data)
-        
-        # Try to discover formulas for different targets
-        targets = ['omega', 'theta_entropy_mean', 'length_mean']
-        
-        for target in targets:
-            logger.log(f"Evolving formula for {target}...", "INFO")
-            algorithm = discoverer.evolve_formula(target, generations=50)
-            
-            if algorithm:
-                formula = discoverer.decode_algorithm(algorithm)
-                logger.log(f"EVOLVO FORMULA for {target}: {formula}", "DISCOVERY")
+        pass
     
-    def train_neural_networks(self):
-        """Train neural networks"""
+    def train_neural_networks(self, features: List[str]):
+        """Train neural networks with a given feature set."""
+        logger.log(f"Training neural network with {len(features)} features...", "INFO")
         predictor = NeuralPredictor(self.data)
-        
-        # Use best features from genetic algorithm or default set
-        features = ['kurtosis_mean', 'length_mean', 'n', 'theta_entropy_mean', 
-                   'phi', 'tau', 'sigma', 'radical']
-        
         accuracy = predictor.train(features, target='omega')
         
         if accuracy and accuracy > 0.7:
             logger.log(f"✓ Neural network successfully predicts ω(n) with {accuracy:.1%} accuracy!", "SUCCESS")
 
-    # +++ METHOD WITH FIXES APPLIED +++
     def mine_patterns(self):
+        # ... (This method remains the same as your corrected version)
         """Mine for all patterns and correlations"""
         
         # Find all correlations
@@ -1472,9 +1481,9 @@ class ComprehensiveAnalyzer:
         
         # Find exceptional numbers
         self.find_exceptional_numbers()
-
-    # +++ METHOD WITH FIXES APPLIED +++
+    
     def find_scaling_laws(self):
+        # ... (This method remains the same as your corrected version)
         """Look for power law relationships"""
         tests = [
             ('entropy_vs_omega', 'theta_entropy_mean', 'omega'),
@@ -1524,8 +1533,9 @@ class ComprehensiveAnalyzer:
                 b_const = self.constants_lib.find_closest_constant(b)
                 if b_const:
                     logger.log(f"Exponent {b:.3f} matches {b_const}!", "DISCOVERY")
-    
+
     def find_exceptional_numbers(self):
+        # ... (This method remains the same as your corrected version)
         """Find numbers with exceptional properties"""
         exceptional = []
         
@@ -1566,7 +1576,7 @@ class ComprehensiveAnalyzer:
         for exc in exceptional[:20]:
             logger.log(f"EXCEPTIONAL: n={exc['n']}: {', '.join(exc['reasons'])}", "FINDING")
 
-    # +++ METHOD WITH FIXES APPLIED +++
+     # +++ METHOD WITH FIXES APPLIED +++
     def create_visualizations(self):
         """Create comprehensive visualizations"""
         
@@ -1733,9 +1743,9 @@ class ComprehensiveAnalyzer:
         plt.savefig(f'sieve_echo_comprehensive_{logger.timestamp}.png', dpi=150)
         plt.close()
         
-        logger.log(f"Saved comprehensive visualization", "INFO")
-    
-    def generate_final_report(self):
+        logger.log(f"Saved comprehensive visualization", "INFO")        
+
+    def generate_final_report(self):       
         """Generate comprehensive final report"""
         
         runtime = time.time() - logger.start_time
@@ -1800,7 +1810,7 @@ def main():
     
     logger.log("="*80, "INFO")
     logger.log("SIEVE ECHO CONJECTURE - ULTIMATE DISCOVERY SYSTEM", "INFO")
-    logger.log(f"Version 6.0 - Evolvo={EVOLVO_AVAILABLE}, PyTorch={TORCH_AVAILABLE}", "INFO")
+    logger.log(f"Version 6.1 - Evolvo={EVOLVO_AVAILABLE}, PyTorch={TORCH_AVAILABLE}", "INFO")
     logger.log("="*80, "INFO")
     
     # Check configuration
@@ -1821,8 +1831,9 @@ def main():
         logger.log(f"ERROR: {e}", "ERROR")
         logger.log(traceback.format_exc(), "ERROR")
     finally:
-        # Always save results
-        logger.save_all()
+        # Always save results, especially after interruption or error
+        logger.log("Finalizing and saving all results...", "INFO")
+        analyzer.generate_final_report()
     
     return True
 
