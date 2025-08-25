@@ -156,7 +156,7 @@ except ImportError:
 
 # Import Evolvo engine
 try:
-    from evolvo_engine import DataStore, InstructionSet, Interpreter, BaseEvaluator, myFloat
+    from evolvo_model import DataStore, InstructionSet, Interpreter, BaseEvaluator, myFloat
     EVOLVO_AVAILABLE = True
 except ImportError:
     EVOLVO_AVAILABLE = False
