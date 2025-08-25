@@ -885,7 +885,7 @@ class EvolvoFormulaDiscoverer:
         """Generate a random valid algorithm"""
         algorithm = []
         
-        for _ in range(random.randint(2, max_length)):
+        for _ in range(random.randint(1, max_length)):
             # Random operation
             ops = ['ADD', 'SUB', 'MUL', 'DIV', 'LOG', 'SQRT', 'POW']
             op = random.choice(ops)
