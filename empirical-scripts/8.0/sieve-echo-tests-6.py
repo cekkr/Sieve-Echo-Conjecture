@@ -80,7 +80,7 @@ class AdaptiveConfig:
     formula_generations: int = 200
     formula_population_size: int = 1000
     max_algorithm_length: int = 60
-    nn_generations: int = 50
+    nn_generations: int = 30 # a little more? too slow...
     nn_population_size: int = 100
     
     # Exploration vs Exploitation balance
@@ -89,8 +89,8 @@ class AdaptiveConfig:
     mutation_rate: float = 0.7
     
     # Historical memory
-    hall_of_fame_size: int = 50  # Best results to keep
-    history_window: int = 10  # Cycles to consider for trend analysis
+    hall_of_fame_size: int = 100  # Best results to keep
+    history_window: int = 20  # Cycles to consider for trend analysis
     
     def adapt_parameters(self, performance_metrics: Dict):
         """Dynamically adjust parameters based on performance"""
