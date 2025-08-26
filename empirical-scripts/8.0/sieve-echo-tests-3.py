@@ -262,7 +262,7 @@ class NDRFormulaEvolver:
         ops = list(self.instruction_set.operations.keys())
         ops = [op for op in ops if op not in ['IF', 'END', 'ASSIGN']]
         
-        for _ in range(random.randint(2, max_length)):
+        for _ in range(random.randint(1, max_length)):
             op = random.choice(ops)
             target = ['d$', 0]  # result
             
