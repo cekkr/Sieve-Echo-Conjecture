@@ -63,18 +63,18 @@ warnings.filterwarnings('ignore', category=UserWarning)
 class Config:
     state_file: str = "sieve_echo_state_v12.pkl"
     perpetual_mode: bool = True
-    max_cycles: int = 1000
-    data_chunk_size: int = 10000
+    max_cycles: int = 500
+    data_chunk_size: int = 1000
     test_bases: List[int] = field(default_factory=lambda: [2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 15, 16, 17, 19])
     n_workers: int = max(1, cpu_count() - 1)
-    analysis_interval_cycles: int = 1
+    analysis_interval_cycles: int = 2
     correlation_threshold: float = 0.15
     constant_match_tolerance: float = 0.02
     formula_generations: int = 200
     formula_population_size: int = 1000
     max_algorithm_length: int = 60
-    nn_generations: int = 500
-    nn_population_size: int = 2000
+    nn_generations: int = 50
+    nn_population_size: int = 100
 
 CONFIG = Config()
 
