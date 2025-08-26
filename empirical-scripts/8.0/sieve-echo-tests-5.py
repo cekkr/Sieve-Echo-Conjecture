@@ -36,6 +36,11 @@ from scipy import stats
 from scipy.fft import fft
 from sklearn.linear_model import LinearRegression
 
+# Device configuration
+import torch
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Using device: {device}")
+
 # Import Evolvo and PyTorch libraries
 try:
     import evolvo_model as em
@@ -315,9 +320,9 @@ class NeuralArchitectureSearcher:
             X = np.array([[d.get(f, 0.0) for f in feature_names] for d in self.data])
             y = np.array([d.get('omega', 0.0) for d in self.data])
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-            X_train_t, y_train_t = torch.FloatTensor(X_train), torch.FloatTensor(y_train).view(-1, 1)
-            X_test_t, y_test_t = torch.FloatTensor(X_test), torch.FloatTensor(y_test).view(-1, 1)
-            model = genome.to_pytorch_model()
+            X_train_t, y_train_t = torch.FloatTensor(X_train).to(device), torch.FloatTensor(y_train).view(-1, 1).to(device)
+            X_test_t, y_test_t = torch.FloatTensor(X_test).to(device), torch.FloatTensor(y_test).view(-1, 1).to(device)
+            model = genome.to_pytorch_model().to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=0.005); criterion = nn.MSELoss()
             for _ in range(20):
                 optimizer.zero_grad(); loss = criterion(model(X_train_t), y_train_t); loss.backward(); optimizer.step()

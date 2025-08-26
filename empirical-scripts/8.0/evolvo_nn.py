@@ -821,7 +821,10 @@ class AdvancedDynamicModel(nn.Module):
     
     def forward(self, x):
         """Forward pass with advanced skip connections"""
-        outputs = {} # Use dict for sparse storage: {layer_index: tensor}
+        
+        # Move input to same device as model
+        x = x.to(next(self.parameters()).device)
+        outputs = {}
         current_tensor = x
 
         for i, layer_spec in enumerate(self.genome.layers):
