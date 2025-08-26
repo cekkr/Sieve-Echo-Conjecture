@@ -221,7 +221,7 @@ class NDRFormulaEvolver:
                     if 'omega' not in d:
                         continue
                     
-                    data_store = em.DataStore(self.store_config)
+                    data_store = em.DataStore(self.data_store_config)
                     
                     # Set constants from data
                     for key in ['h_mean', 'h_std', 'len_mean', 'kurt_mean', 'n']:
