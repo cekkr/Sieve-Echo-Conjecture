@@ -42,47 +42,24 @@ class TensorShape:
     width: Optional[int] = None  # Width for 2D data
     sequence: Optional[int] = None  # Sequence length for RNNs
     features: Optional[int] = None  # Feature dimension for linear layers
-
-    ### FIX START ###
-    # The original check was too simplistic and failed on valid conv->linear transitions.
+    
     def is_compatible_with(self, other: 'TensorShape') -> bool:
-        """
-        Check if this shape (as an output) can connect to other shape (as an input).
-        Handles implicit flattening for spatial-to-feature transitions.
-        """
-        # Case 1: Both are feature vectors (e.g., Linear -> Linear)
-        if self.features is not None and other.features is not None:
+        """Check if two shapes can be connected"""
+        # For simplicity, check if key dimensions match
+        if self.features and other.features:
             return self.features == other.features
-
-        # Case 2: This is spatial (e.g., Conv output), other is a feature vector (e.g., Linear input)
-        # This is the key fix to allow connections that require flattening.
-        if self.features is None and other.features is not None:
-            return self.get_flat_features() == other.features
-        
-        # Case 3: This is a feature vector, other is spatial (requires explicit Unflatten/Reshape)
-        if self.features is not None and other.features is None:
-            return False  # Disallow this implicit transition for safety
-
-        # Case 4: Both are spatial (e.g., Conv -> Conv)
-        # The LayerFactory will handle adapting the in_channels, so this check can be permissive.
-        if self.channels is not None and other.channels is not None:
-            return True
-
-        # Default to true for ambiguous or compatible cases (e.g., connecting to an activation)
+        if self.channels and other.channels:
+            return self.channels == other.channels
         return True
-    ### FIX END ###
-
+    
     def get_flat_features(self) -> int:
         """Get flattened feature count"""
         if self.features:
             return self.features
         if self.channels and self.height and self.width:
             return self.channels * self.height * self.width
-        # Handle cases where H/W might be None but C is present
         if self.channels:
-            return self.channels * (self.height or 1) * (self.width or 1)
-        if self.sequence and self.features:
-            return self.sequence * self.features
+            return self.channels
         return 1
 
 @dataclass
@@ -137,10 +114,7 @@ class ModelGenome:
         if self.layers and layer_spec.input_shape:
             # Validate shape compatibility
             prev_output = self.layers[-1].output_shape
-            # The input_shape of the new layer spec is the same as the prev_output
-            # This check is a sanity check. The more robust check is now in is_compatible_with
             if prev_output and not prev_output.is_compatible_with(layer_spec.input_shape):
-                # This error should no longer be raised due to the fixes, but is kept as a safeguard.
                 raise ValueError(f"Shape mismatch: {prev_output} -> {layer_spec.input_shape}")
         
         self.layers.append(layer_spec)
@@ -417,16 +391,8 @@ class LayerFactory:
         """Adapt parameters to input shape"""
         params = params.copy()
         
-        ### FIX START ###
-        # This logic now correctly infers in_features from a spatial shape.
-        if template.get('requires_input_features'):
-            # This layer needs a 1D feature vector. Flatten if necessary.
-            if shape.features is None:
-                params['in_features'] = shape.get_flat_features()
-            else:
-                params['in_features'] = shape.features
-        ### FIX END ###
-
+        if template.get('requires_input_features') and shape.features:
+            params['in_features'] = shape.features
         if template.get('requires_input_channels') and shape.channels:
             params['in_channels'] = shape.channels
         if template.get('requires_num_features'):
@@ -451,70 +417,52 @@ class LayerFactory:
         return params
     
     @classmethod
-    def _calculate_output_shape(cls, layer_type: str, params: Dict,
+    def _calculate_output_shape(cls, layer_type: str, params: Dict, 
                                input_shape: Optional[TensorShape]) -> TensorShape:
         """Calculate output shape for a layer"""
         if not input_shape:
             return TensorShape()
-
-        ### FIX START ###
-        # Refactored to create clean shape objects from scratch, preventing inconsistent states
-        # where a shape has both `features` and `channels`.
         
-        # Start with a clean slate, only copying batch dim
-        output = TensorShape(batch=input_shape.batch)
+        output = copy.deepcopy(input_shape)
         
         if layer_type == 'linear':
-            # This is a feature-producing layer
             output.features = params.get('out_features', 1)
-
+            output.channels = None
+            output.height = None
+            output.width = None
+        
         elif layer_type in ['conv2d', 'residual_block', 'mobile_block']:
-            # These are spatial-producing layers
             output.channels = params.get('out_channels', params.get('channels', 1))
-            output.height = input_shape.height
-            output.width = input_shape.width
             stride = params.get('stride', 1)
-            if isinstance(stride, (list, tuple)): stride = stride[0]
-            if output.height: output.height //= stride
-            if output.width: output.width //= stride
+            if isinstance(stride, (list, tuple)):
+                stride = stride[0]
+            if output.height:
+                output.height = output.height // stride
+            if output.width:
+                output.width = output.width // stride
         
         elif layer_type in ['lstm', 'gru']:
-            # These operate on sequences and features
-            output.sequence = input_shape.sequence
             output.features = params.get('hidden_size', 1)
             if params.get('bidirectional', False):
                 output.features *= 2
-
+        
         elif layer_type in ['multihead_attention', 'self_attention', 'transformer_encoder']:
-             output.sequence = input_shape.sequence
-             output.features = params.get('embed_dim', params.get('d_model', input_shape.features))
-
-        elif layer_type == 'pooling':
-            # Pooling preserves channels but changes spatial dims
-            output.channels = input_shape.channels
-            output.height = input_shape.height
-            output.width = input_shape.width
+            output.features = params.get('embed_dim', params.get('d_model', 1))
+        
+        elif layer_type in ['pooling']:
             pool_type = params.get('type', 'max2d')
-            if 'global' in pool_type or 'adaptive' in pool_type:
+            if 'global' in pool_type:
                 output.height = 1
                 output.width = 1
             elif '2d' in pool_type:
-                stride = params.get('stride', params.get('kernel_size', 2))
-                if output.height: output.height //= stride
-                if output.width: output.width //= stride
+                stride = params.get('stride', 2)
+                if output.height:
+                    output.height = output.height // stride
+                if output.width:
+                    output.width = output.width // stride
         
-        elif layer_type in ['batchnorm1d', 'batchnorm2d', 'layernorm', 'groupnorm',
-                            'instancenorm2d', 'activation', 'dropout', 'squeeze_excite']:
-            # These layers preserve shape, so a deepcopy is safe and correct.
-            return copy.deepcopy(input_shape)
-
-        else:
-            # Default for unknown layers is to preserve shape
-            return copy.deepcopy(input_shape)
-
         return output
-        ### FIX END ###
-
+    
     @classmethod
     def _estimate_computation_cost(cls, layer_type: str, params: Dict,
                                   input_shape: Optional[TensorShape]) -> float:
@@ -665,7 +613,7 @@ class GradientFlowAnalyzer:
                 prev_features = prev_shape.get_flat_features()
                 curr_features = curr_shape.get_flat_features()
                 
-                if curr_features > 0 and prev_features > 0 and curr_features < prev_features * 0.1:  # 90% reduction
+                if curr_features < prev_features * 0.1:  # 90% reduction
                     analysis['bottlenecks'].append(i)
         
         return analysis
@@ -821,68 +769,51 @@ class AdvancedDynamicModel(nn.Module):
     
     def forward(self, x):
         """Forward pass with advanced skip connections"""
-        outputs = {} # Use dict for sparse storage: {layer_index: tensor}
-        current_tensor = x
-
-        for i, layer_spec in enumerate(self.genome.layers):
-            layer = self.layers[i]
-            
-            # Check for incoming skip connections to this layer
-            # (This is more complex, for now we handle outgoing skips)
-
-            # Apply layer
-            # Handle implicit flatten
-            if isinstance(layer, nn.Linear) and len(current_tensor.shape) > 2:
-                current_tensor = torch.flatten(current_tensor, 1)
-
-            if isinstance(layer, (nn.LSTM, nn.GRU)):
-                current_tensor, _ = layer(current_tensor)
-            elif isinstance(layer, nn.MultiheadAttention):
-                current_tensor, _ = layer(current_tensor, current_tensor, current_tensor)
+        outputs = [None] * len(self.layers)
+        
+        for i, layer in enumerate(self.layers):
+            # Get input from previous layer or skip connections
+            if i == 0:
+                layer_input = x
             else:
-                current_tensor = layer(current_tensor)
+                layer_input = outputs[i-1]
             
-            outputs[i] = current_tensor
+            # Apply layer
+            if isinstance(layer, (nn.LSTM, nn.GRU)):
+                layer_output, _ = layer(layer_input)
+            elif isinstance(layer, nn.MultiheadAttention):
+                layer_output, _ = layer(layer_input, layer_input, layer_input)
+            else:
+                layer_output = layer(layer_input)
             
-            # Handle outgoing skip connections from this layer
+            outputs[i] = layer_output
+            
+            # Handle skip connections
             if i in self.skip_connections:
                 for dest, merge_type in self.skip_connections[i]:
-                    if dest < len(self.genome.layers) and dest in outputs:
-                        # The destination tensor already exists, so we merge into it
-                        outputs[dest] = self._merge_tensors(outputs[dest], current_tensor, merge_type)
+                    if dest < len(outputs) and outputs[dest] is not None:
+                        outputs[dest] = self._merge_tensors(outputs[dest], layer_output, merge_type)
         
-        return outputs.get(len(self.layers) - 1, x)
-
+        return outputs[-1] if outputs else x
+    
     def _merge_tensors(self, tensor1: torch.Tensor, tensor2: torch.Tensor, 
                       merge_type: str) -> torch.Tensor:
         """Merge two tensors with shape matching"""
         # Ensure compatible shapes
         if tensor1.shape != tensor2.shape:
             # Try to match shapes
-            s1 = tensor1.shape
-            s2 = tensor2.shape
-            
-            # Try to pad/pool to match spatial dimensions
-            if len(s1) == 4 and len(s2) == 4 and (s1[2:] != s2[2:]):
-                target_h, target_w = s1[2], s1[3]
-                adaptive_pool = nn.AdaptiveAvgPool2d((target_h, target_w)).to(tensor2.device)
-                tensor2_adapted = adaptive_pool(tensor2)
-            else:
-                tensor2_adapted = tensor2
-
-            # Use 1x1 conv or linear to match channels/features
-            if s1[1] != tensor2_adapted.shape[1]:
-                if len(s1) == 4:  # Conv features
-                    adapter = nn.Conv2d(tensor2_adapted.shape[1], s1[1], 1).to(tensor2.device)
+            if tensor1.shape[-1] != tensor2.shape[-1]:
+                # Use 1x1 conv or linear to match channels/features
+                if len(tensor1.shape) == 4:  # Conv features
+                    adapter = nn.Conv2d(tensor2.shape[1], tensor1.shape[1], 1).to(tensor2.device)
                 else:  # Linear features
-                    adapter = nn.Linear(tensor2_adapted.shape[-1], s1[-1]).to(tensor2.device)
-                tensor2_adapted = adapter(tensor2_adapted)
-            tensor2 = tensor2_adapted
+                    adapter = nn.Linear(tensor2.shape[-1], tensor1.shape[-1]).to(tensor2.device)
+                tensor2 = adapter(tensor2)
         
         if merge_type == 'add':
             return tensor1 + tensor2
         elif merge_type == 'concat':
-            return torch.cat([tensor1, tensor2], dim=1) # Concat on channel/feature dim
+            return torch.cat([tensor1, tensor2], dim=-1)
         elif merge_type == 'mul':
             return tensor1 * tensor2
         elif merge_type == 'max':
@@ -900,32 +831,12 @@ class Mish(nn.Module):
         return x * torch.tanh(F.softplus(x))
 
 class GlobalAvgPool(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.pool = nn.AdaptiveAvgPool2d((1, 1))
-
     def forward(self, x):
-        if len(x.shape) == 4:
-            x = self.pool(x)
-            return torch.flatten(x, 1)
-        elif len(x.shape) == 3: # (batch, seq, features)
-            return x.mean(dim=1)
-        else:
-            return x
+        return x.mean(dim=(-2, -1), keepdim=True) if len(x.shape) == 4 else x.mean(dim=-1, keepdim=True)
 
 class GlobalMaxPool(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.pool = nn.AdaptiveMaxPool2d((1, 1))
-
     def forward(self, x):
-        if len(x.shape) == 4:
-            x = self.pool(x)
-            return torch.flatten(x, 1)
-        elif len(x.shape) == 3:
-            return x.max(dim=1)[0]
-        else:
-            return x
+        return x.max(dim=(-2, -1), keepdim=True)[0] if len(x.shape) == 4 else x.max(dim=-1, keepdim=True)[0]
 
 class SelfAttention(nn.Module):
     def __init__(self, embed_dim, num_heads):
@@ -955,15 +866,15 @@ class SqueezeExcite(nn.Module):
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super().__init__()
-        self.conv1 = nn.Conv2d(in_channels, out_channels, 3, stride, 1, bias=False)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, 3, stride, 1)
         self.bn1 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, 1, 1, bias=False)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, 1, 1)
         self.bn2 = nn.BatchNorm2d(out_channels)
         
         self.shortcut = nn.Sequential()
         if stride != 1 or in_channels != out_channels:
             self.shortcut = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1, stride, bias=False),
+                nn.Conv2d(in_channels, out_channels, 1, stride),
                 nn.BatchNorm2d(out_channels)
             )
     
@@ -1095,17 +1006,12 @@ class AdvancedModelEvolver:
         population = []
         strategies = ['random', 'residual', 'dense', 'mobile', 'transformer']
         
-        while len(population) < size:
-            try:
-                strategy = strategies[len(population) % len(strategies)]
-                genome = self.generate_architecture(strategy)
-                
-                if self.is_novel_architecture(genome):
-                    population.append(genome)
-            except Exception as e:
-                print(f"Warning: Failed to generate a valid architecture with strategy '{strategy}'. Error: {e}")
-                # Try next strategy
-                continue
+        for i in range(size):
+            strategy = strategies[i % len(strategies)]
+            genome = self.generate_architecture(strategy)
+            
+            if self.is_novel_architecture(genome):
+                population.append(genome)
         
         return population
     
@@ -1148,21 +1054,12 @@ class AdvancedModelEvolver:
             
             prev_shape = layer.output_shape
         
-        ### FIX START ###
-        # This section is now much cleaner. It relies on the robust LayerFactory to handle
-        # the transition from the pooling layer's spatial output to the linear layer's feature input.
-        
-        # Global pooling
-        pool_layer = LayerFactory.create_layer('pooling', prev_shape, {'type': 'global_avg'})
-        genome.add_layer(pool_layer)
-        prev_shape = pool_layer.output_shape
-
-        # Classifier
-        # The factory will now automatically infer `in_features` from the flattened `prev_shape`.
-        linear_layer = LayerFactory.create_layer('linear', prev_shape,
-                                                 {'out_features': self.output_shape.features})
-        genome.add_layer(linear_layer)
-        ### FIX END ###
+        # Global pooling and classifier
+        genome.add_layer(LayerFactory.create_layer('pooling', prev_shape, 
+                                                  {'type': 'global_avg'}))
+        genome.add_layer(LayerFactory.create_layer('linear', 
+                                                  TensorShape(features=prev_shape.channels),
+                                                  {'out_features': self.output_shape.features}))
         
         return genome
     
@@ -1190,14 +1087,6 @@ class AdvancedModelEvolver:
             genome.add_layer(layer)
             prev_shape = layer.output_shape
         
-        # Final layers
-        pool_layer = LayerFactory.create_layer('pooling', prev_shape, {'type': 'global_avg'})
-        genome.add_layer(pool_layer)
-        prev_shape = pool_layer.output_shape
-        linear_layer = LayerFactory.create_layer('linear', prev_shape,
-                                                 {'out_features': self.output_shape.features})
-        genome.add_layer(linear_layer)
-
         return genome
     
     def _generate_transformer_architecture(self, genome: ModelGenome) -> ModelGenome:
@@ -1209,15 +1098,6 @@ class AdvancedModelEvolver:
         layer = LayerFactory.create_layer('transformer_encoder', prev_shape,
                                          {'d_model': 256, 'nhead': 8, 'num_layers': 4})
         genome.add_layer(layer)
-        prev_shape = layer.output_shape
-
-        # Final layers
-        pool_layer = LayerFactory.create_layer('pooling', prev_shape, {'type': 'global_avg'})
-        genome.add_layer(pool_layer)
-        prev_shape = pool_layer.output_shape
-        linear_layer = LayerFactory.create_layer('linear', prev_shape,
-                                                 {'out_features': self.output_shape.features})
-        genome.add_layer(linear_layer)
         
         return genome
     
@@ -1227,7 +1107,7 @@ class AdvancedModelEvolver:
         num_layers = random.randint(5, 20)
         
         for _ in range(num_layers):
-            layer_type = self._choose_layer_type(prev_shape)
+            layer_type = self._choose_layer_type()
             layer = LayerFactory.create_layer(layer_type, prev_shape)
             genome.add_layer(layer)
             prev_shape = layer.output_shape
@@ -1236,64 +1116,28 @@ class AdvancedModelEvolver:
             if len(genome.layers) > 3 and random.random() < 0.2:
                 source = random.randint(0, len(genome.layers)-3)
                 genome.add_skip_connection(source, len(genome.layers)-1)
-
-        # Ensure final layer is appropriate
-        if prev_shape.features is None: # If last layer was spatial
-            pool_layer = LayerFactory.create_layer('pooling', prev_shape, {'type': 'global_avg'})
-            genome.add_layer(pool_layer)
-            prev_shape = pool_layer.output_shape
-
-        if prev_shape.features != self.output_shape.features:
-            linear_layer = LayerFactory.create_layer('linear', prev_shape,
-                                                    {'out_features': self.output_shape.features})
-            genome.add_layer(linear_layer)
-
+        
         return genome
     
-    def _choose_layer_type(self, current_shape: TensorShape) -> str:
-        """Choose layer type based on task and current tensor shape"""
-        is_spatial = current_shape.channels is not None
-        is_sequence = current_shape.sequence is not None
-        
+    def _choose_layer_type(self) -> str:
+        """Choose layer type based on task"""
         if self.task_type == 'classification':
             weights = {
-                'conv2d': 0.3 if is_spatial else 0.0,
-                'linear': 0.2 if not is_spatial else 0.05, # Can add after flattening
-                'activation': 0.2,
-                'batchnorm2d': 0.1 if is_spatial else 0.0,
-                'batchnorm1d': 0.1 if not is_spatial else 0.0,
-                'dropout': 0.1,
-                'pooling': 0.1 if is_spatial else 0.0,
-                'residual_block': 0.1 if is_spatial else 0.0,
+                'conv2d': 0.3, 'linear': 0.2, 'activation': 0.2,
+                'batchnorm2d': 0.1, 'dropout': 0.1, 'pooling': 0.1
             }
         elif self.task_type == 'sequence':
             weights = {
-                'lstm': 0.25 if not is_spatial else 0.0,
-                'gru': 0.15 if not is_spatial else 0.0,
-                'multihead_attention': 0.2,
-                'linear': 0.15,
-                'activation': 0.15,
-                'dropout': 0.1,
-                'layernorm': 0.1,
+                'lstm': 0.25, 'gru': 0.15, 'multihead_attention': 0.2,
+                'linear': 0.15, 'activation': 0.15, 'dropout': 0.1
             }
         else:
             weights = {
-                'linear': 0.35,
-                'activation': 0.25,
-                'dropout': 0.15,
-                'batchnorm1d': 0.15,
-                'layernorm': 0.1
+                'linear': 0.35, 'activation': 0.25, 'dropout': 0.15,
+                'batchnorm1d': 0.15, 'layernorm': 0.1
             }
         
-        # Filter out impossible choices and normalize
-        possible_layers = {k: v for k, v in weights.items() if v > 0}
-        total_weight = sum(possible_layers.values())
-        if total_weight == 0: return 'linear' # Fallback
-        
-        return random.choices(
-            list(possible_layers.keys()),
-            weights=[v / total_weight for v in possible_layers.values()]
-        )[0]
+        return random.choices(list(weights.keys()), weights=list(weights.values()))[0]
     
     def mutate_advanced(self, genome: ModelGenome) -> ModelGenome:
         """Advanced mutation with multiple strategies"""
@@ -1326,12 +1170,13 @@ class AdvancedModelEvolver:
             return genome
         
         idx = random.randint(0, len(genome.layers)-1)
-        mutation_type = random.choice(['replace', 'modify', 'duplicate', 'add', 'remove'])
+        mutation_type = random.choice(['replace', 'modify', 'duplicate'])
         
         if mutation_type == 'replace':
-            prev_shape = genome.layers[idx-1].output_shape if idx > 0 else genome.input_shape
-            new_layer_type = self._choose_layer_type(prev_shape)
-            new_layer = LayerFactory.create_layer(new_layer_type, prev_shape)
+            new_layer = LayerFactory.create_layer(
+                self._choose_layer_type(),
+                genome.layers[idx].input_shape
+            )
             genome.layers[idx] = new_layer
         elif mutation_type == 'modify' and genome.layers[idx].params:
             # Modify a random parameter
@@ -1341,30 +1186,10 @@ class AdvancedModelEvolver:
                 genome.layers[idx].params[param_name] = random.choice(
                     template['params'][param_name]
                 )
-        elif mutation_type == 'duplicate' and idx < len(genome.layers) -1: # Don't duplicate final layer
+        elif mutation_type == 'duplicate':
             genome.layers.insert(idx+1, copy.deepcopy(genome.layers[idx]))
-        elif mutation_type == 'add':
-            prev_shape = genome.layers[idx].output_shape
-            new_layer_type = self._choose_layer_type(prev_shape)
-            new_layer = LayerFactory.create_layer(new_layer_type, prev_shape)
-            genome.layers.insert(idx + 1, new_layer)
-        elif mutation_type == 'remove' and len(genome.layers) > 3:
-            genome.layers.pop(idx)
-
-        # After any structural change, we must rebuild subsequent layers to ensure shape compatibility
-        self._rebuild_from_index(genome, 0)
         
         return genome
-
-    def _rebuild_from_index(self, genome: ModelGenome, start_index: int):
-        """Rebuilds layers from a given index to fix shape inconsistencies after mutation."""
-        prev_shape = genome.layers[start_index - 1].output_shape if start_index > 0 else genome.input_shape
-        for i in range(start_index, len(genome.layers)):
-            spec = genome.layers[i]
-            # Create a new layer of the same type and params, but adapted to the new `prev_shape`
-            new_spec = LayerFactory.create_layer(spec.layer_type, prev_shape, spec.params)
-            genome.layers[i] = new_spec
-            prev_shape = new_spec.output_shape
     
     def _mutate_connections(self, genome: ModelGenome) -> ModelGenome:
         """Mutate skip connections"""
@@ -1403,7 +1228,6 @@ class AdvancedModelEvolver:
                 genome.layers.insert(insert_pos, se_layer)
                 genome.patterns.append(pattern)
         
-        self._rebuild_from_index(genome, insert_pos)
         return genome
     
     def _prune_architecture(self, genome: ModelGenome) -> ModelGenome:
@@ -1427,14 +1251,10 @@ class AdvancedModelEvolver:
                 layers_to_remove.append(i)
         
         # Remove layers
-        rebuilt = False
         for idx in sorted(set(layers_to_remove), reverse=True):
             if len(genome.layers) > 5:  # Keep minimum layers
                 genome.layers.pop(idx)
-                rebuilt = True
         
-        if rebuilt:
-             self._rebuild_from_index(genome, 0)
         return genome
     
     def _add_regularization(self, genome: ModelGenome) -> ModelGenome:
@@ -1454,13 +1274,8 @@ class AdvancedModelEvolver:
             else:
                 prev_shape = genome.layers[-1].output_shape
             
-            # Ensure chosen regularization is compatible with shape
-            if reg_type == 'batchnorm2d' and prev_shape.channels is None:
-                reg_type = 'batchnorm1d' if prev_shape.features is not None else 'dropout'
-
             reg_layer = LayerFactory.create_layer(reg_type, prev_shape)
             genome.layers.insert(pos, reg_layer)
-            self._rebuild_from_index(genome, pos)
         
         return genome
     
@@ -1532,8 +1347,6 @@ class AdvancedModelEvolver:
                     if dest < len(child.layers) and random.random() < 0.5:
                         child.add_skip_connection(source, dest, merge_type)
         
-        # Rebuild to ensure validity
-        self._rebuild_from_index(child, 0)
         return child
     
     def is_novel_architecture(self, genome: ModelGenome) -> bool:
@@ -1560,18 +1373,14 @@ class AdvancedModelEvolver:
             if fitness_func:
                 for genome in self.population:
                     if genome.fitness is None:
-                        try:
-                            metrics = fitness_func(genome)
-                            if isinstance(metrics, dict):
-                                genome.fitness = metrics.get('fitness', 0)
-                                genome.accuracy = metrics.get('accuracy', 0)
-                                genome.latency = metrics.get('latency', float('inf'))
-                                genome.memory_usage = metrics.get('memory', float('inf'))
-                            else:
-                                genome.fitness = metrics
-                        except Exception as e:
-                            print(f"Fitness evaluation failed for a genome: {e}. Assigning poor fitness.")
-                            genome.fitness = -1.0 # Penalize failing architectures
+                        metrics = fitness_func(genome)
+                        if isinstance(metrics, dict):
+                            genome.fitness = metrics.get('fitness', 0)
+                            genome.accuracy = metrics.get('accuracy', 0)
+                            genome.latency = metrics.get('latency', float('inf'))
+                            genome.memory_usage = metrics.get('memory', float('inf'))
+                        else:
+                            genome.fitness = metrics
             
             # Multi-objective optimization
             if multi_objective:
@@ -1594,7 +1403,6 @@ class AdvancedModelEvolver:
             # Update hall of fame
             self.hall_of_fame.extend(self.population[:5])
             self.hall_of_fame.sort(key=lambda g: g.fitness or 0, reverse=True)
-            self.hall_of_fame = [g for g in self.hall_of_fame if g.fitness is not None and g.fitness > -1.0] # Clean up
             self.hall_of_fame = self.hall_of_fame[:20]  # Keep top 20
             
             # Selection and reproduction
@@ -1608,35 +1416,25 @@ class AdvancedModelEvolver:
                     min(3, len(self.hall_of_fame))
                 ))
             
-            attempts = 0
-            while len(new_population) < population_size and attempts < population_size * 5:
-                attempts += 1
-                try:
-                    # Tournament selection
-                    parent1 = self._tournament_select()
-                    parent2 = self._tournament_select()
-                    
-                    # Crossover
-                    child = self.crossover_advanced(parent1, parent2)
-                    
-                    # Mutation
-                    if random.random() < 0.8: # Higher mutation rate for exploration
-                        child = self.mutate_advanced(child)
-                    
-                    # Validate constraints
-                    valid, violations = self.constraints.validate(child)
-                    
-                    # Add if valid and novel
-                    if valid and self.is_novel_architecture(child):
-                        new_population.append(child)
-                except Exception as e:
-                    print(f"Warning: Error during reproduction: {e}")
-                    continue
+            while len(new_population) < population_size:
+                # Tournament selection
+                parent1 = self._tournament_select()
+                parent2 = self._tournament_select()
+                
+                # Crossover
+                child = self.crossover_advanced(parent1, parent2)
+                
+                # Mutation
+                if random.random() < 0.3:
+                    child = self.mutate_advanced(child)
+                
+                # Validate constraints
+                valid, violations = self.constraints.validate(child)
+                
+                # Add if valid and novel
+                if valid and self.is_novel_architecture(child):
+                    new_population.append(child)
             
-            # If we failed to generate enough, fill with random new ones
-            if len(new_population) < population_size:
-                new_population.extend(self.generate_population(population_size - len(new_population)))
-
             self.population = new_population[:population_size]
             
             # Report progress
@@ -1653,26 +1451,23 @@ class AdvancedModelEvolver:
     
     def _tournament_select(self, tournament_size: int = 3) -> ModelGenome:
         """Tournament selection"""
-        contenders = [g for g in self.population if g.fitness is not None]
-        if not contenders: return random.choice(self.population)
-        tournament = random.sample(contenders, min(tournament_size, len(contenders)))
-        return max(tournament, key=lambda g: g.fitness or -float('inf'))
+        tournament = random.sample(self.population, min(tournament_size, len(self.population)))
+        return max(tournament, key=lambda g: g.fitness or 0)
     
     def _adapt_mutation_rates(self):
         """Adapt mutation rates based on population diversity"""
         # Calculate population diversity
-        stagnation = len(self.hall_of_fame) > 0 and \
-                     all(g.get_signature() == self.hall_of_fame[0].get_signature() for g in self.population[:5])
+        unique_signatures = len(self.diversity_cache)
+        diversity_ratio = unique_signatures / max(1, len(self.population))
         
-        if stagnation:  # Low diversity or stuck at local optimum
+        if diversity_ratio < 0.3:  # Low diversity
             # Increase mutation rates
-            print("Stagnation detected. Increasing mutation rates.")
             for key in self.mutation_strategies:
                 self.mutation_strategies[key] *= 1.2
-        else:  # Good diversity
+        elif diversity_ratio > 0.8:  # High diversity
             # Decrease mutation rates
             for key in self.mutation_strategies:
-                self.mutation_strategies[key] *= 0.95
+                self.mutation_strategies[key] *= 0.9
         
         # Normalize
         total = sum(self.mutation_strategies.values())
@@ -1685,14 +1480,15 @@ if __name__ == "__main__":
     print("="*50)
     
     # Define shapes
-    input_shape = TensorShape(batch=None, channels=3, height=32, width=32)
-    output_shape = TensorShape(features=10)  # CIFAR-10 classes
+    input_shape = TensorShape(channels=3, height=224, width=224)
+    output_shape = TensorShape(features=1000)  # ImageNet classes
     
     # Create constraints
     constraints = ArchitectureConstraints()
-    constraints.max_depth = 30
-    constraints.max_parameters = 5e6  # 5M parameters
-    constraints.add_layer_limit('conv2d', 15)
+    constraints.max_depth = 50
+    constraints.max_parameters = 1e8  # 100M parameters
+    constraints.add_layer_limit('conv2d', 20)
+    constraints.add_required_pattern(ArchitecturePattern.RESIDUAL)
     
     # Create evolver
     evolver = AdvancedModelEvolver(
@@ -1703,40 +1499,28 @@ if __name__ == "__main__":
     
     # Generate some architectures
     print("\nGenerating architectures with different strategies:")
-    for strategy in ['residual', 'mobile', 'random']:
-        try:
-            genome = evolver.generate_architecture(strategy)
-            print(f"\n{strategy.upper()} Architecture:")
-            print(f"  Layers: {len(genome.layers)}")
-            print(f"  Patterns: {[p.value for p in genome.patterns]}")
-            
-            complexity = genome.estimate_complexity()
-            print(f"  Estimated params: {complexity['params']:.2e}")
-            print(f"  Estimated FLOPs: {complexity['flops']:.2e} MFLOPs")
-            
-            # Validate
-            valid, violations = constraints.validate(genome)
-            print(f"  Valid: {valid}")
-            if violations:
-                print(f"  Violations: {violations}")
-            
-            # Analyze gradient flow
-            analysis = GradientFlowAnalyzer.analyze(genome)
-            print(f"  Gradient flow analysis:")
-            print(f"    Potential vanishing: {analysis['potential_vanishing']}")
-            print(f"    Potential exploding: {analysis['potential_exploding']}")
-            print(f"    Bottlenecks: {analysis['bottlenecks']}")
-            
-            # Test model creation
-            model = genome.to_pytorch_model()
-            print("  PyTorch model created successfully.")
-            # Test forward pass
-            dummy_input = torch.randn(2, 3, 32, 32)
-            output = model(dummy_input)
-            print(f"  Forward pass successful. Output shape: {output.shape}")
-
-        except Exception as e:
-            print(f"\nERROR generating '{strategy}' architecture: {e}")
-
+    for strategy in ['residual', 'mobile', 'transformer']:
+        genome = evolver.generate_architecture(strategy)
+        print(f"\n{strategy.upper()} Architecture:")
+        print(f"  Layers: {len(genome.layers)}")
+        print(f"  Patterns: {[p.value for p in genome.patterns]}")
+        
+        complexity = genome.estimate_complexity()
+        print(f"  Estimated params: {complexity['params']:.2e}")
+        print(f"  Estimated FLOPs: {complexity['flops']:.2e}")
+        
+        # Validate
+        valid, violations = constraints.validate(genome)
+        print(f"  Valid: {valid}")
+        if violations:
+            print(f"  Violations: {violations}")
+        
+        # Analyze gradient flow
+        analysis = GradientFlowAnalyzer.analyze(genome)
+        print(f"  Gradient flow analysis:")
+        print(f"    Potential vanishing: {analysis['potential_vanishing']}")
+        print(f"    Potential exploding: {analysis['potential_exploding']}")
+        print(f"    Bottlenecks: {analysis['bottlenecks']}")
+    
     print("\n" + "="*50)
     print("Enhanced system ready for advanced neural architecture search!")
