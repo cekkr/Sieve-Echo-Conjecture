@@ -11,6 +11,7 @@ Fixes:
 - Resolves ValueError in reporting by gracefully formatting potentially missing fitness scores.
 - Enhances data generation and feature extraction to minimize creation of incomplete data points.
 """
+import signal
 
 import numpy as np
 import math
@@ -252,8 +253,8 @@ class EvolvoFormulaDiscoverer:
                 err, count = 0.0, 0
                 for d in random.sample(self.data, min(200, len(self.data))):
                     if 'omega' not in d or d['omega'] == 0: continue
-                    ds = em.DataStore(self.store_config)
-                    for key in self.store_config['d#']:
+                    ds = em.DataStore(store_config)
+                    for key in store_config['d#']:
                         if key == 'omega_log': ds.set_initial_value(key, math.log(d['omega']))
                         elif key == 'one': ds.set_initial_value(key, 1.0)
                         elif key in self.const_lib.all_consts: ds.set_initial_value(key, self.const_lib.all_consts[key])
@@ -269,7 +270,7 @@ class EvolvoFormulaDiscoverer:
     def _generate_random_alg(self, store_config, max_len=5):
         alg = []
         ops = [op for op in self.instruction_set.operations.keys() if op not in ['IF', 'END', 'ASSIGN']]
-        for _ in range(random.randint(2, max_len)):
+        for _ in range(random.randint(1, max_len)):
             op = random.choice(ops); prop = self.instruction_set.op_properties[op]
             target_var = random.choice(store_config['d$']); target = ['d$', store_config['d$'].index(target_var)]
             instr = target + [op]
