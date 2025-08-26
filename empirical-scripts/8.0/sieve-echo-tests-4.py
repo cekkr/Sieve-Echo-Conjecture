@@ -23,6 +23,7 @@ performing a multi-pronged analysis:
 5.  **Comprehensive Reporting**: Upon graceful shutdown (Ctrl+C), it generates a
     detailed report summarizing all findings, ready for integration into research papers.
 """
+import signal
 
 import numpy as np
 import math
