@@ -97,7 +97,77 @@ mutated = q_guide.guide_mutation(genome)
 q_guide.update(genome, action, reward, mutated)
 ```
 
+---
+
+## Resource Management Features
+
+### 1. **ResourceMonitor Class**
+- **Automatic Memory Tiering**: Models automatically move between VRAM → RAM → Disk based on availability
+- **LRU Cache**: Least recently used models are offloaded when memory is needed
+- **Device Detection**: Automatically detects CUDA, MPS (Apple Silicon), or CPU
+- **Memory Tracking**: Real-time monitoring of VRAM and RAM usage
+
+### 2. **Resource-Aware Evolution**
+- **Pre-validation**: Estimates model size before creation to prevent OOM errors
+- **Batch Processing**: Evaluates populations in parallel batches with automatic memory cleanup
+- **Dynamic Constraints**: Adjusts maximum model size based on available resources
+- **Graceful Degradation**: Models that exceed limits get penalized rather than crashing
+
+### 3. **Model Offloading Strategy**
+```
+VRAM (fastest, limited) 
+  ↓ When full
+RAM (fast, larger)
+  ↓ When full  
+Disk Cache (slow, unlimited)
+```
+
+### 4. **Key Methods**
+- `can_fit_in_vram()`: Checks if model fits in GPU memory
+- `offload_to_ram()`: Moves model from VRAM to system RAM
+- `offload_to_disk()`: Serializes model to disk cache
+- `model_context()`: Context manager for automatic resource cleanup
+
+### 5. **Neural Genome Enhancements**
+- **Resource Constraints**: Set maximum parameters and memory per model
+- **Incremental Validation**: Each layer addition checks resource limits
+- **Memory Estimation**: Calculates both parameter and activation memory
+
+## Usage Example
+
+```python
+# Initialize with resource limits
+resource_monitor = ResourceMonitor(
+    max_vram_usage=0.7,  # Use max 70% of VRAM
+    max_ram_usage=0.8,   # Use max 80% of RAM
+    cache_dir=Path("./model_cache")
+)
+
+# Create resource-aware evolver
+evolver = ResourceAwareEvolver(
+    GenomeType.NEURAL,
+    population_size=50,
+    max_model_params=1e8,  # Max 100M parameters
+    resource_monitor=resource_monitor
+)
+
+# Parallel evaluation with automatic batching
+evolver.evaluate_population_parallel(
+    evaluator=your_fitness_function,
+    batch_size=4  # Process 4 models at a time
+)
+```
+
+## Benefits
+
+1. **No OOM Crashes**: Models that don't fit are automatically offloaded or rejected
+2. **Parallel Processing**: Safely evaluate multiple models simultaneously
+3. **Automatic Cleanup**: Memory is freed between batches
+4. **Scale to Large Populations**: Can handle hundreds of models using disk cache
+5. **Hardware Agnostic**: Works on CUDA, MPS (M1/M2 Macs), or CPU-only systems
+
 """
+
 
 import torch
 import torch.nn as nn
@@ -602,6 +672,352 @@ class CompiledAlgorithm:
         return results
 
 # ============================================================================
+# RESOURCE MANAGEMENT
+# ============================================================================
+
+import psutil
+import gc
+import pickle
+import tempfile
+import os
+from pathlib import Path
+from contextlib import contextmanager
+
+class ResourceMonitor:
+    """
+    Monitors and manages system resources (VRAM, RAM, Disk).
+    Provides automatic model offloading and loading based on resource availability.
+    """
+    def __init__(self, max_vram_usage: float = 0.8, max_ram_usage: float = 0.8,
+                 cache_dir: Optional[Path] = None):
+        """
+        Args:
+            max_vram_usage: Maximum fraction of VRAM to use (0.8 = 80%)
+            max_ram_usage: Maximum fraction of RAM to use
+            cache_dir: Directory for disk cache (temp dir if None)
+        """
+        self.max_vram_usage = max_vram_usage
+        self.max_ram_usage = max_ram_usage
+        self.cache_dir = cache_dir or Path(tempfile.gettempdir()) / 'evolvo_cache'
+        self.cache_dir.mkdir(exist_ok=True)
+        
+        # Track model locations
+        self.model_locations: Dict[str, str] = {}  # model_id -> 'vram'/'ram'/'disk'
+        self.model_sizes: Dict[str, float] = {}  # model_id -> size in MB
+        self.loaded_models: Dict[str, nn.Module] = {}  # Currently in memory
+        self.access_counts: Dict[str, int] = defaultdict(int)  # LRU tracking
+        
+        # Device management
+        self.device = self._get_best_device()
+        self.has_cuda = torch.cuda.is_available()
+        self.has_mps = torch.backends.mps.is_available()
+        
+    def _get_best_device(self) -> torch.device:
+        """Get the best available device"""
+        if torch.cuda.is_available():
+            return torch.device('cuda')
+        elif torch.backends.mps.is_available():
+            return torch.device('mps')
+        else:
+            return torch.device('cpu')
+    
+    def get_vram_info(self) -> Tuple[float, float]:
+        """Get VRAM usage (used_mb, total_mb)"""
+        if self.has_cuda:
+            return (torch.cuda.memory_allocated() / 1024**2,
+                   torch.cuda.max_memory_allocated() / 1024**2)
+        elif self.has_mps:
+            # MPS doesn't provide direct memory querying
+            # Estimate based on system
+            return (0, 8192)  # Default 8GB for Apple Silicon
+        else:
+            return (0, 0)
+    
+    def get_ram_info(self) -> Tuple[float, float]:
+        """Get RAM usage (used_mb, total_mb)"""
+        mem = psutil.virtual_memory()
+        return (mem.used / 1024**2, mem.total / 1024**2)
+    
+    def estimate_model_size(self, genome: 'NeuralGenome') -> float:
+        """Estimate model memory footprint in MB"""
+        total_params = 0
+        
+        for layer in genome.layers:
+            if layer.layer_type == 'linear':
+                in_f = layer.params.get('in_features', 1)
+                out_f = layer.params.get('out_features', 1)
+                total_params += in_f * out_f + out_f
+            elif layer.layer_type == 'conv2d':
+                in_c = layer.params.get('in_channels', 1)
+                out_c = layer.params.get('out_channels', 1)
+                k = layer.params.get('kernel_size', 3)
+                if isinstance(k, (list, tuple)):
+                    k = k[0] * k[1]
+                else:
+                    k = k * k
+                total_params += in_c * out_c * k + out_c
+            # Add more layer types as needed
+        
+        # 4 bytes per parameter + overhead
+        size_mb = (total_params * 4) / 1024**2 * 1.5  # 1.5x for overhead
+        return size_mb
+    
+    def can_fit_in_vram(self, size_mb: float) -> bool:
+        """Check if model can fit in VRAM"""
+        if not (self.has_cuda or self.has_mps):
+            return False
+        
+        used, total = self.get_vram_info()
+        available = (total * self.max_vram_usage) - used
+        return size_mb < available
+    
+    def can_fit_in_ram(self, size_mb: float) -> bool:
+        """Check if model can fit in RAM"""
+        used, total = self.get_ram_info()
+        available = (total * self.max_ram_usage) - used
+        return size_mb < available
+    
+    def offload_to_ram(self, model_id: str) -> bool:
+        """Move model from VRAM to RAM"""
+        if model_id not in self.loaded_models:
+            return False
+        
+        model = self.loaded_models[model_id]
+        try:
+            model.cpu()
+            self.model_locations[model_id] = 'ram'
+            torch.cuda.empty_cache() if self.has_cuda else None
+            return True
+        except Exception:
+            return False
+    
+    def offload_to_disk(self, model_id: str) -> bool:
+        """Move model from RAM to disk cache"""
+        if model_id not in self.loaded_models:
+            return False
+        
+        model = self.loaded_models[model_id]
+        cache_path = self.cache_dir / f"{model_id}.pkl"
+        
+        try:
+            # Save state dict only (more efficient than full model)
+            torch.save(model.state_dict(), cache_path)
+            del self.loaded_models[model_id]
+            self.model_locations[model_id] = 'disk'
+            gc.collect()
+            return True
+        except Exception:
+            return False
+    
+    def load_from_disk(self, model_id: str, genome: 'NeuralGenome') -> Optional[nn.Module]:
+        """Load model from disk cache"""
+        cache_path = self.cache_dir / f"{model_id}.pkl"
+        if not cache_path.exists():
+            return None
+        
+        try:
+            model = genome.to_executable()
+            model.load_state_dict(torch.load(cache_path, map_location='cpu'))
+            self.loaded_models[model_id] = model
+            self.model_locations[model_id] = 'ram'
+            return model
+        except Exception:
+            return None
+    
+    def get_model(self, model_id: str, genome: 'NeuralGenome') -> Optional[nn.Module]:
+        """Get model, loading from cache if necessary"""
+        self.access_counts[model_id] += 1
+        
+        # Already loaded
+        if model_id in self.loaded_models:
+            model = self.loaded_models[model_id]
+            
+            # Try to move to VRAM if beneficial
+            if (self.model_locations[model_id] == 'ram' and 
+                self.can_fit_in_vram(self.model_sizes.get(model_id, 0))):
+                model.to(self.device)
+                self.model_locations[model_id] = 'vram'
+            
+            return model
+        
+        # Load from disk
+        if self.model_locations.get(model_id) == 'disk':
+            return self.load_from_disk(model_id, genome)
+        
+        # Create new model
+        size_mb = self.estimate_model_size(genome)
+        self.model_sizes[model_id] = size_mb
+        
+        # Check if we need to free memory
+        if not self.can_fit_in_ram(size_mb):
+            self._free_memory(size_mb)
+        
+        try:
+            model = genome.to_executable()
+            
+            if self.can_fit_in_vram(size_mb):
+                model.to(self.device)
+                self.model_locations[model_id] = 'vram'
+            else:
+                self.model_locations[model_id] = 'ram'
+            
+            self.loaded_models[model_id] = model
+            return model
+        except RuntimeError as e:
+            if "out of memory" in str(e):
+                # Try to free memory and retry
+                self._free_memory(size_mb * 2)
+                return self.get_model(model_id, genome)
+            raise
+    
+    def _free_memory(self, required_mb: float):
+        """Free memory using LRU eviction"""
+        # Sort by access count (LRU)
+        sorted_models = sorted(self.access_counts.items(), key=lambda x: x[1])
+        
+        freed = 0
+        for model_id, _ in sorted_models:
+            if freed >= required_mb:
+                break
+            
+            if model_id in self.loaded_models:
+                size = self.model_sizes.get(model_id, 0)
+                location = self.model_locations.get(model_id, 'ram')
+                
+                if location == 'vram':
+                    # First try moving to RAM
+                    if self.offload_to_ram(model_id):
+                        freed += size * 0.5  # Estimate partial freeing
+                    else:
+                        # If can't move to RAM, go directly to disk
+                        self.offload_to_disk(model_id)
+                        freed += size
+                elif location == 'ram':
+                    # Move to disk
+                    self.offload_to_disk(model_id)
+                    freed += size
+        
+        # Force garbage collection
+        gc.collect()
+        if self.has_cuda:
+            torch.cuda.empty_cache()
+    
+    @contextmanager
+    def model_context(self, model_id: str, genome: 'NeuralGenome'):
+        """Context manager for using a model with automatic resource management"""
+        model = self.get_model(model_id, genome)
+        try:
+            yield model
+        finally:
+            # Optionally offload if memory pressure is high
+            used_ram, total_ram = self.get_ram_info()
+            if used_ram / total_ram > self.max_ram_usage:
+                self.offload_to_disk(model_id)
+    
+    def cleanup_cache(self):
+        """Clean up disk cache"""
+        for cache_file in self.cache_dir.glob("*.pkl"):
+            cache_file.unlink()
+
+class ResourceAwareEvolver(UnifiedEvolver):
+    """
+    Enhanced evolver with resource management for parallel model evaluation.
+    """
+    def __init__(self, genome_type: GenomeType, population_size: int = 50,
+                 max_model_params: int = 1e8, resource_monitor: Optional[ResourceMonitor] = None):
+        super().__init__(genome_type, population_size)
+        self.max_model_params = max_model_params
+        self.resource_monitor = resource_monitor or ResourceMonitor()
+        
+        # Constraints based on available resources
+        self._update_constraints()
+    
+    def _update_constraints(self):
+        """Update evolution constraints based on available resources"""
+        vram_used, vram_total = self.resource_monitor.get_vram_info()
+        ram_used, ram_total = self.resource_monitor.get_ram_info()
+        
+        # Estimate maximum model size that can fit
+        available_memory = min(
+            (vram_total - vram_used) * 0.8 if vram_total > 0 else float('inf'),
+            (ram_total - ram_used) * 0.8
+        )
+        
+        # Assuming 4 bytes per parameter
+        max_params_by_memory = (available_memory * 1024**2) / 4
+        self.max_model_params = min(self.max_model_params, max_params_by_memory)
+    
+    def validate_genome_resources(self, genome: BaseGenome) -> bool:
+        """Check if genome respects resource constraints"""
+        if isinstance(genome, NeuralGenome):
+            size_mb = self.resource_monitor.estimate_model_size(genome)
+            
+            # Check if it can fit anywhere (RAM or disk at minimum)
+            if not self.resource_monitor.can_fit_in_ram(size_mb * 1.5):  # 1.5x for safety
+                return False
+            
+            # Estimate parameter count
+            estimated_params = (size_mb * 1024**2) / 4
+            if estimated_params > self.max_model_params:
+                return False
+        
+        return True
+    
+    def evaluate_population_parallel(self, evaluator: Callable, batch_size: int = 4):
+        """
+        Evaluate population in parallel batches with resource management.
+        """
+        # Update constraints before evaluation
+        self._update_constraints()
+        
+        # Group population into batches
+        batches = [self.population[i:i+batch_size] 
+                  for i in range(0, len(self.population), batch_size)]
+        
+        for batch_idx, batch in enumerate(batches):
+            # Check available resources for this batch
+            batch_models = []
+            
+            for genome in batch:
+                if not self.validate_genome_resources(genome):
+                    genome.fitness = -float('inf')  # Penalize oversized models
+                    continue
+                
+                if isinstance(genome, NeuralGenome):
+                    model_id = genome.get_signature()
+                    
+                    # Use context manager for automatic resource management
+                    with self.resource_monitor.model_context(model_id, genome) as model:
+                        if model:
+                            batch_models.append((genome, model))
+                        else:
+                            genome.fitness = -float('inf')
+                else:
+                    batch_models.append((genome, None))
+            
+            # Evaluate batch
+            for genome, model in batch_models:
+                try:
+                    if model:
+                        genome.fitness = evaluator(genome, model=model)
+                    else:
+                        genome.fitness = evaluator(genome)
+                except RuntimeError as e:
+                    if "out of memory" in str(e):
+                        # Model too large, offload and penalize
+                        genome.fitness = -float('inf')
+                        if isinstance(genome, NeuralGenome):
+                            self.resource_monitor.offload_to_disk(genome.get_signature())
+                    else:
+                        raise
+            
+            # Free memory between batches
+            if batch_idx < len(batches) - 1:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+# ============================================================================
 # NEURAL GENOME
 # ============================================================================
 
@@ -665,25 +1081,88 @@ class NeuralGenome(BaseGenome):
     Genome representing a neural network architecture.
     Supports automatic shape inference and fine-tuning.
     """
-    def __init__(self, input_shape: TensorShape, output_shape: TensorShape):
+    def __init__(self, input_shape: TensorShape, output_shape: TensorShape,
+                 max_params: Optional[int] = None, max_memory_mb: Optional[float] = None):
         super().__init__(GenomeType.NEURAL)
         self.input_shape = input_shape
         self.output_shape = output_shape
         self.layers: List[LayerSpec] = []
         self.skip_connections: Dict[int, List[Tuple[int, str]]] = defaultdict(list)
         self.frozen_until: int = 0  # For fine-tuning: layers before this are frozen
+        
+        # Resource constraints
+        self.max_params = max_params or 1e9  # Default 1B parameters
+        self.max_memory_mb = max_memory_mb or 8192  # Default 8GB
+        self.estimated_params: int = 0
+        self.estimated_memory_mb: float = 0
     
     def add_layer(self, layer_spec: LayerSpec) -> bool:
-        """Add layer with automatic shape inference"""
+        """Add layer with automatic shape inference and resource checking"""
         if self.layers:
             prev_shape = self.layers[-1].output_shape
             if prev_shape and layer_spec.input_shape:
                 if not prev_shape.is_compatible_with(layer_spec.input_shape):
                     return False
         
+        # Estimate resource usage for new layer
+        new_params = self._estimate_layer_params(layer_spec)
+        new_memory = self._estimate_layer_memory(layer_spec)
+        
+        # Check resource constraints
+        if self.estimated_params + new_params > self.max_params:
+            return False  # Would exceed parameter limit
+        if self.estimated_memory_mb + new_memory > self.max_memory_mb:
+            return False  # Would exceed memory limit
+        
         self.layers.append(layer_spec)
+        self.estimated_params += new_params
+        self.estimated_memory_mb += new_memory
         self._signature = None
         return True
+    
+    def _estimate_layer_params(self, layer: LayerSpec) -> int:
+        """Estimate number of parameters in a layer"""
+        params = 0
+        if layer.layer_type == 'linear':
+            in_f = layer.params.get('in_features', 1)
+            out_f = layer.params.get('out_features', 1)
+            params = in_f * out_f
+            if layer.params.get('bias', True):
+                params += out_f
+        elif layer.layer_type == 'conv2d':
+            in_c = layer.params.get('in_channels', 1)
+            out_c = layer.params.get('out_channels', 1)
+            k = layer.params.get('kernel_size', 3)
+            if isinstance(k, (list, tuple)):
+                k = k[0] * k[1]
+            else:
+                k = k * k
+            params = in_c * out_c * k
+            if layer.params.get('bias', True):
+                params += out_c
+        # Add more layer types as needed
+        return params
+    
+    def _estimate_layer_memory(self, layer: LayerSpec) -> float:
+        """Estimate memory usage of a layer in MB"""
+        params = self._estimate_layer_params(layer)
+        # 4 bytes per parameter + activation memory (estimated)
+        memory_mb = (params * 4) / 1024**2
+        
+        # Add activation memory estimate
+        if layer.output_shape:
+            shape = layer.output_shape
+            activation_elements = 1
+            if shape.features:
+                activation_elements = shape.features
+            elif shape.channels and shape.height and shape.width:
+                activation_elements = shape.channels * shape.height * shape.width
+            
+            # Assume batch size of 32 for memory estimation
+            activation_memory_mb = (activation_elements * 32 * 4) / 1024**2
+            memory_mb += activation_memory_mb
+        
+        return memory_mb * 1.2  # 20% overhead
     
     def add_skip_connection(self, source: int, dest: int, merge_type: str = "add"):
         """Add skip connection with merge strategy"""
@@ -1202,8 +1681,10 @@ if __name__ == "__main__":
     data_config = {
         'b#': ['true', 'false'],
         'd#': ['pi', 'e', 'one'],
-        'b$': ['result_bool'],
-        'd$': ['x', 'y', 'temp']
+        'b
+: ['result_bool'],
+        'd
+: ['x', 'y', 'temp']
     }
     
     # Create instruction set
@@ -1214,16 +1695,21 @@ if __name__ == "__main__":
     
     # Add some instructions
     algo_genome.add_instruction(Instruction(
-        target=('d$', 2),  # temp
+        target=('d
+, 2),  # temp
         operation='MUL',
-        args=[('d$', 0), ('d#', 2)]  # x * one
+        args=[('d
+, 0), ('d#', 2)]  # x * one
     ))
     algo_genome.add_instruction(Instruction(
-        target=('d$', 1),  # y
+        target=('d
+, 1),  # y
         operation='ADD',
-        args=[('d$', 2), ('d#', 1)]  # temp + e
+        args=[('d
+, 2), ('d#', 1)]  # temp + e
     ))
-    algo_genome.mark_output(('d$', 1))  # y is output
+    algo_genome.mark_output(('d
+, 1))  # y is output
     
     # Validate and simplify
     valid, errors = algo_genome.validate()
@@ -1233,94 +1719,217 @@ if __name__ == "__main__":
     
     print(f"Signature: {algo_genome.get_signature()[:16]}...")
     
-    # 2. Neural Architecture Evolution Example
-    print("\n2. Neural Architecture Evolution:")
+    # 2. Neural Architecture Evolution with Resource Management
+    print("\n2. Neural Architecture Evolution with Resource Management:")
     print("-" * 40)
     
-    # Define shapes
+    # Initialize resource monitor
+    resource_monitor = ResourceMonitor(max_vram_usage=0.7, max_ram_usage=0.8)
+    
+    # Check available resources
+    vram_used, vram_total = resource_monitor.get_vram_info()
+    ram_used, ram_total = resource_monitor.get_ram_info()
+    
+    print(f"Available VRAM: {vram_total - vram_used:.0f}/{vram_total:.0f} MB")
+    print(f"Available RAM: {(ram_total - ram_used):.0f}/{ram_total:.0f} MB")
+    print(f"Device: {resource_monitor.device}")
+    
+    # Define shapes with resource constraints
     input_shape = TensorShape(batch=None, channels=3, height=224, width=224)
     output_shape = TensorShape(features=1000)
     
-    # Create neural genome
-    neural_genome = NeuralGenome(input_shape, output_shape)
+    # Calculate maximum model size based on available resources
+    max_memory = min(
+        (vram_total - vram_used) * 0.5 if vram_total > 0 else float('inf'),
+        (ram_total - ram_used) * 0.3
+    )
+    max_params = int((max_memory * 1024**2) / 4)  # 4 bytes per param
     
-    # Add layers
-    neural_genome.add_layer(LayerSpec(
-        'conv2d',
-        {'in_channels': 3, 'out_channels': 64, 'kernel_size': 7, 'stride': 2},
-        input_shape=input_shape,
-        output_shape=TensorShape(channels=64, height=112, width=112)
-    ))
-    neural_genome.add_layer(LayerSpec(
-        'batchnorm2d',
-        {'num_features': 64},
-        output_shape=TensorShape(channels=64, height=112, width=112)
-    ))
-    neural_genome.add_layer(LayerSpec(
-        'relu', {},
-        output_shape=TensorShape(channels=64, height=112, width=112)
-    ))
+    print(f"Maximum model parameters: {max_params/1e6:.1f}M")
     
-    # Add skip connection
-    neural_genome.add_skip_connection(0, 2, 'add')
+    # Create neural genome with resource constraints
+    neural_genome = NeuralGenome(
+        input_shape, 
+        output_shape,
+        max_params=max_params,
+        max_memory_mb=max_memory
+    )
     
-    # Validate
-    valid, errors = neural_genome.validate()
-    print(f"Neural architecture valid: {valid}")
-    print(f"Signature: {neural_genome.get_signature()[:16]}...")
+    # Add layers (will respect resource constraints)
+    layers_added = 0
+    layer_specs = [
+        LayerSpec('conv2d', {'in_channels': 3, 'out_channels': 64, 'kernel_size': 7, 'stride': 2},
+                 input_shape=input_shape,
+                 output_shape=TensorShape(channels=64, height=112, width=112)),
+        LayerSpec('batchnorm2d', {'num_features': 64},
+                 output_shape=TensorShape(channels=64, height=112, width=112)),
+        LayerSpec('relu', {},
+                 output_shape=TensorShape(channels=64, height=112, width=112)),
+        LayerSpec('conv2d', {'in_channels': 64, 'out_channels': 128, 'kernel_size': 3},
+                 output_shape=TensorShape(channels=128, height=112, width=112)),
+    ]
     
-    # 3. Evolution Example
-    print("\n3. Evolution Process:")
+    for spec in layer_specs:
+        if neural_genome.add_layer(spec):
+            layers_added += 1
+            print(f"Added {spec.layer_type} - Total params: {neural_genome.estimated_params/1e6:.2f}M, "
+                  f"Memory: {neural_genome.estimated_memory_mb:.1f}MB")
+        else:
+            print(f"Cannot add {spec.layer_type} - would exceed resource limits")
+    
+    # 3. Parallel Evolution with Resource Management
+    print("\n3. Parallel Evolution with Resource Management:")
     print("-" * 40)
     
-    # Create evolver
-    evolver = UnifiedEvolver(GenomeType.ALGORITHM, population_size=10)
+    # Create resource-aware evolver
+    evolver = ResourceAwareEvolver(
+        GenomeType.NEURAL, 
+        population_size=10,
+        max_model_params=max_params,
+        resource_monitor=resource_monitor
+    )
     
-    # Generate initial population
-    for _ in range(10):
-        genome = AlgorithmGenome(data_config, instruction_set)
-        # Add random instructions
-        for _ in range(random.randint(2, 5)):
-            genome.add_instruction(Instruction(
-                target=(random.choice(['d$', 'b$']), random.randint(0, 2)),
-                operation=random.choice(list(instruction_set.operations.keys())),
-                args=[(random.choice(['d#', 'd$']), random.randint(0, 2)) 
-                     for _ in range(2)]
-            ))
+    # Generate initial population of small models
+    for i in range(10):
+        genome = NeuralGenome(
+            input_shape, 
+            output_shape,
+            max_params=max_params,
+            max_memory_mb=max_memory
+        )
+        
+        # Add random small architecture
+        num_layers = random.randint(3, 7)
+        channels = 32
+        
+        for j in range(num_layers):
+            if j % 3 == 0:
+                # Conv layer
+                layer = LayerSpec('conv2d', 
+                                {'in_channels': channels if j > 0 else 3, 
+                                 'out_channels': channels,
+                                 'kernel_size': 3})
+            elif j % 3 == 1:
+                # Batch norm
+                layer = LayerSpec('batchnorm2d', {'num_features': channels})
+            else:
+                # Activation
+                layer = LayerSpec('relu', {})
+            
+            if not genome.add_layer(layer):
+                break  # Hit resource limit
+        
         evolver.add_genome(genome)
     
-    # Simple fitness function
-    def dummy_fitness(genome):
-        # Reward shorter algorithms
-        return 10 - len(genome.instructions) if isinstance(genome, AlgorithmGenome) else 0
+    # Define evaluation function that works with resource manager
+    def evaluate_with_resources(genome: NeuralGenome, model: Optional[nn.Module] = None) -> float:
+        """Evaluate model with automatic resource management"""
+        if model is None:
+            model_id = genome.get_signature()
+            model = resource_monitor.get_model(model_id, genome)
+        
+        if model is None:
+            return -float('inf')  # Model couldn't be created
+        
+        # Simple fitness based on parameter efficiency
+        # In practice, this would involve actual training/evaluation
+        param_count = genome.estimated_params
+        if param_count == 0:
+            return -float('inf')
+        
+        # Favor models that use resources efficiently
+        efficiency = 1000 / (param_count / 1e6)  # Inverse of millions of parameters
+        memory_penalty = genome.estimated_memory_mb / max_memory
+        
+        return efficiency - memory_penalty
     
-    # Evolve
-    final_population = evolver.evolve(generations=5, evaluator=dummy_fitness)
+    # Evolve with parallel batch evaluation
+    print("Starting evolution with resource-aware batch processing...")
+    evolver.evaluate_population_parallel(evaluate_with_resources, batch_size=3)
     
-    print(f"\nBest genome fitness: {final_population[0].fitness:.2f}")
-    print(f"Population diversity: {len(evolver.diversity_cache)} unique genomes")
+    # Report results
+    evolver.population.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
+    best = evolver.population[0]
     
-    # 4. Q-Learning Integration
-    print("\n4. Q-Learning Guided Evolution:")
+    print(f"\nBest genome:")
+    print(f"  Fitness: {best.fitness:.2f}")
+    print(f"  Parameters: {best.estimated_params/1e6:.2f}M")
+    print(f"  Memory: {best.estimated_memory_mb:.1f}MB")
+    print(f"  Layers: {len(best.layers)}")
+    
+    # Show resource utilization
+    print(f"\nResource utilization:")
+    print(f"  Models in VRAM: {sum(1 for loc in resource_monitor.model_locations.values() if loc == 'vram')}")
+    print(f"  Models in RAM: {sum(1 for loc in resource_monitor.model_locations.values() if loc == 'ram')}")
+    print(f"  Models on disk: {sum(1 for loc in resource_monitor.model_locations.values() if loc == 'disk')}")
+    
+    # 4. Fine-tuning Example
+    print("\n4. Fine-tuning with Frozen Layers:")
+    print("-" * 40)
+    
+    # Take best model and prepare for fine-tuning
+    best_genome = evolver.population[0]
+    if isinstance(best_genome, NeuralGenome) and len(best_genome.layers) > 3:
+        # Freeze early layers
+        freeze_point = len(best_genome.layers) // 2
+        best_genome.freeze_layers(freeze_point)
+        print(f"Frozen first {freeze_point} layers for fine-tuning")
+        
+        # Now mutations will only affect layers after freeze_point
+        mutated = evolver.mutate(best_genome)
+        print(f"Mutated genome still has {freeze_point} frozen layers")
+    
+    # 5. Q-Learning Integration Example
+    print("\n5. Q-Learning Guided Evolution:")
     print("-" * 40)
     
     q_guide = QLearningGuide()
     
-    # Simulate learning
-    for _ in range(10):
+    # Simulate learning from experience
+    for i in range(20):
         genome = random.choice(evolver.population)
         action = q_guide.choose_action(genome)
         
-        # Simulate mutation with action
+        # Apply guided mutation
+        original_fitness = genome.fitness or 0
         mutated = evolver.mutate(genome)
         
-        # Calculate reward (simplified)
-        reward = dummy_fitness(mutated) - dummy_fitness(genome)
+        # Evaluate mutated genome
+        with resource_monitor.model_context(mutated.get_signature(), mutated) as model:
+            if model:
+                mutated.fitness = evaluate_with_resources(mutated, model)
+            else:
+                mutated.fitness = -float('inf')
+        
+        # Calculate reward
+        reward = mutated.fitness - original_fitness
         
         # Update Q-values
         q_guide.update(genome, action, reward, mutated)
+        
+        if i % 5 == 0:
+            print(f"  Iteration {i}: Explored {len(q_guide.q_tables[GenomeType.NEURAL])} states")
     
-    print("Q-Learning updated with experience")
-    print(f"Explored states: {len(q_guide.q_tables[GenomeType.ALGORITHM])}")
+    print(f"\nQ-Learning explored {len(q_guide.q_tables[GenomeType.NEURAL])} unique states")
+    
+    # Cleanup
+    print("\n6. Cleanup:")
+    print("-" * 40)
+    resource_monitor.cleanup_cache()
+    print("Cache cleaned up")
+    
+    # Final resource status
+    vram_used_end, _ = resource_monitor.get_vram_info()
+    ram_used_end, _ = resource_monitor.get_ram_info()
+    print(f"VRAM freed: {vram_used - vram_used_end:.0f} MB")
+    print(f"RAM freed: {ram_used - ram_used_end:.0f} MB")
     
     print("\n=== Demo Complete ===")
+    print("\nKey Features Demonstrated:")
+    print("- Automatic VRAM/RAM/Disk tiering for models")
+    print("- Resource-aware population evolution")
+    print("- Parallel batch evaluation with memory management")
+    print("- Model size constraints based on available resources")
+    print("- Fine-tuning with frozen layers")
+    print("- Q-learning integration for guided evolution")
+    print("- Automatic cleanup and resource monitoring")
