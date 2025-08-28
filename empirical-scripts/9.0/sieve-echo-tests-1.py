@@ -381,6 +381,35 @@ class UnifiedFormulaDiscoverer:
 # ==============================================================================
 # NEURAL ARCHITECTURE SEARCH WITH UNIFIED EVOLVO
 # ==============================================================================
+
+def safe_tensor_conversion(data, device):
+    """Safely convert numpy array to PyTorch tensor"""
+    # If it's already a tensor, just move to device
+    if isinstance(data, torch.Tensor):
+        return data.to(device)
+    
+    # Convert to numpy array if not already
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    
+    # Handle object dtype
+    if data.dtype == np.object_:
+        try:
+            # Try to convert to float
+            data = np.array(data, dtype=np.float64)
+        except (ValueError, TypeError):
+            # If that fails, try to flatten and convert
+            flat_data = []
+            for item in data.flat:
+                if isinstance(item, (list, np.ndarray)):
+                    flat_data.extend(np.array(item).flatten())
+                else:
+                    flat_data.append(float(item))
+            data = np.array(flat_data).reshape(data.shape)
+    
+    # Convert to tensor
+    return torch.FloatTensor(data).to(device)
+
 class UnifiedNeuralSearcher:
     """Neural architecture search using unified evolvo"""
     
@@ -412,11 +441,18 @@ class UnifiedNeuralSearcher:
         )
         
         # Convert to tensors
+        """
         X_train_t = torch.FloatTensor(X_train).to(device)
         y_train_t = torch.FloatTensor(y_train).reshape(-1, 1).to(device)
         X_test_t = torch.FloatTensor(X_test).to(device)
         y_test_t = torch.FloatTensor(y_test).reshape(-1, 1).to(device)
+        """
         
+        X_train_t = safe_tensor_conversion(X_train, device)
+        y_train_t = safe_tensor_conversion(y_train.reshape(-1, 1), device)
+        X_test_t = safe_tensor_conversion(X_test, device)
+        y_test_t = safe_tensor_conversion(y_test.reshape(-1, 1), device)
+
         # Define shapes
         input_shape = evolvo.TensorShape(features=len(feature_names))
         output_shape = evolvo.TensorShape(features=1)
