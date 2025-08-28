@@ -99,7 +99,7 @@ class Config:
     data_chunk_size: int = 1000
     
     # CRITICAL: Multiple bases for pattern discovery
-    test_bases: List[int] = field(default_factory=lambda: [2, 3, 5, 7, 10, 11, 13, 16, 17, 19, 23, 29, 31])
+    test_bases: List[int] = field(default_factory=lambda: [2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 15, 16, 17, 19, 23, 29, 31])
     
     # Evolution parameters
     formula_generations: int = 200
