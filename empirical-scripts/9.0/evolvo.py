@@ -1198,33 +1198,69 @@ class UnifiedEvolver:
         mutated._signature = None  # Reset signature
         return mutated
     
+    # In class UnifiedEvolver
     def _mutate_algorithm(self, genome: AlgorithmGenome):
         """Mutate algorithm genome"""
-        if not genome.instructions:
-            return
-        
-        mutation_type = random.choice(['modify', 'add', 'remove', 'reorder'])
+
+        mutation_type = random.choice(['modify', 'add', 'remove', 'reorder'])        
+
+        if not genome.instructions and mutation_type != 'add':
+            return # Cannot modify, remove, or reorder an empty list
         
         if mutation_type == 'modify' and genome.instructions:
-            # Modify random instruction
             idx = random.randint(0, len(genome.instructions) - 1)
             if isinstance(genome.instructions[idx], Instruction):
-                # Change operation or arguments
-                ops = list(genome.instruction_set.operations.keys())
-                genome.instructions[idx].operation = random.choice(ops)
-        
+                # Change operation
+                # Find a new op with the same signature to reduce errors
+                old_op = genome.instruction_set.operations[genome.instructions[idx].operation]
+                compatible_ops = [
+                    op_name for op_name, op in genome.instruction_set.operations.items()
+                    if len(op.arg_types) == len(old_op.arg_types) and op.return_type == old_op.return_type
+                ]
+                if compatible_ops:
+                    genome.instructions[idx].operation = random.choice(compatible_ops)
+
         elif mutation_type == 'add':
-            # Add new instruction
-            # Implementation depends on specific requirements
-            pass
+            # --- START: IMPLEMENTED 'add' MUTATION ---
+            op_name = random.choice(list(genome.instruction_set.operations.keys()))
+            op_info = genome.instruction_set.operations[op_name]
+
+            if op_name not in ['IF', 'ELSE', 'END', 'ASSIGN']:
+                # Determine target type
+                if op_info.return_type == 'decimal':
+                    target_store = 'd$'
+                elif op_info.return_type == 'bool':
+                    target_store = 'b$'
+                else:
+                    return # Skip adding complex/untyped operations
+
+                target_idx = random.randint(0, len(genome.data_config[target_store]) - 1)
+                target = (target_store, target_idx)
+                
+                # Determine args
+                args = []
+                for arg_type in op_info.arg_types:
+                    if arg_type in ['decimal', 'any']:
+                        store_type = 'd#' if random.random() < 0.7 else 'd$'
+                        idx = random.randint(0, len(genome.data_config[store_type]) - 1)
+                        args.append((store_type, idx))
+                    elif arg_type == 'bool':
+                        store_type = 'b#' if random.random() < 0.5 else 'b$'
+                        idx = random.randint(0, len(genome.data_config[store_type]) - 1)
+                        args.append((store_type, idx))
+
+                new_instruction = Instruction(target, op_name, args)
+                
+                # Insert at a random position
+                insert_pos = random.randint(0, len(genome.instructions))
+                genome.instructions.insert(insert_pos, new_instruction)
+            # --- END: IMPLEMENTED 'add' MUTATION ---
         
         elif mutation_type == 'remove' and len(genome.instructions) > 1:
-            # Remove random instruction
             idx = random.randint(0, len(genome.instructions) - 1)
             genome.instructions.pop(idx)
         
         elif mutation_type == 'reorder' and len(genome.instructions) > 2:
-            # Swap two instructions if dependency-safe
             i, j = random.sample(range(len(genome.instructions)), 2)
             genome.instructions[i], genome.instructions[j] = genome.instructions[j], genome.instructions[i]
     
