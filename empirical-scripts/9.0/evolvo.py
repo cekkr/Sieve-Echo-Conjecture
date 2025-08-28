@@ -168,6 +168,7 @@ evolver.evaluate_population_parallel(
 
 """
 
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
@@ -919,168 +920,18 @@ class ResourceMonitor:
         for cache_file in self.cache_dir.glob("*.pkl"):
             cache_file.unlink()
 
-class ResourceAwareEvolver(UnifiedEvolver):
-    """
-    Enhanced evolver with resource management for parallel model evaluation.
-    """
-    def __init__(self, genome_type: GenomeType, population_size: int = 50,
-                 max_model_params: int = 1e8, resource_monitor: Optional[ResourceMonitor] = None):
-        super().__init__(genome_type, population_size)
-        self.max_model_params = max_model_params
-        self.resource_monitor = resource_monitor or ResourceMonitor()
-        
-        # Constraints based on available resources
-        self._update_constraints()
-    
-    def _update_constraints(self):
-        """Update evolution constraints based on available resources"""
-        vram_used, vram_total = self.resource_monitor.get_vram_info()
-        ram_used, ram_total = self.resource_monitor.get_ram_info()
-        
-        # Estimate maximum model size that can fit
-        available_memory = min(
-            (vram_total - vram_used) * 0.8 if vram_total > 0 else float('inf'),
-            (ram_total - ram_used) * 0.8
-        )
-        
-        # Assuming 4 bytes per parameter
-        max_params_by_memory = (available_memory * 1024**2) / 4
-        self.max_model_params = min(self.max_model_params, max_params_by_memory)
-    
-    def validate_genome_resources(self, genome: BaseGenome) -> bool:
-        """Check if genome respects resource constraints"""
-        if isinstance(genome, NeuralGenome):
-            size_mb = self.resource_monitor.estimate_model_size(genome)
-            
-            # Check if it can fit anywhere (RAM or disk at minimum)
-            if not self.resource_monitor.can_fit_in_ram(size_mb * 1.5):  # 1.5x for safety
-                return False
-            
-            # Estimate parameter count
-            estimated_params = (size_mb * 1024**2) / 4
-            if estimated_params > self.max_model_params:
-                return False
-        
-        return True
-    
-    def evaluate_population_parallel(self, evaluator: Callable, batch_size: int = 4):
-        """
-        Evaluate population in parallel batches with resource management.
-        """
-        # Update constraints before evaluation
-        self._update_constraints()
-        
-        # Group population into batches
-        batches = [self.population[i:i+batch_size] 
-                  for i in range(0, len(self.population), batch_size)]
-        
-        for batch_idx, batch in enumerate(batches):
-            # Check available resources for this batch
-            batch_models = []
-            
-            for genome in batch:
-                if not self.validate_genome_resources(genome):
-                    genome.fitness = -float('inf')  # Penalize oversized models
-                    continue
-                
-                if isinstance(genome, NeuralGenome):
-                    model_id = genome.get_signature()
-                    
-                    # Use context manager for automatic resource management
-                    with self.resource_monitor.model_context(model_id, genome) as model:
-                        if model:
-                            batch_models.append((genome, model))
-                        else:
-                            genome.fitness = -float('inf')
-                else:
-                    batch_models.append((genome, None))
-            
-            # Evaluate batch
-            for genome, model in batch_models:
-                try:
-                    if model:
-                        genome.fitness = evaluator(genome, model=model)
-                    else:
-                        genome.fitness = evaluator(genome)
-                except RuntimeError as e:
-                    if "out of memory" in str(e):
-                        # Model too large, offload and penalize
-                        genome.fitness = -float('inf')
-                        if isinstance(genome, NeuralGenome):
-                            self.resource_monitor.offload_to_disk(genome.get_signature())
-                    else:
-                        raise
-            
-            # Free memory between batches
-            if batch_idx < len(batches) - 1:
-                gc.collect()
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
 
-# ============================================================================
-# NEURAL GENOME
-# ============================================================================
+####
+####
+####
 
-@dataclass
-class TensorShape:
-    """Enhanced tensor shape with automatic compatibility checking"""
-    batch: Optional[int] = None
-    channels: Optional[int] = None
-    height: Optional[int] = None
-    width: Optional[int] = None
-    sequence: Optional[int] = None
-    features: Optional[int] = None
-    
-    def get_flat_features(self) -> int:
-        """Calculate total features when flattened"""
-        if self.features:
-            return self.features
-        if self.channels and self.height and self.width:
-            return self.channels * self.height * self.width
-        if self.channels:
-            return self.channels * (self.height or 1) * (self.width or 1)
-        if self.sequence and self.features:
-            return self.sequence * self.features
-        return 1
-    
-    def is_compatible_with(self, other: 'TensorShape') -> bool:
-        """Check if shapes can be connected (with implicit flattening)"""
-        # Feature to feature
-        if self.features is not None and other.features is not None:
-            return self.features == other.features
-        
-        # Spatial to feature (implicit flattening)
-        if self.features is None and other.features is not None:
-            return self.get_flat_features() == other.features
-        
-        # Feature to spatial requires explicit reshape
-        if self.features is not None and other.features is None:
-            return False
-        
-        # Spatial to spatial (channels can be adapted)
-        if self.channels is not None and other.channels is not None:
-            return True
-        
-        return True
-
-@dataclass
-class LayerSpec:
-    """Neural network layer specification"""
-    layer_type: str
-    params: Dict[str, Any]
-    input_shape: Optional[TensorShape] = None
-    output_shape: Optional[TensorShape] = None
-    computation_cost: float = 0.0
-    memory_cost: float = 0.0
-    
-    def __hash__(self):
-        return hash((self.layer_type, json.dumps(self.params, sort_keys=True)))
 
 class NeuralGenome(BaseGenome):
     """
     Genome representing a neural network architecture.
     Supports automatic shape inference and fine-tuning.
     """
+
     def __init__(self, input_shape: TensorShape, output_shape: TensorShape,
                  max_params: Optional[int] = None, max_memory_mb: Optional[float] = None):
         super().__init__(GenomeType.NEURAL)
@@ -1089,13 +940,13 @@ class NeuralGenome(BaseGenome):
         self.layers: List[LayerSpec] = []
         self.skip_connections: Dict[int, List[Tuple[int, str]]] = defaultdict(list)
         self.frozen_until: int = 0  # For fine-tuning: layers before this are frozen
-        
+
         # Resource constraints
         self.max_params = max_params or 1e9  # Default 1B parameters
         self.max_memory_mb = max_memory_mb or 8192  # Default 8GB
         self.estimated_params: int = 0
         self.estimated_memory_mb: float = 0
-    
+
     def add_layer(self, layer_spec: LayerSpec) -> bool:
         """Add layer with automatic shape inference and resource checking"""
         if self.layers:
@@ -1103,23 +954,23 @@ class NeuralGenome(BaseGenome):
             if prev_shape and layer_spec.input_shape:
                 if not prev_shape.is_compatible_with(layer_spec.input_shape):
                     return False
-        
+
         # Estimate resource usage for new layer
         new_params = self._estimate_layer_params(layer_spec)
         new_memory = self._estimate_layer_memory(layer_spec)
-        
+
         # Check resource constraints
         if self.estimated_params + new_params > self.max_params:
             return False  # Would exceed parameter limit
         if self.estimated_memory_mb + new_memory > self.max_memory_mb:
             return False  # Would exceed memory limit
-        
+
         self.layers.append(layer_spec)
         self.estimated_params += new_params
         self.estimated_memory_mb += new_memory
         self._signature = None
         return True
-    
+
     def _estimate_layer_params(self, layer: LayerSpec) -> int:
         """Estimate number of parameters in a layer"""
         params = 0
@@ -1142,13 +993,13 @@ class NeuralGenome(BaseGenome):
                 params += out_c
         # Add more layer types as needed
         return params
-    
+
     def _estimate_layer_memory(self, layer: LayerSpec) -> float:
         """Estimate memory usage of a layer in MB"""
         params = self._estimate_layer_params(layer)
         # 4 bytes per parameter + activation memory (estimated)
-        memory_mb = (params * 4) / 1024**2
-        
+        memory_mb = (params * 4) / 1024 ** 2
+
         # Add activation memory estimate
         if layer.output_shape:
             shape = layer.output_shape
@@ -1157,13 +1008,13 @@ class NeuralGenome(BaseGenome):
                 activation_elements = shape.features
             elif shape.channels and shape.height and shape.width:
                 activation_elements = shape.channels * shape.height * shape.width
-            
+
             # Assume batch size of 32 for memory estimation
-            activation_memory_mb = (activation_elements * 32 * 4) / 1024**2
+            activation_memory_mb = (activation_elements * 32 * 4) / 1024 ** 2
             memory_mb += activation_memory_mb
-        
+
         return memory_mb * 1.2  # 20% overhead
-    
+
     def add_skip_connection(self, source: int, dest: int, merge_type: str = "add"):
         """Add skip connection with merge strategy"""
         if source >= dest or source < 0 or dest >= len(self.layers):
@@ -1171,33 +1022,33 @@ class NeuralGenome(BaseGenome):
         self.skip_connections[source].append((dest, merge_type))
         self._signature = None
         return True
-    
+
     def freeze_layers(self, until_layer: int):
         """Freeze layers for fine-tuning (layers before this index won't be modified)"""
         self.frozen_until = max(0, min(until_layer, len(self.layers)))
-    
+
     def get_signature(self) -> str:
         """Generate canonical signature for architecture"""
         if self._signature is None:
             sig_parts = []
-            
+
             # Canonical layer representation
             for layer in self.layers:
                 sig_parts.append(f"{layer.layer_type}:{json.dumps(layer.params, sort_keys=True)}")
-            
+
             # Canonical skip connections
             for src in sorted(self.skip_connections.keys()):
                 for dest, merge in sorted(self.skip_connections[src]):
                     sig_parts.append(f"skip:{src}->{dest}:{merge}")
-            
+
             self._signature = hashlib.md5('|'.join(sig_parts).encode()).hexdigest()
-        
+
         return self._signature
-    
+
     def validate(self) -> Tuple[bool, List[str]]:
         """Validate architecture connectivity and shapes"""
         errors = []
-        
+
         # Check shape compatibility
         prev_shape = self.input_shape
         for i, layer in enumerate(self.layers):
@@ -1205,23 +1056,23 @@ class NeuralGenome(BaseGenome):
                 if not prev_shape.is_compatible_with(layer.input_shape):
                     errors.append(f"Layer {i}: Shape mismatch")
             prev_shape = layer.output_shape
-        
+
         # Check output compatibility
         if prev_shape and not prev_shape.is_compatible_with(self.output_shape):
             errors.append("Final layer incompatible with expected output shape")
-        
+
         # Validate skip connections
         for src, dests in self.skip_connections.items():
             for dest, _ in dests:
                 if src >= dest:
                     errors.append(f"Invalid skip: {src} -> {dest}")
-        
+
         return len(errors) == 0, errors
-    
+
     def simplify(self) -> 'NeuralGenome':
         """Remove redundant layers and optimize architecture"""
         simplified = NeuralGenome(self.input_shape, self.output_shape)
-        
+
         # Remove consecutive activations
         prev_was_activation = False
         for layer in self.layers:
@@ -1232,94 +1083,16 @@ class NeuralGenome(BaseGenome):
             else:
                 prev_was_activation = False
             simplified.layers.append(layer)
-        
+
         # Copy skip connections
         simplified.skip_connections = copy.deepcopy(self.skip_connections)
-        
+
         return simplified
-    
+
     def to_executable(self) -> nn.Module:
         """Convert to PyTorch model"""
         return DynamicNeuralModel(self)
 
-class DynamicNeuralModel(nn.Module):
-    """PyTorch model dynamically created from NeuralGenome"""
-    def __init__(self, genome: NeuralGenome):
-        super().__init__()
-        self.genome = genome
-        self.layers = nn.ModuleList()
-        self.skip_connections = genome.skip_connections
-        self._build_layers()
-    
-    def _build_layers(self):
-        """Build PyTorch layers from genome specification"""
-        for spec in self.genome.layers:
-            layer = self._create_layer(spec)
-            if layer:
-                self.layers.append(layer)
-    
-    def _create_layer(self, spec: LayerSpec) -> Optional[nn.Module]:
-        """Create PyTorch layer from specification"""
-        lt = spec.layer_type
-        p = spec.params
-        
-        # Map layer types to PyTorch modules
-        if lt == 'linear':
-            return nn.Linear(p.get('in_features', 128), p['out_features'], p.get('bias', True))
-        elif lt == 'conv2d':
-            return nn.Conv2d(p.get('in_channels', 3), p['out_channels'],
-                           p['kernel_size'], p.get('stride', 1), p.get('padding', 0))
-        elif lt == 'batchnorm2d':
-            return nn.BatchNorm2d(p['num_features'])
-        elif lt == 'relu':
-            return nn.ReLU()
-        elif lt == 'dropout':
-            return nn.Dropout(p.get('p', 0.5))
-        elif lt == 'maxpool2d':
-            return nn.MaxPool2d(p.get('kernel_size', 2), p.get('stride', 2))
-        # Add more layer types as needed
-        
-        return None
-    
-    def forward(self, x):
-        """Forward pass with skip connections"""
-        outputs = {}
-        
-        for i, layer in enumerate(self.layers):
-            # Apply layer
-            if isinstance(layer, nn.Linear) and len(x.shape) > 2:
-                x = torch.flatten(x, 1)  # Implicit flattening
-            x = layer(x)
-            outputs[i] = x
-            
-            # Handle incoming skip connections
-            if i in [dest for srcs in self.skip_connections.values() for dest, _ in srcs]:
-                for src, dests in self.skip_connections.items():
-                    for dest, merge_type in dests:
-                        if dest == i and src in outputs:
-                            x = self._merge_tensors(x, outputs[src], merge_type)
-        
-        return x
-    
-    def _merge_tensors(self, t1: torch.Tensor, t2: torch.Tensor, merge_type: str) -> torch.Tensor:
-        """Merge tensors according to strategy"""
-        # Ensure shape compatibility
-        if t1.shape != t2.shape:
-            # Use adaptive pooling or linear projection to match shapes
-            if len(t1.shape) == 4 and len(t2.shape) == 4:  # Conv features
-                t2 = F.adaptive_avg_pool2d(t2, (t1.shape[2], t1.shape[3]))
-                if t1.shape[1] != t2.shape[1]:  # Channel mismatch
-                    conv = nn.Conv2d(t2.shape[1], t1.shape[1], 1).to(t1.device)
-                    t2 = conv(t2)
-        
-        if merge_type == 'add':
-            return t1 + t2
-        elif merge_type == 'concat':
-            return torch.cat([t1, t2], dim=1)
-        elif merge_type == 'mul':
-            return t1 * t2
-        else:
-            return t1 + t2  # Default to add
 
 # ============================================================================
 # UNIFIED EVOLUTION ENGINE
@@ -1578,6 +1351,243 @@ class UnifiedEvolver:
             else:
                 # Decrease mutation when making progress
                 self.mutation_rate = max(0.1, self.mutation_rate * 0.95)
+
+
+class ResourceAwareEvolver(UnifiedEvolver):
+    """
+    Enhanced evolver with resource management for parallel model evaluation.
+    """
+    def __init__(self, genome_type: GenomeType, population_size: int = 50,
+                 max_model_params: int = 1e8, resource_monitor: Optional[ResourceMonitor] = None):
+        super().__init__(genome_type, population_size)
+        self.max_model_params = max_model_params
+        self.resource_monitor = resource_monitor or ResourceMonitor()
+        
+        # Constraints based on available resources
+        self._update_constraints()
+    
+    def _update_constraints(self):
+        """Update evolution constraints based on available resources"""
+        vram_used, vram_total = self.resource_monitor.get_vram_info()
+        ram_used, ram_total = self.resource_monitor.get_ram_info()
+        
+        # Estimate maximum model size that can fit
+        available_memory = min(
+            (vram_total - vram_used) * 0.8 if vram_total > 0 else float('inf'),
+            (ram_total - ram_used) * 0.8
+        )
+        
+        # Assuming 4 bytes per parameter
+        max_params_by_memory = (available_memory * 1024**2) / 4
+        self.max_model_params = min(self.max_model_params, max_params_by_memory)
+    
+    def validate_genome_resources(self, genome: BaseGenome) -> bool:
+        """Check if genome respects resource constraints"""
+        if isinstance(genome, NeuralGenome):
+            size_mb = self.resource_monitor.estimate_model_size(genome)
+            
+            # Check if it can fit anywhere (RAM or disk at minimum)
+            if not self.resource_monitor.can_fit_in_ram(size_mb * 1.5):  # 1.5x for safety
+                return False
+            
+            # Estimate parameter count
+            estimated_params = (size_mb * 1024**2) / 4
+            if estimated_params > self.max_model_params:
+                return False
+        
+        return True
+    
+    def evaluate_population_parallel(self, evaluator: Callable, batch_size: int = 4):
+        """
+        Evaluate population in parallel batches with resource management.
+        """
+        # Update constraints before evaluation
+        self._update_constraints()
+        
+        # Group population into batches
+        batches = [self.population[i:i+batch_size] 
+                  for i in range(0, len(self.population), batch_size)]
+        
+        for batch_idx, batch in enumerate(batches):
+            # Check available resources for this batch
+            batch_models = []
+            
+            for genome in batch:
+                if not self.validate_genome_resources(genome):
+                    genome.fitness = -float('inf')  # Penalize oversized models
+                    continue
+                
+                if isinstance(genome, NeuralGenome):
+                    model_id = genome.get_signature()
+                    
+                    # Use context manager for automatic resource management
+                    with self.resource_monitor.model_context(model_id, genome) as model:
+                        if model:
+                            batch_models.append((genome, model))
+                        else:
+                            genome.fitness = -float('inf')
+                else:
+                    batch_models.append((genome, None))
+            
+            # Evaluate batch
+            for genome, model in batch_models:
+                try:
+                    if model:
+                        genome.fitness = evaluator(genome, model=model)
+                    else:
+                        genome.fitness = evaluator(genome)
+                except RuntimeError as e:
+                    if "out of memory" in str(e):
+                        # Model too large, offload and penalize
+                        genome.fitness = -float('inf')
+                        if isinstance(genome, NeuralGenome):
+                            self.resource_monitor.offload_to_disk(genome.get_signature())
+                    else:
+                        raise
+            
+            # Free memory between batches
+            if batch_idx < len(batches) - 1:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+# ============================================================================
+# NEURAL GENOME
+# ============================================================================
+
+@dataclass
+class TensorShape:
+    """Enhanced tensor shape with automatic compatibility checking"""
+    batch: Optional[int] = None
+    channels: Optional[int] = None
+    height: Optional[int] = None
+    width: Optional[int] = None
+    sequence: Optional[int] = None
+    features: Optional[int] = None
+    
+    def get_flat_features(self) -> int:
+        """Calculate total features when flattened"""
+        if self.features:
+            return self.features
+        if self.channels and self.height and self.width:
+            return self.channels * self.height * self.width
+        if self.channels:
+            return self.channels * (self.height or 1) * (self.width or 1)
+        if self.sequence and self.features:
+            return self.sequence * self.features
+        return 1
+    
+    def is_compatible_with(self, other: 'TensorShape') -> bool:
+        """Check if shapes can be connected (with implicit flattening)"""
+        # Feature to feature
+        if self.features is not None and other.features is not None:
+            return self.features == other.features
+        
+        # Spatial to feature (implicit flattening)
+        if self.features is None and other.features is not None:
+            return self.get_flat_features() == other.features
+        
+        # Feature to spatial requires explicit reshape
+        if self.features is not None and other.features is None:
+            return False
+        
+        # Spatial to spatial (channels can be adapted)
+        if self.channels is not None and other.channels is not None:
+            return True
+        
+        return True
+
+@dataclass
+class LayerSpec:
+    """Neural network layer specification"""
+    layer_type: str
+    params: Dict[str, Any]
+    input_shape: Optional[TensorShape] = None
+    output_shape: Optional[TensorShape] = None
+    computation_cost: float = 0.0
+    memory_cost: float = 0.0
+    
+    def __hash__(self):
+        return hash((self.layer_type, json.dumps(self.params, sort_keys=True)))
+
+class DynamicNeuralModel(nn.Module):
+    """PyTorch model dynamically created from NeuralGenome"""
+    def __init__(self, genome: NeuralGenome):
+        super().__init__()
+        self.genome = genome
+        self.layers = nn.ModuleList()
+        self.skip_connections = genome.skip_connections
+        self._build_layers()
+    
+    def _build_layers(self):
+        """Build PyTorch layers from genome specification"""
+        for spec in self.genome.layers:
+            layer = self._create_layer(spec)
+            if layer:
+                self.layers.append(layer)
+    
+    def _create_layer(self, spec: LayerSpec) -> Optional[nn.Module]:
+        """Create PyTorch layer from specification"""
+        lt = spec.layer_type
+        p = spec.params
+        
+        # Map layer types to PyTorch modules
+        if lt == 'linear':
+            return nn.Linear(p.get('in_features', 128), p['out_features'], p.get('bias', True))
+        elif lt == 'conv2d':
+            return nn.Conv2d(p.get('in_channels', 3), p['out_channels'],
+                           p['kernel_size'], p.get('stride', 1), p.get('padding', 0))
+        elif lt == 'batchnorm2d':
+            return nn.BatchNorm2d(p['num_features'])
+        elif lt == 'relu':
+            return nn.ReLU()
+        elif lt == 'dropout':
+            return nn.Dropout(p.get('p', 0.5))
+        elif lt == 'maxpool2d':
+            return nn.MaxPool2d(p.get('kernel_size', 2), p.get('stride', 2))
+        # Add more layer types as needed
+        
+        return None
+    
+    def forward(self, x):
+        """Forward pass with skip connections"""
+        outputs = {}
+        
+        for i, layer in enumerate(self.layers):
+            # Apply layer
+            if isinstance(layer, nn.Linear) and len(x.shape) > 2:
+                x = torch.flatten(x, 1)  # Implicit flattening
+            x = layer(x)
+            outputs[i] = x
+            
+            # Handle incoming skip connections
+            if i in [dest for srcs in self.skip_connections.values() for dest, _ in srcs]:
+                for src, dests in self.skip_connections.items():
+                    for dest, merge_type in dests:
+                        if dest == i and src in outputs:
+                            x = self._merge_tensors(x, outputs[src], merge_type)
+        
+        return x
+    
+    def _merge_tensors(self, t1: torch.Tensor, t2: torch.Tensor, merge_type: str) -> torch.Tensor:
+        """Merge tensors according to strategy"""
+        # Ensure shape compatibility
+        if t1.shape != t2.shape:
+            # Use adaptive pooling or linear projection to match shapes
+            if len(t1.shape) == 4 and len(t2.shape) == 4:  # Conv features
+                t2 = F.adaptive_avg_pool2d(t2, (t1.shape[2], t1.shape[3]))
+                if t1.shape[1] != t2.shape[1]:  # Channel mismatch
+                    conv = nn.Conv2d(t2.shape[1], t1.shape[1], 1).to(t1.device)
+                    t2 = conv(t2)
+        
+        if merge_type == 'add':
+            return t1 + t2
+        elif merge_type == 'concat':
+            return torch.cat([t1, t2], dim=1)
+        elif merge_type == 'mul':
+            return t1 * t2
+        else:
+            return t1 + t2  # Default to add
 
 # ============================================================================
 # Q-LEARNING INTEGRATION
