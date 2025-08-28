@@ -56,7 +56,10 @@ The script now properly implements the evolutionary discovery approach you inten
 import numpy as np
 import math
 import random
-import pickle
+
+#import pickle
+import dill
+
 import json
 import time
 import os
@@ -726,6 +729,7 @@ class SieveEchoDiscoverySystem:
         }
         with open(CONFIG.state_file, 'wb') as f:
             pickle.dump(state, f)
+            dill.dump(state, f)
 
     def _save_minimal_state(self):
         """Save only essential data, exclude unpicklable objects"""
@@ -735,7 +739,8 @@ class SieveEchoDiscoverySystem:
             'results': self._extract_serializable_results()
         }
         with open(CONFIG.state_file + '.minimal', 'wb') as f:
-            pickle.dump(state, f)
+            #pickle.dump(state, f)
+            dill.dump(state, f)
 
     def _save_emergency_backup(self):
         """Last resort - save as JSON (loses some data types)"""
@@ -798,9 +803,9 @@ class SieveEchoDiscoverySystem:
     def load_state(self):
         """Load state with fallback to different formats"""
         files_to_try = [
-            (CONFIG.state_file, pickle.load, 'rb'),
-            (CONFIG.state_file + '.minimal', pickle.load, 'rb'),
-            (CONFIG.state_file + '.emergency.json', json.load, 'r')
+            (CONFIG.state_file, dill.load, 'rb'),
+            (CONFIG.state_file + '.minimal', dill.load, 'rb'),
+            (CONFIG.state_file + '.emergency.json', dill.load, 'r')
         ]
         
         for filename, loader, mode in files_to_try:
