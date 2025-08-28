@@ -280,12 +280,26 @@ class UnifiedFormulaDiscoverer:
             # Generate random algorithm
             for _ in range(random.randint(3, CONFIG.max_algorithm_length)):
                 # Random operation
-                op = random.choice(list(self.instruction_set.operations.keys()))
-                if op in ['IF', 'ELSE', 'END', 'ASSIGN']:
-                    continue  # Skip control flow for now
+                op_name = random.choice(list(self.instruction_set.operations.keys()))
+                op_info = self.instruction_set.operations[op_name]
+
+                if op_name in ['IF', 'ELSE', 'END', 'ASSIGN']:
+                    continue
+                
+                # Determine the correct target store based on the operation's return type
+                if op_info.return_type == 'decimal':
+                    target_store = 'd$'
+                    target_idx = random.randint(0, len(data_config[target_store]) - 1)
+                elif op_info.return_type == 'bool':
+                    target_store = 'b$'
+                    target_idx = random.randint(0, len(data_config[target_store]) - 1)
+                else:
+                    # Skip operations with unknown or 'any' return types for simplicity
+                    continue
+                
+                target = (target_store, target_idx)
                 
                 # Create instruction
-                op_info = self.instruction_set.operations[op]
                 target = ('d$', 0)  # result
                 args = []
                 
@@ -303,8 +317,18 @@ class UnifiedFormulaDiscoverer:
                         store = 'b#' if random.random() < 0.5 else 'b$'
                         idx = random.randint(0, len(data_config[store])-1)
                         args.append((store, idx))
-                
-                instruction = evolvo.Instruction(target, op, args)
+                    
+                    if arg_type in ['decimal', 'any']:
+                        store_type = 'd#' if random.random() < 0.7 else 'd$'
+                        idx = random.randint(0, len(data_config[store_type]) - 1)
+                        args.append((store_type, idx))
+                    elif arg_type == 'bool':
+                        store_type = 'b#' if random.random() < 0.5 else 'b$'
+                        idx = random.randint(0, len(data_config[store_type]) - 1)
+                        args.append((store_type, idx))
+                    
+
+                instruction = evolvo.Instruction(target, op_name, args)
                 genome.add_instruction(instruction)
             
             # Mark result as output
@@ -340,13 +364,14 @@ class UnifiedFormulaDiscoverer:
                     results = compiled.execute(data_store)
                     
                     # Get prediction
-                    pred = results.get('d$_0', 0)
+                    pred = results.get('d$_0', 0) # The target is a decimal variable
                     actual = d.get('omega', 0)
                     
-                    if np.isfinite(pred):
-                        error = (pred - actual) ** 2
-                        total_error += error
-                        count += 1
+                    if isinstance(pred, (int, float, np.number)):
+                        if np.isfinite(pred):
+                            error = (pred - actual) ** 2
+                            total_error += error
+                            count += 1
                 
                 if count == 0:
                     return -float('inf')
