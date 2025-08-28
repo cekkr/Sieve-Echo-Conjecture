@@ -694,22 +694,31 @@ class SieveEchoDiscoverySystem:
         # Load saved state if exists
         self.load_state()
         
-    def load_state(self):
-        if os.path.exists(CONFIG.state_file):
-            
-            print(f"Loading state from {CONFIG.state_file}")
-            with open(CONFIG.state_file, 'rb') as f:
-
-                state = pickle.load(f)
-
-                # Reset fitness for all loaded genomes to force re-evaluation
-                if 'results' in state and 'co_evolution' in state['results']:                                  
-                    self.data = state.get('data', [])
-                    self.current_n = state.get('current_n', 2)
-                    self.results = state.get('results', {})
-        
     def save_state(self):
+        """Save state with multiple fallback strategies"""
         print("Saving state...")
+        
+        # Try different save strategies
+        strategies = [
+            (self._save_full_state, "full state"),
+            (self._save_minimal_state, "minimal state"),
+            (self._save_emergency_backup, "emergency backup")
+        ]
+        
+        for save_method, description in strategies:
+            try:
+                save_method()
+                print(f"Successfully saved {description}")
+                return  # Success, exit
+            except Exception as e:
+                print(f"Warning: Failed to save {description}: {e}")
+                continue
+        
+        print("ERROR: Could not save state in any format!")
+        print("Data is still in memory - consider manual export")
+
+    def _save_full_state(self):
+        """Try to save everything"""
         state = {
             'data': self.data,
             'current_n': self.current_n,
@@ -717,6 +726,104 @@ class SieveEchoDiscoverySystem:
         }
         with open(CONFIG.state_file, 'wb') as f:
             pickle.dump(state, f)
+
+    def _save_minimal_state(self):
+        """Save only essential data, exclude unpicklable objects"""
+        state = {
+            'data': self.data,
+            'current_n': self.current_n,
+            'results': self._extract_serializable_results()
+        }
+        with open(CONFIG.state_file + '.minimal', 'wb') as f:
+            pickle.dump(state, f)
+
+    def _save_emergency_backup(self):
+        """Last resort - save as JSON (loses some data types)"""
+        import json
+        
+        state = {
+            'data': self._to_json_compatible(self.data),
+            'current_n': self.current_n,
+            'results': self._to_json_compatible(self._extract_serializable_results())
+        }
+        
+        with open(CONFIG.state_file + '.emergency.json', 'w') as f:
+            json.dump(state, f, indent=2, default=str)
+
+    def _extract_serializable_results(self):
+        """Extract only serializable parts of results"""
+        cleaned = {}
+        for key, value in self.results.items():
+            if isinstance(value, dict):
+                cleaned_value = {}
+                for k, v in value.items():
+                    try:
+                        # Try to pickle this value
+                        pickle.dumps(v)
+                        cleaned_value[k] = v
+                    except:
+                        # If it fails, try to extract basic info
+                        if hasattr(v, '__dict__'):
+                            # Extract basic attributes
+                            cleaned_value[k] = {
+                                'type': type(v).__name__,
+                                'fitness': getattr(v, 'fitness', None)
+                            }
+                        else:
+                            cleaned_value[k] = str(v)
+                cleaned[key] = cleaned_value
+            else:
+                try:
+                    pickle.dumps(value)
+                    cleaned[key] = value
+                except:
+                    cleaned[key] = str(value)
+        return cleaned
+
+    def _to_json_compatible(self, obj):
+        """Convert object to JSON-compatible format"""
+        if isinstance(obj, (str, int, float, bool, type(None))):
+            return obj
+        elif isinstance(obj, dict):
+            return {k: self._to_json_compatible(v) for k, v in obj.items()}
+        elif isinstance(obj, (list, tuple)):
+            return [self._to_json_compatible(item) for item in obj]
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif hasattr(obj, '__dict__'):
+            return self._to_json_compatible(obj.__dict__)
+        else:
+            return str(obj)
+
+    def load_state(self):
+        """Load state with fallback to different formats"""
+        files_to_try = [
+            (CONFIG.state_file, pickle.load, 'rb'),
+            (CONFIG.state_file + '.minimal', pickle.load, 'rb'),
+            (CONFIG.state_file + '.emergency.json', json.load, 'r')
+        ]
+        
+        for filename, loader, mode in files_to_try:
+            if os.path.exists(filename):
+                print(f"Loading state from {filename}")
+                try:
+                    with open(filename, mode) as f:
+                        state = loader(f)
+                        self.data = state.get('data', [])
+                        self.current_n = state.get('current_n', 2)
+                        self.results = state.get('results', {})
+                        print(f"Successfully loaded state from {filename}")
+                        return
+                except Exception as e:
+                    print(f"Warning: Could not load from {filename}: {e}")
+                    continue
+        
+        print("No valid state file found, starting fresh...")
+        self.data = []
+        self.current_n = 2
+        self.results = {}
+
+    ################
     
     def generate_data(self):
         """Generate multi-base NDR data"""
