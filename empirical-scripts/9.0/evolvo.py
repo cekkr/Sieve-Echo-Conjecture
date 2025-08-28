@@ -1419,13 +1419,16 @@ class ResourceAwareEvolver(UnifiedEvolver):
                 
                 if isinstance(genome, NeuralGenome):
                     model_id = genome.get_signature()
-                    
-                    # Use context manager for automatic resource management
-                    with self.resource_monitor.model_context(model_id, genome) as model:
-                        if model:
-                            batch_models.append((genome, model))
-                        else:
-                            genome.fitness = -float('inf')
+
+                    try:
+                        # Use context manager for automatic resource management
+                        with self.resource_monitor.model_context(model_id, genome) as model:
+                            if model:
+                                batch_models.append((genome, model))
+                            else:
+                                genome.fitness = -float('inf')
+                    except Exception as error:
+                        print("Failed with self.resource_monitor.model_context:", error)
                 else:
                     batch_models.append((genome, None))
             

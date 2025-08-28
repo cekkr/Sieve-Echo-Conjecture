@@ -447,7 +447,7 @@ class UnifiedNeuralSearcher:
         X_test_t = torch.FloatTensor(X_test).to(device)
         y_test_t = torch.FloatTensor(y_test).reshape(-1, 1).to(device)
         """
-        
+
         X_train_t = safe_tensor_conversion(X_train, device)
         y_train_t = safe_tensor_conversion(y_train.reshape(-1, 1), device)
         X_test_t = safe_tensor_conversion(X_test, device)
@@ -780,7 +780,7 @@ class SieveEchoDiscoverySystem:
                 co_evo = cycle_results.get('co_evolution', {})
                 if co_evo:
                     formula_fitness = co_evo.get('best_formula', {}).get('fitness', 0)
-                    nn_fitness = co_evo.get('best_nn', {}).get('fitness', 0)
+                    nn_fitness = co_evo.get('best_nn', {}).get('fitness', 0) #todo: error here
                     
                     best_formula_fitness = max(best_formula_fitness, formula_fitness)
                     best_nn_fitness = max(best_nn_fitness, nn_fitness)
