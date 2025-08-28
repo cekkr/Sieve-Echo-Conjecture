@@ -1397,56 +1397,79 @@ class ResourceAwareEvolver(UnifiedEvolver):
         
         return True
     
+    
     def evaluate_population_parallel(self, evaluator: Callable, batch_size: int = 4):
         """
         Evaluate population in parallel batches with resource management.
         """
-        # Update constraints before evaluation
         self._update_constraints()
         
-        # Group population into batches
         batches = [self.population[i:i+batch_size] 
-                  for i in range(0, len(self.population), batch_size)]
+                for i in range(0, len(self.population), batch_size)]
         
         for batch_idx, batch in enumerate(batches):
-            # Check available resources for this batch
             batch_models = []
             
             for genome in batch:
-                if not self.validate_genome_resources(genome):
-                    genome.fitness = -float('inf')  # Penalize oversized models
-                    continue
-                
-                if isinstance(genome, NeuralGenome):
-                    model_id = genome.get_signature()
+                # === START: New Upper Try-Except for Genome Isolation ===
+                try:
+                    # Reset fitness to ensure it's re-evaluated
+                    genome.fitness = None
 
-                    try:
-                        # Use context manager for automatic resource management
-                        with self.resource_monitor.model_context(model_id, genome) as model:
-                            if model:
-                                batch_models.append((genome, model))
-                            else:
-                                genome.fitness = -float('inf')
-                    except Exception as error:
-                        print("Failed with self.resource_monitor.model_context:", error)
-                else:
-                    batch_models.append((genome, None))
-            
-            # Evaluate batch
+                    if not self.validate_genome_resources(genome):
+                        genome.fitness = -float('inf')  # Penalize oversized models
+                        continue # Skip to the next genome in the batch
+                    
+                    if isinstance(genome, NeuralGenome):
+                        model_id = genome.get_signature()
+
+                        # This inner try-except is still useful for context-specific errors
+                        try:
+                            with self.resource_monitor.model_context(model_id, genome) as model:
+                                if model:
+                                    batch_models.append((genome, model))
+                                else:
+                                    # Model failed to build or load
+                                    genome.fitness = -float('inf')
+                        except Exception as model_context_error:
+                            print(f"ERROR: model_context failed for genome {model_id[:10]}...: {model_context_error}", file=sys.stderr)
+                            genome.fitness = -float('inf')
+                    else:
+                        # For non-neural genomes like AlgorithmGenome
+                        batch_models.append((genome, None))
+
+                except Exception as processing_error:
+                    # This catches ANY error related to a single genome (e.g., bad signature, validation bug)
+                    import traceback
+                    print(f"FATAL ERROR processing genome. Assigning -inf fitness.", file=sys.stderr)
+                    traceback.print_exc(file=sys.stderr)
+                    genome.fitness = -float('inf')
+                    # The 'continue' is implicit as we will just move to the next genome
+                # === END: New Upper Try-Except ===
+
+            # Evaluate batch (only models that were successfully prepared)
             for genome, model in batch_models:
+                # If fitness was already set to -inf due to an error, skip evaluation
+                if genome.fitness is not None:
+                    continue
+
                 try:
                     if model:
                         genome.fitness = evaluator(genome, model=model)
                     else:
                         genome.fitness = evaluator(genome)
                 except RuntimeError as e:
-                    if "out of memory" in str(e):
-                        # Model too large, offload and penalize
+                    if "out of memory" in str(e).lower():
                         genome.fitness = -float('inf')
                         if isinstance(genome, NeuralGenome):
                             self.resource_monitor.offload_to_disk(genome.get_signature())
                     else:
-                        raise
+                        # Catch other evaluation-time errors
+                        genome.fitness = -float('inf')
+                        print(f"ERROR: Evaluator failed for genome {genome.get_signature()[:10]}...: {e}", file=sys.stderr)
+                except Exception as e:
+                    genome.fitness = -float('inf')
+                    print(f"ERROR: A non-runtime error occurred in evaluator for genome {genome.get_signature()[:10]}...: {e}", file=sys.stderr)
             
             # Free memory between batches
             if batch_idx < len(batches) - 1:

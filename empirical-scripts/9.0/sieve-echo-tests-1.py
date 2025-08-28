@@ -672,13 +672,18 @@ class SieveEchoDiscoverySystem:
         
     def load_state(self):
         if os.path.exists(CONFIG.state_file):
+            
             print(f"Loading state from {CONFIG.state_file}")
             with open(CONFIG.state_file, 'rb') as f:
+
                 state = pickle.load(f)
-                self.data = state.get('data', [])
-                self.current_n = state.get('current_n', 2)
-                self.results = state.get('results', {})
-    
+
+                # Reset fitness for all loaded genomes to force re-evaluation
+                if 'results' in state and 'co_evolution' in state['results']:                                  
+                    self.data = state.get('data', [])
+                    self.current_n = state.get('current_n', 2)
+                    self.results = state.get('results', {})
+        
     def save_state(self):
         print("Saving state...")
         state = {
