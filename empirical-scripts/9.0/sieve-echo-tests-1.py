@@ -96,21 +96,21 @@ class Config:
     # Core parameters
     perpetual_mode: bool = True
     max_cycles: int = 100
-    data_chunk_size: int = 500
+    data_chunk_size: int = 1000
     
     # CRITICAL: Multiple bases for pattern discovery
     test_bases: List[int] = field(default_factory=lambda: [2, 3, 5, 7, 10, 11, 13, 16, 17, 19, 23, 29, 31])
     
     # Evolution parameters
-    formula_generations: int = 100
-    formula_population_size: int = 500
+    formula_generations: int = 200
+    formula_population_size: int = 1000
     nn_generations: int = 50
-    nn_population_size: int = 50
-    max_algorithm_length: int = 20
+    nn_population_size: int = 200
+    max_algorithm_length: int = 60
     
     # Resource management
-    max_model_params: int = int(1e7)  # 10M parameters max
-    max_memory_mb: float = 2048  # 2GB max per model
+    max_model_params: int = int(1e8)  # 100M parameters max
+    max_memory_mb: float = 2048 * 6  # 2GB max per model
     
     # Files
     state_file: str = "sieve_echo_state_v7.pkl"
@@ -373,11 +373,9 @@ class UnifiedFormulaDiscoverer:
             print(f"Best formula fitness: {best.fitness:.4f}")
             
             return {
+                'genome': best,
                 'fitness': best.fitness,
-                'formula_str': self._decode_genome(best),
-                'signature': best.get_signature(),
-                'instruction_count': len(best.instructions),
-                'formula': self._decode_genome(best) # Changed 'formula_str' back to 'formula'
+                'formula': self._decode_genome(best)
             }
         
         return {}
@@ -639,51 +637,43 @@ class CoEvolutionSystem:
         """Run co-evolution cycles"""
         print("\n🔄 Starting co-evolution...")
         
-        # These will hold the serializable results
-        final_formula_result = {}
-        final_nn_result = {}
+        best_formula = None
+        best_nn = None
         
         for cycle in range(cycles):
             print(f"\n--- Co-evolution Cycle {cycle+1}/{cycles} ---")
             
-            # --- Formula Evolution and Q-Learning ---
-            formula_result_with_genome = self.formula_discoverer.evolve_formulas()
-            if formula_result_with_genome:
-                # 1. Use the live genome for Q-learning
-                live_genome = formula_result_with_genome.get('genome')
-                if live_genome:
-                    action = self.q_guide.choose_action(live_genome)
-                    reward = formula_result_with_genome.get('fitness', 0)
-                    self.q_guide.update(live_genome, action, reward, live_genome)
+            # Evolve formulas
+            formula_result = self.formula_discoverer.evolve_formulas()
+            if formula_result:
+                best_formula = formula_result
                 
-                # 2. Create a clean, serializable copy for saving state
-                final_formula_result = formula_result_with_genome.copy()
-                final_formula_result.pop('genome', None) # Remove the non-serializable key
-
-            # --- Neural Network Evolution and Q-Learning ---
-            nn_result_with_genome = self.neural_searcher.evolve_architectures()
-            if nn_result_with_genome:
-                # 1. Use the live genome for Q-learning
-                live_genome = nn_result_with_genome.get('genome')
-                if live_genome:
-                    action = self.q_guide.choose_action(live_genome)
-                    reward = nn_result_with_genome.get('fitness', 0)
-                    self.q_guide.update(live_genome, action, reward, live_genome)
-
-                # 2. Create a clean, serializable copy
-                final_nn_result = nn_result_with_genome.copy()
-                final_nn_result.pop('genome', None) # Remove the non-serializable key
+                # Use Q-learning to guide next evolution
+                if best_formula.get('genome'):
+                    action = self.q_guide.choose_action(best_formula['genome'])
+                    reward = best_formula.get('fitness', 0)
+                    self.q_guide.update(best_formula['genome'], action, reward, best_formula['genome'])
             
-            # Report progress using the cleaned results
-            if final_formula_result:
-                print(f"Best formula fitness: {final_formula_result.get('fitness', 0):.4f}")
-            if final_nn_result:
-                print(f"Best NN fitness: {final_nn_result.get('fitness', 0):.4f}")
+            # Evolve neural networks
+            nn_result = self.neural_searcher.evolve_architectures()
+            if nn_result:
+                best_nn = nn_result
+                
+                # Q-learning guidance for NN
+                if best_nn.get('genome'):
+                    action = self.q_guide.choose_action(best_nn['genome'])
+                    reward = best_nn.get('fitness', 0)
+                    self.q_guide.update(best_nn['genome'], action, reward, best_nn['genome'])
+            
+            # Report progress
+            if best_formula:
+                print(f"Best formula fitness: {best_formula.get('fitness', 0):.4f}")
+            if best_nn:
+                print(f"Best NN fitness: {best_nn.get('fitness', 0):.4f}")
         
-        # Return ONLY the serializable results
         return {
-            'best_formula': final_formula_result,
-            'best_nn': final_nn_result,
+            'best_formula': best_formula,
+            'best_nn': best_nn,
             'q_states_explored': len(self.q_guide.q_tables[evolvo.GenomeType.ALGORITHM]) + 
                                 len(self.q_guide.q_tables[evolvo.GenomeType.NEURAL])
         }
