@@ -279,7 +279,6 @@ class UnifiedFormulaDiscoverer:
             
             # Generate random algorithm
             for _ in range(random.randint(3, CONFIG.max_algorithm_length)):
-                # Random operation
                 op_name = random.choice(list(self.instruction_set.operations.keys()))
                 op_info = self.instruction_set.operations[op_name]
 
@@ -294,30 +293,13 @@ class UnifiedFormulaDiscoverer:
                     target_store = 'b$'
                     target_idx = random.randint(0, len(data_config[target_store]) - 1)
                 else:
-                    # Skip operations with unknown or 'any' return types for simplicity
-                    continue
+                    continue # Skip operations with unknown return types
                 
                 target = (target_store, target_idx)
                 
-                # Create instruction
-                target = ('d$', 0)  # result
+                # Generate the correct number of arguments
                 args = []
-                
                 for arg_type in op_info.arg_types:
-                    if arg_type in ['decimal', 'any']:
-                        # Choose between constant and variable
-                        if random.random() < 0.7:
-                            store = 'd#'
-                            idx = random.randint(0, len(data_config['d#'])-1)
-                        else:
-                            store = 'd$'
-                            idx = random.randint(0, len(data_config['d$'])-1)
-                        args.append((store, idx))
-                    elif arg_type == 'bool':
-                        store = 'b#' if random.random() < 0.5 else 'b$'
-                        idx = random.randint(0, len(data_config[store])-1)
-                        args.append((store, idx))
-                    
                     if arg_type in ['decimal', 'any']:
                         store_type = 'd#' if random.random() < 0.7 else 'd$'
                         idx = random.randint(0, len(data_config[store_type]) - 1)
@@ -326,7 +308,6 @@ class UnifiedFormulaDiscoverer:
                         store_type = 'b#' if random.random() < 0.5 else 'b$'
                         idx = random.randint(0, len(data_config[store_type]) - 1)
                         args.append((store_type, idx))
-                    
 
                 instruction = evolvo.Instruction(target, op_name, args)
                 genome.add_instruction(instruction)
@@ -450,23 +431,41 @@ class UnifiedNeuralSearcher:
         
         # Prepare data
         feature_names = ['kurtosis_mean', 'length_mean', 'entropy_mean',
-                'entropy_cv', 'n', 'phi', 'tau']
+                         'entropy_cv', 'n', 'phi', 'tau']
+        # Define the target variable here, as the "single source of truth"
         target_name = 'omega'
 
-        # Filter more robustly
+        # --- START: CORRECTED & ROBUST FILTER (USING target_name) ---
         valid_data = []
         for d in self.data:
-            if all(f in d and d[f] is not None and np.isfinite(d[f]) for f in feature_names) and \
-            target_name in d and d[target_name] is not None and np.isfinite(d[target_name]):
-                valid_data.append(d)
+            try:
+                is_valid = True
+                # Check all features
+                for f in feature_names:
+                    if not (f in d and isinstance(d[f], (int, float, np.number)) and np.isfinite(d[f])):
+                        is_valid = False
+                        break
+                if not is_valid: continue
+
+                # CORRECT: Check the target variable using the target_name variable
+                if not (target_name in d and isinstance(d[target_name], (int, float, np.number)) and np.isfinite(d[target_name])):
+                    is_valid = False
+                
+                if is_valid:
+                    valid_data.append(d)
+            except Exception:
+                # Failsafe for any other unexpected data corruption
+                continue
+        # --- END: CORRECTED & ROBUST FILTER ---
 
         if len(valid_data) < 100:
             print("Not enough valid, finite data for neural evolution")
-            return {}        
+            return {}
         
         # Create train/test split
         X = np.array([[d.get(f, 0) for f in feature_names] for d in valid_data])
-        y = np.array([d.get('omega', 0) for d in valid_data])
+        # CORRECT: Use target_name here as well
+        y = np.array([d.get(target_name, 0) for d in valid_data])
         
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
