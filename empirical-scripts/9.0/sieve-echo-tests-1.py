@@ -355,6 +355,7 @@ class UnifiedFormulaDiscoverer:
                 return 1 / (1 + mse)  # Higher fitness = lower MSE
                 
             except Exception as e:
+                print(f"WARN: Formula evaluation failed for genome {genome.get_signature()[:10]}... with error: {e}", file=sys.stderr)
                 return -float('inf')
         
         # Evolve
@@ -424,13 +425,19 @@ class UnifiedNeuralSearcher:
         
         # Prepare data
         feature_names = ['kurtosis_mean', 'length_mean', 'entropy_mean',
-                        'entropy_cv', 'n', 'phi', 'tau']
-        
-        valid_data = [d for d in self.data if all(f in d for f in feature_names)]
-        
+                'entropy_cv', 'n', 'phi', 'tau']
+        target_name = 'omega'
+
+        # Filter more robustly
+        valid_data = []
+        for d in self.data:
+            if all(f in d and d[f] is not None and np.isfinite(d[f]) for f in feature_names) and \
+            target_name in d and d[target_name] is not None and np.isfinite(d[target_name]):
+                valid_data.append(d)
+
         if len(valid_data) < 100:
-            print("Not enough data for neural evolution")
-            return {}
+            print("Not enough valid, finite data for neural evolution")
+            return {}        
         
         # Create train/test split
         X = np.array([[d.get(f, 0) for f in feature_names] for d in valid_data])
@@ -543,6 +550,7 @@ class UnifiedNeuralSearcher:
                 return 1 / (1 + test_loss)
                 
             except Exception as e:
+                print(f"WARN: NN evaluation failed for genome {genome.get_signature()[:10]}... with error: {e}", file=sys.stderr)
                 return 0.0
         
         # Evolve with resource management
@@ -779,8 +787,19 @@ class SieveEchoDiscoverySystem:
             if 'cycle_' in cycle_key:
                 co_evo = cycle_results.get('co_evolution', {})
                 if co_evo:
-                    formula_fitness = co_evo.get('best_formula', {}).get('fitness', 0)
-                    nn_fitness = co_evo.get('best_nn', {}).get('fitness', 0) #todo: error here
+                    # --- START: Corrected Logic ---
+                    formula_result = co_evo.get('best_formula')
+                    if formula_result and isinstance(formula_result, dict):
+                        formula_fitness = formula_result.get('fitness', 0)
+                    else:
+                        formula_fitness = 0
+
+                    nn_result = co_evo.get('best_nn')
+                    if nn_result and isinstance(nn_result, dict):
+                        nn_fitness = nn_result.get('fitness', 0)
+                    else:
+                        nn_fitness = 0
+                    # --- END: Corrected Logic ---
                     
                     best_formula_fitness = max(best_formula_fitness, formula_fitness)
                     best_nn_fitness = max(best_nn_fitness, nn_fitness)
