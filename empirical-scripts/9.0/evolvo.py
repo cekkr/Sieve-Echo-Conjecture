@@ -1681,10 +1681,8 @@ if __name__ == "__main__":
     data_config = {
         'b#': ['true', 'false'],
         'd#': ['pi', 'e', 'one'],
-        'b
-: ['result_bool'],
-        'd
-: ['x', 'y', 'temp']
+        'b$' : ['result_bool'],
+        'd$' : ['x', 'y', 'temp']
     }
     
     # Create instruction set
@@ -1695,21 +1693,15 @@ if __name__ == "__main__":
     
     # Add some instructions
     algo_genome.add_instruction(Instruction(
-        target=('d
-, 2),  # temp
-        operation='MUL',
-        args=[('d
-, 0), ('d#', 2)]  # x * one
+        target=('d$', 2),  # temp
+        operation='MUL', args=[('d$' , 0), ('d#', 2)]  # x * one
     ))
     algo_genome.add_instruction(Instruction(
-        target=('d
-, 1),  # y
+        target=('d$', 1),  # y
         operation='ADD',
-        args=[('d
-, 2), ('d#', 1)]  # temp + e
+        args=[('d$', 2), ('d#', 1)]  # temp + e
     ))
-    algo_genome.mark_output(('d
-, 1))  # y is output
+    algo_genome.mark_output(('d$' , 1))  # y is output
     
     # Validate and simplify
     valid, errors = algo_genome.validate()
