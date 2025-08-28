@@ -267,9 +267,9 @@ class UnifiedFormulaDiscoverer:
         # Create data configuration for evolvo
         data_config = {
             'b#': ['true', 'false'],
-            'd#': feature_names + ['one', 'two', 'pi', 'e'],
-            'b$': ['flag', 'temp_bool'],
-            'd$': ['result', 'temp1', 'temp2', 'accumulator']
+            'd#': feature_names + ['one', 'two', 'pi', 'e', 'half', 'quarter'], # Add more constants
+            'b$': [f'b{i}' for i in range(8)], # Was ['flag', 'temp_bool']
+            'd$': [f'd{i}' for i in range(16)] # Was ['result', 'temp1', 'temp2', 'accumulator']
         }
         
         # Create algorithm genome population

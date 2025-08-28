@@ -1302,27 +1302,40 @@ class UnifiedEvolver:
             elite_size = int(self.population_size * self.elite_ratio)
             new_population = self.population[:elite_size]  # Elitism
             
-            # Reproduction
-            while len(new_population) < self.population_size:
-                # Tournament selection
+            # --- START: MODIFIED REPRODUCTION LOOP ---
+            attempts = 0
+            max_attempts = self.population_size * 10 # Allow 10 attempts per slot
+
+            while len(new_population) < self.population_size and attempts < max_attempts:
                 parent1 = self._tournament_select()
                 parent2 = self._tournament_select()
                 
-                # Crossover
                 if random.random() < self.crossover_rate:
                     child = self.crossover(parent1, parent2)
                 else:
                     child = copy.deepcopy(random.choice([parent1, parent2]))
                 
-                # Mutation
                 if random.random() < self.mutation_rate:
                     child = self.mutate(child)
-                
-                # Add if novel
-                if self.add_genome(child):
+
+                # Check for novelty before adding to new_population
+                if child.get_signature() not in self.diversity_cache:
+                    self.diversity_cache.add(child.get_signature())
                     new_population.append(child)
-            
+                
+                attempts += 1
+
+            # If the loop timed out, fill the rest with mutated elites
+            if len(new_population) < self.population_size:
+                print(f"WARN: Population diversity exhausted. Filling with {self.population_size - len(new_population)} mutated elites.")
+                while len(new_population) < self.population_size:
+                    elite = copy.deepcopy(self.population[0])
+                    mutated_elite = self.mutate(elite)
+                    # We don't check for diversity here, just fill the spots
+                    new_population.append(mutated_elite)
+
             self.population = new_population[:self.population_size]
+            # --- END: MODIFIED REPRODUCTION LOOP ---
             
             # Adaptive rates
             if gen % 10 == 0:
@@ -1397,7 +1410,7 @@ class ResourceAwareEvolver(UnifiedEvolver):
         
         return True
     
-    
+
     def evaluate_population_parallel(self, evaluator: Callable, batch_size: int = 4):
         """
         Evaluate population in parallel batches with resource management.
