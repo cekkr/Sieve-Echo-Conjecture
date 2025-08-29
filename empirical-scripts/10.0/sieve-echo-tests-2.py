@@ -209,16 +209,89 @@ class SieveEchoDiscoverySystem:
 
     def save_state(self):
         print("\n💾 Saving state...")
-        # --- START: SAFE STATE SAVING ---
+        
+        # Process results to make them JSON-serializable
+        serialized_results = {}
+        for cycle_key, cycle_data in self.results.items():
+            if not isinstance(cycle_data, dict):
+                continue
+                
+            serialized_cycle = {}
+            
+            # Handle formula results
+            if 'formula_results' in cycle_data and cycle_data['formula_results']:
+                formula_results = cycle_data['formula_results']
+                serialized_formulas = {
+                    'top_discoveries': []
+                }
+                
+                # Process each formula discovery
+                if 'top_discoveries' in formula_results:
+                    for discovery in formula_results['top_discoveries'][:50]:  # Keep top 50
+                        formula_entry = {
+                            'rank': discovery.get('rank', 0),
+                            'fitness': discovery.get('fitness', 0)
+                        }
+                        
+                        # Extract the actual algorithm from the genome
+                        if 'genome' in discovery and discovery['genome'] is not None:
+                            genome = discovery['genome']
+                            
+                            # Extract algorithm structure
+                            if hasattr(genome, 'instructions'):
+                                instructions_data = []
+                                for instr in genome.instructions:
+                                    if hasattr(instr, 'target'):  # Regular instruction
+                                        instructions_data.append({
+                                            'type': 'instruction',
+                                            'target': instr.target,
+                                            'operation': instr.operation,
+                                            'args': instr.args
+                                        })
+                                    else:  # Control flow
+                                        instructions_data.append(instr)
+                                
+                                formula_entry['algorithm'] = {
+                                    'instructions': instructions_data,
+                                    'outputs': list(genome.outputs) if hasattr(genome, 'outputs') else [],
+                                    'signature': genome.get_signature() if hasattr(genome, 'get_signature') else None
+                                }
+                                
+                                # Add data config if available
+                                if hasattr(genome, 'data_config'):
+                                    formula_entry['algorithm']['data_config'] = genome.data_config
+                        
+                        serialized_formulas['top_discoveries'].append(formula_entry)
+                
+                serialized_cycle['formula_results'] = serialized_formulas
+            
+            serialized_results[cycle_key] = serialized_cycle
+        
+        # Create complete state with all formula details
         state = {
             'current_n': self.current_n,
-            'data': self.data,
-            'results_summary': {k: v.get('summary', {}) for k, v in self.results.items()}
+            'data': self.data[-1000:],  # Keep last 1000 data points to avoid huge files
+            'results': serialized_results,  # Full results, not just summaries
+            'total_cycles': len([k for k in self.results.keys() if k.startswith('cycle_')]),
+            'timestamp': datetime.now().isoformat()
         }
-        with open(CONFIG.state_file, 'w') as f:
-            json.dump(state, f, default=str)
-        print(f"✅ Safe state saved to {CONFIG.state_file}")
-        # --- END: SAFE STATE SAVING ---
+        
+        # Save main state file
+        try:
+            with open(CONFIG.state_file, 'w') as f:
+                json.dump(state, f, default=str, indent=2)
+            print(f"✅ State saved to {CONFIG.state_file} with {len(serialized_results)} cycles")
+        except Exception as e:
+            print(f"⚠️ Error saving state: {e}")
+            # Try to save a minimal version
+            minimal_state = {
+                'current_n': self.current_n,
+                'total_data_points': len(self.data),
+                'total_cycles': len(serialized_results)
+            }
+            with open(CONFIG.state_file + '.minimal', 'w') as f:
+                json.dump(minimal_state, f)
+            print(f"✅ Minimal state saved to {CONFIG.state_file}.minimal")
     
     def load_state(self):
         print("📂 Loading state...")
@@ -250,18 +323,56 @@ class SieveEchoDiscoverySystem:
                 base_invariance = self.analyze_base_invariance()
                 
                 print("\n🔬 Starting formula evolution...")
-                # For this version, we focus on the more complex formula discovery
                 formula_discoverer = UnifiedFormulaDiscoverer(self.data)
                 formula_results = formula_discoverer.evolve_formulas()
                 
-                self.results[f'cycle_{cycle}'] = {'formula_results': formula_results}
+                # Process and decode formulas before storing
+                if formula_results and 'top_discoveries' in formula_results:
+                    for discovery in formula_results['top_discoveries']:
+                        if 'genome' in discovery and discovery['genome']:
+                            # Add decoded version to each discovery
+                            try:
+                                discovery['decoded'] = formula_discoverer._decode_genome(discovery['genome'])
+                            except Exception as e:
+                                print(f"Warning: Could not decode genome: {e}")
+                                discovery['decoded'] = {}
+                
+                # Store results with all formula details
+                self.results[f'cycle_{cycle}'] = {
+                    'formula_results': formula_results,
+                    'base_invariance': base_invariance,
+                    'timestamp': datetime.now().isoformat()
+                }
+                
+                # Save to both locations for redundancy
+                # 1. Save via FormulaResultsManager (creates individual formula files)
                 self.results_manager.save_cycle_results(
                     cycle, 
                     formula_results, 
                     base_invariance=base_invariance,
-                    discoverer_instance=formula_discoverer # Pass instance for smart serialization
+                    discoverer_instance=formula_discoverer
                 )
+                
+                # 2. Save complete state (includes all formulas in main state file)
                 self.save_state()
+                
+                # Also save a cycle-specific backup
+                cycle_backup_file = Path(CONFIG.results_dir) / f"cycle_{cycle:03d}" / "complete_state.json"
+                cycle_backup_file.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    with open(cycle_backup_file, 'w') as f:
+                        json.dump({
+                            'cycle': cycle,
+                            'current_n': self.current_n,
+                            'formula_results': self.serializer.make_json_safe(
+                                formula_results, 
+                                discoverer_instance=formula_discoverer
+                            ),
+                            'base_invariance': base_invariance
+                        }, f, default=str, indent=2)
+                    print(f"✅ Cycle backup saved to {cycle_backup_file}")
+                except Exception as e:
+                    print(f"⚠️ Could not save cycle backup: {e}")
                         
             except KeyboardInterrupt:
                 print("\n🛑 Interrupted by user.")
