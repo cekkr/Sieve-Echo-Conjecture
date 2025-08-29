@@ -24,7 +24,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple, Optional, Any
 from dataclasses import dataclass, field
 import warnings
-from concurrent.futures import ProcessPoolExecutor, as_completed, cpu_count
+from concurrent.futures import ProcessPoolExecutor, as_completed # cpu_count doesn't exists
 
 # Core mathematical libraries
 from sympy import factorint, isprime, totient, divisors
@@ -276,7 +276,7 @@ class SieveEchoDiscoverySystem:
         print(f"\nGenerating data for n={self.current_n} to {self.current_n + CONFIG.data_chunk_size - 1}")
         start_n, end_n = self.current_n, self.current_n + CONFIG.data_chunk_size
         
-        max_workers = min(32, (cpu_count() or 1) + 4)
+        max_workers = min(32, (os.cpu_count() or 1) + 4)
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             futures = {executor.submit(self.ndr_computer.compute_multi_base_features, n, CONFIG.test_bases): n for n in range(start_n, end_n)}
             for future in as_completed(futures):
