@@ -52,8 +52,10 @@ Key improvements:
 The script now properly implements the evolutionary discovery approach you intended, where patterns emerge from evolution rather than being predetermined, and critically tests across multiple numerical bases to find universal patterns rather than base-specific artifacts.
 
 """
-
+import copy
 import traceback
+from pathlib import Path
+
 import numpy as np
 import math
 import random
