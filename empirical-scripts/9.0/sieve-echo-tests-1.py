@@ -53,6 +53,7 @@ The script now properly implements the evolutionary discovery approach you inten
 
 """
 
+import traceback
 import numpy as np
 import math
 import random
