@@ -448,7 +448,7 @@ class AlgorithmGenome(BaseGenome):
         
         # Validate argument count
         op = self.instruction_set.operations[instruction.operation]
-        if len(instruction.args) != len(op.arg_types):
+        if op.func is not None and len(instruction.args) != len(op.arg_types):
             return False
         
         # Type checking would go here (simplified for brevity)
@@ -531,8 +531,8 @@ class AlgorithmGenome(BaseGenome):
                     continue
                 
                 # Check argument types (simplified)
-                if len(instr.args) != len(op.arg_types):
-                    errors.append(f"Instruction {i}: Argument count mismatch")
+                if op.func is not None and len(instr.args) != len(op.arg_types):
+                    errors.append(f"Instruction {i}: Argument count mismatch for {op.name}")
         
         # Check control flow balance
         if_count = sum(1 for i in self.instructions if isinstance(i, dict) and i['type'] == 'IF')
@@ -654,13 +654,13 @@ class ResourceMonitor:
         # Device management
         self.device = self._get_best_device()
         self.has_cuda = torch.cuda.is_available()
-        self.has_mps = torch.backends.mps.is_available()
+        self.has_mps = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()
         
     def _get_best_device(self) -> torch.device:
         """Get the best available device"""
         if torch.cuda.is_available():
             return torch.device('cuda')
-        elif torch.backends.mps.is_available():
+        elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
             return torch.device('mps')
         else:
             return torch.device('cpu')
@@ -684,23 +684,7 @@ class ResourceMonitor:
     
     def estimate_model_size(self, genome: 'NeuralGenome') -> float:
         """Estimate model memory footprint in MB"""
-        total_params = 0
-        
-        for layer in genome.layers:
-            if layer.layer_type == 'linear':
-                in_f = layer.params.get('in_features', 1)
-                out_f = layer.params.get('out_features', 1)
-                total_params += in_f * out_f + out_f
-            elif layer.layer_type == 'conv2d':
-                in_c = layer.params.get('in_channels', 1)
-                out_c = layer.params.get('out_channels', 1)
-                k = layer.params.get('kernel_size', 3)
-                if isinstance(k, (list, tuple)):
-                    k = k[0] * k[1]
-                else:
-                    k = k * k
-                total_params += in_c * out_c * k + out_c
-            # Add more layer types as needed
+        total_params = genome.estimated_params
         
         # 4 bytes per parameter + overhead
         size_mb = (total_params * 4) / 1024**2 * 1.5  # 1.5x for overhead
@@ -730,7 +714,8 @@ class ResourceMonitor:
         try:
             model.cpu()
             self.model_locations[model_id] = 'ram'
-            torch.cuda.empty_cache() if self.has_cuda else None
+            if self.has_cuda:
+                torch.cuda.empty_cache()
             return True
         except Exception:
             return False
@@ -808,7 +793,7 @@ class ResourceMonitor:
             self.loaded_models[model_id] = model
             return model
         except RuntimeError as e:
-            if "out of memory" in str(e):
+            if "out of memory" in str(e).lower():
                 # Try to free memory and retry
                 self._free_memory(size_mb * 2)
                 return self.get_model(model_id, genome)
@@ -861,7 +846,10 @@ class ResourceMonitor:
     def cleanup_cache(self):
         """Clean up disk cache"""
         for cache_file in self.cache_dir.glob("*.pkl"):
-            cache_file.unlink()
+            try:
+                cache_file.unlink()
+            except OSError:
+                pass
 
 
 ####
@@ -1215,30 +1203,48 @@ class UnifiedEvolver:
         """Mutate neural genome respecting frozen layers"""
         start_idx = genome.frozen_until  # Don't mutate frozen layers
         
-        if len(genome.layers) <= start_idx:
-            return
+        # Allow mutation if there are non-frozen layers
+        if len(genome.layers) <= start_idx and len(genome.layers) > 0:
+            start_idx = len(genome.layers) -1 # Mutate at least the last layer if all are frozen
+        elif not genome.layers:
+             return # Cannot mutate empty genome
         
         mutation_type = random.choice(['modify', 'add', 'remove', 'skip'])
         
-        if mutation_type == 'modify':
+        if mutation_type == 'modify' and len(genome.layers) > start_idx:
             # Modify layer parameters
             idx = random.randint(start_idx, len(genome.layers) - 1)
             layer = genome.layers[idx]
             # Modify random parameter
             if layer.params:
-                param = random.choice(list(layer.params.keys()))
-                # Generate new value (simplified)
-                if isinstance(layer.params[param], bool):
-                    layer.params[param] = not layer.params[param]
-                elif isinstance(layer.params[param], (int, float)):
-                    layer.params[param] *= random.uniform(0.5, 2.0)
+                param_key = random.choice(list(layer.params.keys()))
+                original_value = layer.params[param_key]
+
+                # --- START: BUG FIX ---
+                if isinstance(original_value, bool):
+                    layer.params[param_key] = not original_value
+                elif isinstance(original_value, int):
+                    # Mutate and keep as int, ensure it's at least 1
+                    new_val = int(round(original_value * random.uniform(0.75, 1.25)))
+                    layer.params[param_key] = max(1, new_val)
+                elif isinstance(original_value, float):
+                    # Mutate and keep as float
+                    layer.params[param_key] *= random.uniform(0.5, 2.0)
+                # --- END: BUG FIX ---
         
         elif mutation_type == 'add':
             # Add new layer
             idx = random.randint(start_idx, len(genome.layers))
             # Create appropriate layer based on context
-            # Implementation depends on layer factory
-            pass
+            # (Implementation depends on a layer factory, simplified here)
+            # This part can be expanded to create more diverse layers
+            if idx > 0 and isinstance(genome.layers[idx-1], LayerSpec):
+                 prev_layer_params = genome.layers[idx-1].params
+                 if 'out_features' in prev_layer_params:
+                     in_feat = prev_layer_params['out_features']
+                     out_feat = random.choice([32, 64, 128, in_feat])
+                     new_layer = LayerSpec('linear', {'in_features': in_feat, 'out_features': out_feat})
+                     genome.layers.insert(idx, new_layer)
         
         elif mutation_type == 'remove' and len(genome.layers) > start_idx + 1:
             # Remove layer
@@ -1249,14 +1255,18 @@ class UnifiedEvolver:
             # Add or remove skip connection
             if genome.skip_connections and random.random() < 0.5:
                 # Remove random skip
-                src = random.choice(list(genome.skip_connections.keys()))
-                genome.skip_connections.pop(src)
+                if genome.skip_connections:
+                    src = random.choice(list(genome.skip_connections.keys()))
+                    if genome.skip_connections[src]:
+                        genome.skip_connections[src].pop(random.randrange(len(genome.skip_connections[src])))
+                        if not genome.skip_connections[src]:
+                            del genome.skip_connections[src]
             else:
                 # Add random skip
-                if len(genome.layers) > 2:
+                if len(genome.layers) - start_idx > 2:
                     src = random.randint(start_idx, len(genome.layers) - 2)
                     dest = random.randint(src + 1, len(genome.layers) - 1)
-                    genome.skip_connections[src].append((dest, 'add'))
+                    genome.add_skip_connection(src, dest, 'add')
     
     def evolve(self, generations: int, evaluator: Callable[[BaseGenome], float],
               multi_objective: bool = False) -> List[BaseGenome]:
@@ -1270,7 +1280,7 @@ class UnifiedEvolver:
                 if genome.fitness is None:
                     try:
                         genome.fitness = evaluator(genome)
-                    except Exception as e:
+                    except Exception:
                         genome.fitness = -float('inf')  # Penalize errors
             
             # Sort by fitness
@@ -1290,8 +1300,11 @@ class UnifiedEvolver:
             max_attempts = self.population_size * 10 # Allow 10 attempts per slot
 
             while len(new_population) < self.population_size and attempts < max_attempts:
-                parent1 = self._tournament_select()
-                parent2 = self._tournament_select()
+                try:
+                    parent1 = self._tournament_select()
+                    parent2 = self._tournament_select()
+                except ValueError: # Handle empty population case
+                    break
                 
                 if random.random() < self.crossover_rate:
                     child = self.crossover(parent1, parent2)
@@ -1309,7 +1322,7 @@ class UnifiedEvolver:
                 attempts += 1
 
             # If the loop timed out, fill the rest with mutated elites
-            if len(new_population) < self.population_size:
+            if len(new_population) < self.population_size and self.population:
                 print(f"WARN: Population diversity exhausted. Filling with {self.population_size - len(new_population)} mutated elites.")
                 while len(new_population) < self.population_size:
                     elite = copy.deepcopy(self.population[0])
@@ -1325,9 +1338,10 @@ class UnifiedEvolver:
                 self._adapt_rates()
             
             # Report progress
-            best = self.population[0]
-            print(f"Generation {gen}: Best fitness = {best.fitness:.4f}, "
-                  f"Unique genomes = {len(self.diversity_cache)}")
+            if self.population:
+                best = self.population[0]
+                print(f"Generation {gen}: Best fitness = {best.fitness:.4f}, "
+                      f"Unique genomes = {len(self.diversity_cache)}")
         
         return self.population
     
@@ -1390,9 +1404,7 @@ class ResourceAwareEvolver(UnifiedEvolver):
             if not self.resource_monitor.can_fit_in_ram(size_mb * 1.5):  # 1.5x for safety
                 return False
             
-            # Estimate parameter count
-            estimated_params = (size_mb * 1024**2) / 4
-            if estimated_params > self.max_model_params:
+            if genome.estimated_params > self.max_model_params:
                 return False
         
         return True
@@ -1558,21 +1570,25 @@ class DynamicNeuralModel(nn.Module):
         p = spec.params
         
         # Map layer types to PyTorch modules
-        if lt == 'linear':
-            return nn.Linear(p.get('in_features', 128), p['out_features'], p.get('bias', True))
-        elif lt == 'conv2d':
-            return nn.Conv2d(p.get('in_channels', 3), p['out_channels'],
-                           p['kernel_size'], p.get('stride', 1), p.get('padding', 0))
-        elif lt == 'batchnorm2d':
-            return nn.BatchNorm2d(p['num_features'])
-        elif lt == 'relu':
-            return nn.ReLU()
-        elif lt == 'dropout':
-            return nn.Dropout(p.get('p', 0.5))
-        elif lt == 'maxpool2d':
-            return nn.MaxPool2d(p.get('kernel_size', 2), p.get('stride', 2))
-        # Add more layer types as needed
-        
+        try:
+            if lt == 'linear':
+                return nn.Linear(p.get('in_features', 128), p['out_features'], p.get('bias', True))
+            elif lt == 'conv2d':
+                return nn.Conv2d(p.get('in_channels', 3), p['out_channels'],
+                               p['kernel_size'], p.get('stride', 1), p.get('padding', 0))
+            elif lt == 'batchnorm2d':
+                # Ensure num_features is an integer
+                num_features = int(p['num_features'])
+                return nn.BatchNorm2d(num_features)
+            elif lt == 'relu':
+                return nn.ReLU()
+            elif lt == 'dropout':
+                return nn.Dropout(p.get('p', 0.5))
+            elif lt == 'maxpool2d':
+                return nn.MaxPool2d(p.get('kernel_size', 2), p.get('stride', 2))
+        except (TypeError, KeyError) as e:
+             print(f"Error creating layer {lt} with params {p}: {e}", file=sys.stderr)
+
         return None
     
     def forward(self, x):
@@ -1877,13 +1893,14 @@ if __name__ == "__main__":
     
     # Report results
     evolver.population.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
-    best = evolver.population[0]
+    if evolver.population:
+        best = evolver.population[0]
     
-    print(f"\nBest genome:")
-    print(f"  Fitness: {best.fitness:.2f}")
-    print(f"  Parameters: {best.estimated_params/1e6:.2f}M")
-    print(f"  Memory: {best.estimated_memory_mb:.1f}MB")
-    print(f"  Layers: {len(best.layers)}")
+        print(f"\nBest genome:")
+        print(f"  Fitness: {best.fitness:.2f}")
+        print(f"  Parameters: {best.estimated_params/1e6:.2f}M")
+        print(f"  Memory: {best.estimated_memory_mb:.1f}MB")
+        print(f"  Layers: {len(best.layers)}")
     
     # Show resource utilization
     print(f"\nResource utilization:")
@@ -1896,16 +1913,17 @@ if __name__ == "__main__":
     print("-" * 40)
     
     # Take best model and prepare for fine-tuning
-    best_genome = evolver.population[0]
-    if isinstance(best_genome, NeuralGenome) and len(best_genome.layers) > 3:
-        # Freeze early layers
-        freeze_point = len(best_genome.layers) // 2
-        best_genome.freeze_layers(freeze_point)
-        print(f"Frozen first {freeze_point} layers for fine-tuning")
-        
-        # Now mutations will only affect layers after freeze_point
-        mutated = evolver.mutate(best_genome)
-        print(f"Mutated genome still has {freeze_point} frozen layers")
+    if evolver.population:
+        best_genome = evolver.population[0]
+        if isinstance(best_genome, NeuralGenome) and len(best_genome.layers) > 3:
+            # Freeze early layers
+            freeze_point = len(best_genome.layers) // 2
+            best_genome.freeze_layers(freeze_point)
+            print(f"Frozen first {freeze_point} layers for fine-tuning")
+            
+            # Now mutations will only affect layers after freeze_point
+            mutated = evolver.mutate(best_genome)
+            print(f"Mutated genome still has {freeze_point} frozen layers")
     
     # 5. Q-Learning Integration Example
     print("\n5. Q-Learning Guided Evolution:")
@@ -1914,29 +1932,33 @@ if __name__ == "__main__":
     q_guide = QLearningGuide()
     
     # Simulate learning from experience
-    for i in range(20):
-        genome = random.choice(evolver.population)
-        action = q_guide.choose_action(genome)
-        
-        # Apply guided mutation
-        original_fitness = genome.fitness or 0
-        mutated = evolver.mutate(genome)
-        
-        # Evaluate mutated genome
-        with resource_monitor.model_context(mutated.get_signature(), mutated) as model:
-            if model:
-                mutated.fitness = evaluate_with_resources(mutated, model)
-            else:
-                mutated.fitness = -float('inf')
-        
-        # Calculate reward
-        reward = mutated.fitness - original_fitness
-        
-        # Update Q-values
-        q_guide.update(genome, action, reward, mutated)
-        
-        if i % 5 == 0:
-            print(f"  Iteration {i}: Explored {len(q_guide.q_tables[GenomeType.NEURAL])} states")
+    if evolver.population:
+        for i in range(20):
+            genome = random.choice(evolver.population)
+            action = q_guide.choose_action(genome)
+            
+            # Apply guided mutation
+            original_fitness = genome.fitness or 0
+            mutated = evolver.mutate(genome)
+            
+            # Evaluate mutated genome
+            if isinstance(mutated, NeuralGenome):
+                with resource_monitor.model_context(mutated.get_signature(), mutated) as model:
+                    if model:
+                        mutated.fitness = evaluate_with_resources(mutated, model)
+                    else:
+                        mutated.fitness = -float('inf')
+            else: # Fallback for other genome types
+                mutated.fitness = -1 
+            
+            # Calculate reward
+            reward = mutated.fitness - original_fitness
+            
+            # Update Q-values
+            q_guide.update(genome, action, reward, mutated)
+            
+            if i % 5 == 0:
+                print(f"  Iteration {i}: Explored {len(q_guide.q_tables[GenomeType.NEURAL])} states")
     
     print(f"\nQ-Learning explored {len(q_guide.q_tables[GenomeType.NEURAL])} unique states")
     
