@@ -1078,8 +1078,8 @@ class RobustSerializer:
             ('.dill', dill.load, 'rb'),
             ('.pkl', pickle.load, 'rb'),
             ('.json', json.load, 'r'),
-            ('_safe.json', json.load, 'r'),
-            ('_minimal.json', json.load, 'r')
+            #('_safe.json', json.load, 'r'),
+            #('_minimal.json', json.load, 'r')
         ]
         
         for extension, loader, mode in load_strategies:
