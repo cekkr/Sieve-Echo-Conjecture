@@ -1,56 +1,27 @@
-
-#!/usr/bin/env python3
+```python
+# -*- coding: utf-8 -*-
 """
-Sieve Echo Conjecture - Unified Evolvo Discovery Engine v10
-Key improvements:
-- Uses unified evolvo library instead of split evolvo_model/evolvo_nn
-- Multi-base NDR pattern discovery 
-- Proper evolutionary approach to finding patterns
-- Co-evolution of formulas and neural architectures
+Unified Evolvo Library - Genetic Evolution Framework
+=====================================================
 
----
+A unified genetic evolution system for both algorithmic sequences and neural architectures.
 
-## Major Changes from v9 to v10:
+Key Design Principles:
+1. **Canonical Representation**: Each genome has a unique canonical form to avoid redundant descriptions
+2. **Valid-by-Construction**: Generation methods ensure syntactic validity, avoiding dead-ends
+3. **Implicit Shape Inference**: Automatic shape/type propagation reduces configuration errors
+4. **Modular Evolution**: Common evolution framework for both algorithms and neural networks
+5. **Q-Learning Integration**: Built-in support for reinforcement learning guidance
+6. **Graceful Error Handling**: Algorithms handle errors without crashing
 
-### 1. **Multi-Base NDR Discovery**
-- Tests patterns across 13 different prime bases (2, 3, 5, 7, 10, 11, 13, 16, 17, 19, 23, 29, 31)
-- Computes base invariance metrics (coefficient of variation) to verify pattern consistency
-- Aggregates features across all bases (mean entropy, std, kurtosis, etc.)
-
-### 2. **Proper Evolvo Integration**
-- Uses `evolvo.AlgorithmGenome` for formula evolution
-- Uses `evolvo.NeuralGenome` for neural architecture search  
-- Implements `evolvo.ResourceAwareEvolver` for memory-managed evolution
-- Includes `evolvo.ResourceMonitor` for VRAM/RAM management
-- Uses `evolvo.QLearningGuide` for guided evolution
-
-### 3. **Co-Evolution System**
-- Evolves formulas and neural networks together
-- Shares learning between both systems via Q-learning
-- Allows mutual feedback between symbolic and neural approaches
-
-### 4. **Key Improvements**
-- **Base Invariance Testing**: Verifies that patterns are structurally similar across different bases
-- **Proper Genome Creation**: Creates valid instruction sequences using the new Instruction class
-- **Resource Management**: Prevents memory overflow when evolving multiple neural networks
-- **Parallel Evaluation**: Uses batch processing for neural network evaluation
-
-### 5. **Critical Fixes**
-- No longer computes simple correlations - uses evolution to discover patterns
-- Properly normalizes digits to [0,1] interval (NDR framework)
-- Tests pattern structure across bases, not expecting identical values
-- Lets evolution discover feature combinations rather than pre-specifying them
-
-## How It Works:
-
-1. **Data Generation**: For each n, computes NDR patterns in all test bases
-2. **Feature Aggregation**: Calculates mean/std of entropy, kurtosis, length across bases
-3. **Formula Evolution**: Uses genetic algorithms to evolve mathematical formulas
-4. **Neural Evolution**: Evolves neural architectures with resource constraints
-5. **Co-Evolution**: Both systems evolve together, sharing insights via Q-learning
-6. **Base Invariance Check**: Verifies patterns are consistent (CV < 0.1 is good)
-
-The script now properly implements the evolutionary discovery approach you intended, where patterns emerge from evolution rather than being predetermined, and critically tests across multiple numerical bases to find universal patterns rather than base-specific artifacts.
+Core Components:
+- BaseGenome: Abstract base for all evolvable structures
+- AlgorithmGenome: Represents instruction sequences with bool/decimal separation
+- NeuralGenome: Represents neural network architectures with shape tracking
+- UnifiedEvolver: Common evolution engine for all genome types
+- QLearningGuide: Reinforcement learning for guided evolution
+- RobustSerializer: Advanced serialization with fallbacks (dill, pickle, json)
+- FormulaResultsManager: Manages and saves experimental results robustly.
 
 """
 
@@ -72,6 +43,15 @@ from enum import Enum
 from abc import ABC, abstractmethod
 import traceback
 import sys
+import psutil
+import gc
+import pickle
+import tempfile
+import os
+from pathlib import Path
+from contextlib import contextmanager
+import dill
+from datetime import datetime
 
 # ============================================================================
 # BASE GENOME SYSTEM
@@ -620,14 +600,6 @@ class CompiledAlgorithm:
 # RESOURCE MANAGEMENT
 # ============================================================================
 
-import psutil
-import gc
-import pickle
-import tempfile
-import os
-from pathlib import Path
-from contextlib import contextmanager
-
 class ResourceMonitor:
     """
     Monitors and manages system resources (VRAM, RAM, Disk).
@@ -853,10 +825,64 @@ class ResourceMonitor:
                 pass
 
 
-####
-####
-####
+# ============================================================================
+# NEURAL GENOME & DYNAMIC MODEL
+# ============================================================================
 
+@dataclass
+class TensorShape:
+    """Enhanced tensor shape with automatic compatibility checking"""
+    batch: Optional[int] = None
+    channels: Optional[int] = None
+    height: Optional[int] = None
+    width: Optional[int] = None
+    sequence: Optional[int] = None
+    features: Optional[int] = None
+    
+    def get_flat_features(self) -> int:
+        """Calculate total features when flattened"""
+        if self.features:
+            return self.features
+        if self.channels and self.height and self.width:
+            return self.channels * self.height * self.width
+        if self.channels:
+            return self.channels * (self.height or 1) * (self.width or 1)
+        if self.sequence and self.features:
+            return self.sequence * self.features
+        return 1
+    
+    def is_compatible_with(self, other: 'TensorShape') -> bool:
+        """Check if shapes can be connected (with implicit flattening)"""
+        # Feature to feature
+        if self.features is not None and other.features is not None:
+            return self.features == other.features
+        
+        # Spatial to feature (implicit flattening)
+        if self.features is None and other.features is not None:
+            return self.get_flat_features() == other.features
+        
+        # Feature to spatial requires explicit reshape
+        if self.features is not None and other.features is None:
+            return False
+        
+        # Spatial to spatial (channels can be adapted)
+        if self.channels is not None and other.channels is not None:
+            return True
+        
+        return True
+
+@dataclass
+class LayerSpec:
+    """Neural network layer specification"""
+    layer_type: str
+    params: Dict[str, Any]
+    input_shape: Optional[TensorShape] = None
+    output_shape: Optional[TensorShape] = None
+    computation_cost: float = 0.0
+    memory_cost: float = 0.0
+    
+    def __hash__(self):
+        return hash((self.layer_type, json.dumps(self.params, sort_keys=True)))
 
 class NeuralGenome(BaseGenome):
     """
@@ -889,13 +915,13 @@ class NeuralGenome(BaseGenome):
 
         # Estimate resource usage for new layer
         new_params = self._estimate_layer_params(layer_spec)
-        new_memory = self._estimate_layer_memory(layer_spec)
+        new_memory = self._estimate_layer_memory(new_params, layer_spec.output_shape)
 
         # Check resource constraints
         if self.estimated_params + new_params > self.max_params:
-            return False  # Would exceed parameter limit
+            return False
         if self.estimated_memory_mb + new_memory > self.max_memory_mb:
-            return False  # Would exceed memory limit
+            return False
 
         self.layers.append(layer_spec)
         self.estimated_params += new_params
@@ -906,41 +932,26 @@ class NeuralGenome(BaseGenome):
     def _estimate_layer_params(self, layer: 'LayerSpec') -> int:
         """Estimate number of parameters in a layer"""
         params = 0
-        if layer.layer_type == 'linear':
-            in_f = layer.params.get('in_features', 1)
-            out_f = layer.params.get('out_features', 1)
-            params = in_f * out_f
-            if layer.params.get('bias', True):
-                params += out_f
-        elif layer.layer_type == 'conv2d':
-            in_c = layer.params.get('in_channels', 1)
-            out_c = layer.params.get('out_channels', 1)
-            k = layer.params.get('kernel_size', 3)
-            if isinstance(k, (list, tuple)):
-                k = k[0] * k[1]
-            else:
-                k = k * k
-            params = in_c * out_c * k
-            if layer.params.get('bias', True):
-                params += out_c
-        # Add more layer types as needed
+        lt = layer.layer_type
+        p = layer.params
+        if lt == 'linear':
+            params = p.get('in_features', 1) * p.get('out_features', 1)
+            if p.get('bias', True): params += p.get('out_features', 1)
+        elif lt == 'conv2d':
+            k = p.get('kernel_size', 3)
+            k_size = k*k if isinstance(k, int) else k[0]*k[1]
+            params = p.get('in_channels', 1) * p.get('out_channels', 1) * k_size
+            if p.get('bias', True): params += p.get('out_channels', 1)
+        elif lt == 'batchnorm2d':
+            params = 2 * p.get('num_features', 1) # weight and bias
         return params
 
-    def _estimate_layer_memory(self, layer: 'LayerSpec') -> float:
+    def _estimate_layer_memory(self, params: int, output_shape: Optional[TensorShape]) -> float:
         """Estimate memory usage of a layer in MB"""
-        params = self._estimate_layer_params(layer)
-        # 4 bytes per parameter + activation memory (estimated)
-        memory_mb = (params * 4) / 1024 ** 2
+        memory_mb = (params * 4) / 1024 ** 2 # 4 bytes per parameter
 
-        # Add activation memory estimate
-        if layer.output_shape:
-            shape = layer.output_shape
-            activation_elements = 1
-            if shape.features:
-                activation_elements = shape.features
-            elif shape.channels and shape.height and shape.width:
-                activation_elements = shape.channels * shape.height * shape.width
-
+        if output_shape:
+            activation_elements = output_shape.get_flat_features()
             # Assume batch size of 32 for memory estimation
             activation_memory_mb = (activation_elements * 32 * 4) / 1024 ** 2
             memory_mb += activation_memory_mb
@@ -963,25 +974,17 @@ class NeuralGenome(BaseGenome):
         """Generate canonical signature for architecture"""
         if self._signature is None:
             sig_parts = []
-
-            # Canonical layer representation
             for layer in self.layers:
                 sig_parts.append(f"{layer.layer_type}:{json.dumps(layer.params, sort_keys=True)}")
-
-            # Canonical skip connections
             for src in sorted(self.skip_connections.keys()):
                 for dest, merge in sorted(self.skip_connections[src]):
                     sig_parts.append(f"skip:{src}->{dest}:{merge}")
-
             self._signature = hashlib.md5('|'.join(sig_parts).encode()).hexdigest()
-
         return self._signature
 
     def validate(self) -> Tuple[bool, List[str]]:
         """Validate architecture connectivity and shapes"""
         errors = []
-
-        # Check shape compatibility
         prev_shape = self.input_shape
         for i, layer in enumerate(self.layers):
             if layer.input_shape and prev_shape:
@@ -989,41 +992,114 @@ class NeuralGenome(BaseGenome):
                     errors.append(f"Layer {i}: Shape mismatch")
             prev_shape = layer.output_shape
 
-        # Check output compatibility
         if prev_shape and not prev_shape.is_compatible_with(self.output_shape):
             errors.append("Final layer incompatible with expected output shape")
 
-        # Validate skip connections
         for src, dests in self.skip_connections.items():
             for dest, _ in dests:
-                if src >= dest:
-                    errors.append(f"Invalid skip: {src} -> {dest}")
+                if src >= dest: errors.append(f"Invalid skip: {src} -> {dest}")
 
         return len(errors) == 0, errors
 
     def simplify(self) -> 'NeuralGenome':
         """Remove redundant layers and optimize architecture"""
         simplified = NeuralGenome(self.input_shape, self.output_shape)
-
-        # Remove consecutive activations
         prev_was_activation = False
         for layer in self.layers:
-            if layer.layer_type == 'activation':
-                if prev_was_activation:
-                    continue  # Skip redundant activation
+            is_activation = layer.layer_type in ['relu', 'sigmoid', 'tanh']
+            if is_activation:
+                if prev_was_activation: continue
                 prev_was_activation = True
             else:
                 prev_was_activation = False
-            simplified.layers.append(layer)
+            simplified.add_layer(copy.deepcopy(layer))
 
-        # Copy skip connections
         simplified.skip_connections = copy.deepcopy(self.skip_connections)
-
         return simplified
 
     def to_executable(self) -> nn.Module:
         """Convert to PyTorch model"""
         return DynamicNeuralModel(self)
+
+
+class DynamicNeuralModel(nn.Module):
+    """PyTorch model dynamically created from NeuralGenome"""
+    def __init__(self, genome: NeuralGenome):
+        super().__init__()
+        self.genome = genome
+        self.layers = nn.ModuleList()
+        self.skip_connections = genome.skip_connections
+        self._build_layers()
+    
+    def _build_layers(self):
+        """Build PyTorch layers from genome specification"""
+        for spec in self.genome.layers:
+            layer = self._create_layer(spec)
+            if layer:
+                self.layers.append(layer)
+    
+    def _create_layer(self, spec: LayerSpec) -> Optional[nn.Module]:
+        """Create PyTorch layer from specification"""
+        lt = spec.layer_type
+        p = spec.params
+        
+        try:
+            if lt == 'linear':
+                return nn.Linear(int(p['in_features']), int(p['out_features']), p.get('bias', True))
+            elif lt == 'conv2d':
+                return nn.Conv2d(int(p['in_channels']), int(p['out_channels']),
+                               int(p['kernel_size']), int(p.get('stride', 1)), int(p.get('padding', 0)))
+            elif lt == 'batchnorm2d':
+                return nn.BatchNorm2d(int(p['num_features']))
+            elif lt == 'relu':
+                return nn.ReLU()
+            elif lt == 'dropout':
+                return nn.Dropout(float(p.get('p', 0.5)))
+            elif lt == 'maxpool2d':
+                return nn.MaxPool2d(int(p.get('kernel_size', 2)), int(p.get('stride', 2)))
+        except (TypeError, KeyError, ValueError) as e:
+             print(f"ERROR creating layer {lt} with params {p}: {e}", file=sys.stderr)
+        return None
+    
+    def forward(self, x):
+        """Forward pass with skip connections"""
+        outputs = {}
+        
+        for i, layer in enumerate(self.layers):
+            # Apply layer
+            if isinstance(layer, nn.Linear) and len(x.shape) > 2:
+                x = torch.flatten(x, 1)  # Implicit flattening
+            x = layer(x)
+            outputs[i] = x
+            
+            # Handle incoming skip connections
+            if i in [dest for srcs in self.skip_connections.values() for dest, _ in srcs]:
+                for src, dests in self.skip_connections.items():
+                    for dest, merge_type in dests:
+                        if dest == i and src in outputs:
+                            x = self._merge_tensors(x, outputs[src], merge_type)
+        
+        return x
+    
+    def _merge_tensors(self, t1: torch.Tensor, t2: torch.Tensor, merge_type: str) -> torch.Tensor:
+        """Merge tensors according to strategy"""
+        # Ensure shape compatibility
+        if t1.shape != t2.shape:
+            # Use adaptive pooling or linear projection to match shapes
+            if len(t1.shape) == 4 and len(t2.shape) == 4:  # Conv features
+                t2 = F.adaptive_avg_pool2d(t2, (t1.shape[2], t1.shape[3]))
+                if t1.shape[1] != t2.shape[1]:  # Channel mismatch
+                    conv = nn.Conv2d(t2.shape[1], t1.shape[1], 1).to(t1.device)
+                    t2 = conv(t2)
+        
+        if merge_type == 'add':
+            return t1 + t2
+        elif merge_type == 'concat':
+            return torch.cat([t1, t2], dim=1)
+        elif merge_type == 'mul':
+            return t1 * t2
+        else:
+            return t1 + t2  # Default to add
 
 
 # ============================================================================
@@ -1097,15 +1173,16 @@ class UnifiedEvolver:
         # Layer-wise crossover
         max_layers = max(len(p1.layers), len(p2.layers))
         for i in range(max_layers):
+            parent_layer = None
             if i < len(p1.layers) and i < len(p2.layers):
-                # Randomly choose layer from either parent
-                child.layers.append(copy.deepcopy(random.choice([p1.layers[i], p2.layers[i]])))
+                parent_layer = random.choice([p1.layers[i], p2.layers[i]])
             elif i < len(p1.layers):
-                if random.random() < 0.5:
-                    child.layers.append(copy.deepcopy(p1.layers[i]))
+                if random.random() < 0.5: parent_layer = p1.layers[i]
             elif i < len(p2.layers):
-                if random.random() < 0.5:
-                    child.layers.append(copy.deepcopy(p2.layers[i]))
+                if random.random() < 0.5: parent_layer = p2.layers[i]
+            
+            if parent_layer:
+                child.add_layer(copy.deepcopy(parent_layer))
         
         # Inherit skip connections
         for parent in [p1, p2]:
@@ -1113,7 +1190,7 @@ class UnifiedEvolver:
                 if src < len(child.layers):
                     for dest, merge in dests:
                         if dest < len(child.layers) and random.random() < 0.5:
-                            child.skip_connections[src].append((dest, merge))
+                            child.add_skip_connection(src, dest, merge)
         
         return child
     
@@ -1130,20 +1207,17 @@ class UnifiedEvolver:
         mutated._signature = None  # Reset signature
         return mutated
     
-    # In class UnifiedEvolver
     def _mutate_algorithm(self, genome: AlgorithmGenome):
         """Mutate algorithm genome"""
 
         mutation_type = random.choice(['modify', 'add', 'remove', 'reorder'])        
 
         if not genome.instructions and mutation_type != 'add':
-            return # Cannot modify, remove, or reorder an empty list
+            return
         
         if mutation_type == 'modify' and genome.instructions:
             idx = random.randint(0, len(genome.instructions) - 1)
             if isinstance(genome.instructions[idx], Instruction):
-                # Change operation
-                # Find a new op with the same signature to reduce errors
                 old_op = genome.instruction_set.operations[genome.instructions[idx].operation]
                 compatible_ops = [
                     op_name for op_name, op in genome.instruction_set.operations.items()
@@ -1153,44 +1227,33 @@ class UnifiedEvolver:
                     genome.instructions[idx].operation = random.choice(compatible_ops)
 
         elif mutation_type == 'add':
-            # --- START: IMPLEMENTED 'add' MUTATION ---
             op_name = random.choice(list(genome.instruction_set.operations.keys()))
             op_info = genome.instruction_set.operations[op_name]
 
             if op_name not in ['IF', 'ELSE', 'END', 'ASSIGN']:
-                # Determine target type
-                if op_info.return_type == 'decimal':
-                    target_store = 'd$'
-                elif op_info.return_type == 'bool':
-                    target_store = 'b$'
-                else:
-                    return # Skip adding complex/untyped operations
+                if op_info.return_type == 'decimal': target_store = 'd$'
+                elif op_info.return_type == 'bool': target_store = 'b$'
+                else: return
 
                 if not genome.data_config.get(target_store): return
 
                 target_idx = random.randint(0, len(genome.data_config[target_store]) - 1)
                 target = (target_store, target_idx)
                 
-                # Determine args
                 args = []
                 for arg_type in op_info.arg_types:
-                    if arg_type in ['decimal', 'any']:
-                        store_type = 'd#' if random.random() < 0.7 else 'd$'
-                        if not genome.data_config.get(store_type): continue
-                        idx = random.randint(0, len(genome.data_config[store_type]) - 1)
-                        args.append((store_type, idx))
-                    elif arg_type == 'bool':
-                        store_type = 'b#' if random.random() < 0.5 else 'b$'
-                        if not genome.data_config.get(store_type): continue
-                        idx = random.randint(0, len(genome.data_config[store_type]) - 1)
-                        args.append((store_type, idx))
+                    if arg_type in ['decimal', 'any']: store_type = 'd#' if random.random() < 0.7 else 'd$'
+                    elif arg_type == 'bool': store_type = 'b#' if random.random() < 0.5 else 'b$'
+                    else: continue
+                    
+                    if not genome.data_config.get(store_type): continue
+                    idx = random.randint(0, len(genome.data_config[store_type]) - 1)
+                    args.append((store_type, idx))
 
                 if len(args) == len(op_info.arg_types):
                     new_instruction = Instruction(target, op_name, args)
-                    # Insert at a random position
                     insert_pos = random.randint(0, len(genome.instructions))
                     genome.instructions.insert(insert_pos, new_instruction)
-            # --- END: IMPLEMENTED 'add' MUTATION ---
         
         elif mutation_type == 'remove' and len(genome.instructions) > 1:
             idx = random.randint(0, len(genome.instructions) - 1)
@@ -1202,60 +1265,43 @@ class UnifiedEvolver:
     
     def _mutate_neural(self, genome: NeuralGenome):
         """Mutate neural genome respecting frozen layers"""
-        start_idx = genome.frozen_until  # Don't mutate frozen layers
+        start_idx = genome.frozen_until
         
-        # Allow mutation if there are non-frozen layers
-        if len(genome.layers) <= start_idx and len(genome.layers) > 0:
-            start_idx = len(genome.layers) -1 # Mutate at least the last layer if all are frozen
-        elif not genome.layers:
-             return # Cannot mutate empty genome
-        
-        mutation_type = random.choice(['modify', 'add', 'remove', 'skip'])
-        
+        if not genome.layers:
+            # Handle empty genome: only 'add' mutation is possible
+            mutation_type = 'add'
+        else:
+            mutation_type = random.choice(['modify', 'add', 'remove', 'skip'])
+
         if mutation_type == 'modify' and len(genome.layers) > start_idx:
-            # Modify layer parameters
             idx = random.randint(start_idx, len(genome.layers) - 1)
             layer = genome.layers[idx]
-            # Modify random parameter
             if layer.params:
                 param_key = random.choice(list(layer.params.keys()))
                 original_value = layer.params[param_key]
-
-                # --- START: BUG FIX ---
+                
+                # --- START: TYPE-AWARE MUTATION (BUG FIX) ---
                 if isinstance(original_value, bool):
                     layer.params[param_key] = not original_value
                 elif isinstance(original_value, int):
-                    # Mutate and keep as int, ensure it's at least 1
                     new_val = int(round(original_value * random.uniform(0.75, 1.25)))
-                    layer.params[param_key] = max(1, new_val)
+                    layer.params[param_key] = max(1, new_val) # Ensure it's at least 1
                 elif isinstance(original_value, float):
-                    # Mutate and keep as float
-                    layer.params[param_key] *= random.uniform(0.5, 2.0)
-                # --- END: BUG FIX ---
-        
+                    layer.params[param_key] *= random.uniform(0.75, 1.25)
+                # --- END: TYPE-AWARE MUTATION ---
+
         elif mutation_type == 'add':
-            # Add new layer
             idx = random.randint(start_idx, len(genome.layers))
-            # Create appropriate layer based on context
-            # (Implementation depends on a layer factory, simplified here)
-            # This part can be expanded to create more diverse layers
-            if idx > 0 and isinstance(genome.layers[idx-1], LayerSpec):
-                 prev_layer_params = genome.layers[idx-1].params
-                 if 'out_features' in prev_layer_params:
-                     in_feat = prev_layer_params['out_features']
-                     out_feat = random.choice([32, 64, 128, in_feat])
-                     new_layer = LayerSpec('linear', {'in_features': in_feat, 'out_features': out_feat})
-                     genome.layers.insert(idx, new_layer)
+            # (Simplified layer creation logic)
+            new_layer = LayerSpec('relu', {})
+            genome.layers.insert(idx, new_layer)
         
         elif mutation_type == 'remove' and len(genome.layers) > start_idx + 1:
-            # Remove layer
             idx = random.randint(start_idx, len(genome.layers) - 1)
             genome.layers.pop(idx)
         
         elif mutation_type == 'skip':
-            # Add or remove skip connection
             if genome.skip_connections and random.random() < 0.5:
-                # Remove random skip
                 if genome.skip_connections:
                     src = random.choice(list(genome.skip_connections.keys()))
                     if genome.skip_connections[src]:
@@ -1263,11 +1309,13 @@ class UnifiedEvolver:
                         if not genome.skip_connections[src]:
                             del genome.skip_connections[src]
             else:
-                # Add random skip
-                if len(genome.layers) - start_idx > 2:
-                    src = random.randint(start_idx, len(genome.layers) - 2)
-                    dest = random.randint(src + 1, len(genome.layers) - 1)
+                if len(genome.layers) > start_idx + 1:
+                    src, dest = sorted(random.sample(range(start_idx, len(genome.layers)), 2))
                     genome.add_skip_connection(src, dest, 'add')
+
+        # Recalculate estimated params/memory after mutation
+        genome.estimated_params = sum(genome._estimate_layer_params(l) for l in genome.layers)
+        genome.estimated_memory_mb = sum(genome._estimate_layer_memory(genome._estimate_layer_params(l), l.output_shape) for l in genome.layers)
     
     def evolve(self, generations: int, evaluator: Callable[[BaseGenome], float],
               multi_objective: bool = False) -> List[BaseGenome]:
@@ -1276,73 +1324,52 @@ class UnifiedEvolver:
         for gen in range(generations):
             self.generation = gen
             
-            # Evaluate population
             for genome in self.population:
                 if genome.fitness is None:
                     try:
                         genome.fitness = evaluator(genome)
                     except Exception:
-                        genome.fitness = -float('inf')  # Penalize errors
+                        genome.fitness = -float('inf')
             
-            # Sort by fitness
             self.population.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
             
-            # Update hall of fame
             self.hall_of_fame.extend(self.population[:5])
             self.hall_of_fame.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
             self.hall_of_fame = self.hall_of_fame[:20]
             
-            # Selection
             elite_size = int(self.population_size * self.elite_ratio)
-            new_population = self.population[:elite_size]  # Elitism
+            new_population = self.population[:elite_size]
             
-            # --- START: MODIFIED REPRODUCTION LOOP ---
             attempts = 0
-            max_attempts = self.population_size * 10 # Allow 10 attempts per slot
+            max_attempts = self.population_size * 10
 
             while len(new_population) < self.population_size and attempts < max_attempts:
                 try:
                     parent1 = self._tournament_select()
                     parent2 = self._tournament_select()
-                except ValueError: # Handle empty population case
-                    break
+                except ValueError: break
                 
-                if random.random() < self.crossover_rate:
-                    child = self.crossover(parent1, parent2)
-                else:
-                    child = copy.deepcopy(random.choice([parent1, parent2]))
-                
+                child = self.crossover(parent1, parent2) if random.random() < self.crossover_rate else copy.deepcopy(random.choice([parent1, parent2]))
                 if random.random() < self.mutation_rate:
                     child = self.mutate(child)
 
-                # Check for novelty before adding to new_population
                 if child.get_signature() not in self.diversity_cache:
                     self.diversity_cache.add(child.get_signature())
                     new_population.append(child)
-                
                 attempts += 1
 
-            # If the loop timed out, fill the rest with mutated elites
             if len(new_population) < self.population_size and self.population:
-                print(f"WARN: Population diversity exhausted. Filling with {self.population_size - len(new_population)} mutated elites.")
+                print(f"WARN: Filling with {self.population_size - len(new_population)} mutated elites.")
                 while len(new_population) < self.population_size:
-                    elite = copy.deepcopy(self.population[0])
-                    mutated_elite = self.mutate(elite)
-                    # We don't check for diversity here, just fill the spots
-                    new_population.append(mutated_elite)
+                    new_population.append(self.mutate(copy.deepcopy(self.population[0])))
 
             self.population = new_population[:self.population_size]
-            # --- END: MODIFIED REPRODUCTION LOOP ---
             
-            # Adaptive rates
-            if gen % 10 == 0:
-                self._adapt_rates()
+            if gen % 10 == 0: self._adapt_rates()
             
-            # Report progress
             if self.population:
                 best = self.population[0]
-                print(f"Generation {gen}: Best fitness = {best.fitness:.4f}, "
-                      f"Unique genomes = {len(self.diversity_cache)}")
+                print(f"Gen {gen}: Best fitness = {best.fitness:.4f}, Unique genomes = {len(self.diversity_cache)}")
         
         return self.population
     
@@ -1355,18 +1382,18 @@ class UnifiedEvolver:
     
     def _adapt_rates(self):
         """Adapt evolution rates based on progress"""
-        # Check for stagnation
         if len(self.hall_of_fame) >= 5:
             recent_fitness = [g.fitness for g in self.hall_of_fame[:5] if g.fitness is not None]
             if not recent_fitness: return
             
-            if all(abs(f - recent_fitness[0]) < 0.001 for f in recent_fitness):
-                # Increase mutation to escape local optimum
+            if all(abs(f - recent_fitness[0]) < 1e-4 for f in recent_fitness):
                 self.mutation_rate = min(0.8, self.mutation_rate * 1.2)
             else:
-                # Decrease mutation when making progress
                 self.mutation_rate = max(0.1, self.mutation_rate * 0.95)
 
+# ============================================================================
+# RESOURCE-AWARE EVOLVER
+# ============================================================================
 
 class ResourceAwareEvolver(UnifiedEvolver):
     """
@@ -1377,260 +1404,65 @@ class ResourceAwareEvolver(UnifiedEvolver):
         super().__init__(genome_type, population_size)
         self.max_model_params = max_model_params
         self.resource_monitor = resource_monitor or ResourceMonitor()
-        
-        # Constraints based on available resources
         self._update_constraints()
     
     def _update_constraints(self):
         """Update evolution constraints based on available resources"""
-        vram_used, vram_total = self.resource_monitor.get_vram_info()
-        ram_used, ram_total = self.resource_monitor.get_ram_info()
-        
-        # Estimate maximum model size that can fit
-        available_memory = min(
-            (vram_total - vram_used) * 0.8 if vram_total > 0 else float('inf'),
-            (ram_total - ram_used) * 0.8
-        )
-        
-        # Assuming 4 bytes per parameter
-        max_params_by_memory = (available_memory * 1024**2) / 4
-        self.max_model_params = min(self.max_model_params, max_params_by_memory)
+        _, vram_total = self.resource_monitor.get_vram_info()
+        _, ram_total = self.resource_monitor.get_ram_info()
+        available_mem_mb = min(vram_total * 0.8, ram_total * 0.8)
+        max_params_by_mem = (available_mem_mb * 1024**2) / 8 # 8 bytes for param+grad
+        self.max_model_params = min(self.max_model_params, max_params_by_mem)
     
     def validate_genome_resources(self, genome: BaseGenome) -> bool:
         """Check if genome respects resource constraints"""
         if isinstance(genome, NeuralGenome):
+            if genome.estimated_params > self.max_model_params: return False
             size_mb = self.resource_monitor.estimate_model_size(genome)
-            
-            # Check if it can fit anywhere (RAM or disk at minimum)
-            if not self.resource_monitor.can_fit_in_ram(size_mb * 1.5):  # 1.5x for safety
-                return False
-            
-            if genome.estimated_params > self.max_model_params:
-                return False
-        
+            if not self.resource_monitor.can_fit_in_ram(size_mb * 1.5): return False
         return True
     
-
     def evaluate_population_parallel(self, evaluator: Callable, batch_size: int = 4):
         """
         Evaluate population in parallel batches with resource management.
         """
         self._update_constraints()
-        
-        batches = [self.population[i:i+batch_size] 
-                for i in range(0, len(self.population), batch_size)]
+        batches = [self.population[i:i+batch_size] for i in range(0, len(self.population), batch_size)]
         
         for batch_idx, batch in enumerate(batches):
             batch_models = []
-            
             for genome in batch:
-                # === START: New Upper Try-Except for Genome Isolation ===
                 try:
-                    # Reset fitness to ensure it's re-evaluated
                     genome.fitness = None
-
                     if not self.validate_genome_resources(genome):
-                        genome.fitness = -float('inf')  # Penalize oversized models
-                        continue # Skip to the next genome in the batch
+                        genome.fitness = -float('inf')
+                        continue
                     
                     if isinstance(genome, NeuralGenome):
                         model_id = genome.get_signature()
-
-                        # This inner try-except is still useful for context-specific errors
-                        try:
-                            with self.resource_monitor.model_context(model_id, genome) as model:
-                                if model:
-                                    batch_models.append((genome, model))
-                                else:
-                                    # Model failed to build or load
-                                    genome.fitness = -float('inf')
-                        except Exception as model_context_error:
-                            print(f"ERROR: model_context failed for genome {model_id[:10]}...: {model_context_error}", file=sys.stderr)
-                            genome.fitness = -float('inf')
+                        with self.resource_monitor.model_context(model_id, genome) as model:
+                            if model: batch_models.append((genome, model))
+                            else: genome.fitness = -float('inf')
                     else:
-                        # For non-neural genomes like AlgorithmGenome
                         batch_models.append((genome, None))
-
-                except Exception as processing_error:
-                    # This catches ANY error related to a single genome (e.g., bad signature, validation bug)
-                    import traceback
-                    print(f"FATAL ERROR processing genome. Assigning -inf fitness.", file=sys.stderr)
+                except Exception:
                     traceback.print_exc(file=sys.stderr)
                     genome.fitness = -float('inf')
-                    # The 'continue' is implicit as we will just move to the next genome
-                # === END: New Upper Try-Except ===
 
-            # Evaluate batch (only models that were successfully prepared)
             for genome, model in batch_models:
-                # If fitness was already set to -inf due to an error, skip evaluation
-                if genome.fitness is not None:
-                    continue
-
+                if genome.fitness is not None: continue
                 try:
-                    if model:
-                        genome.fitness = evaluator(genome, model=model)
-                    else:
-                        genome.fitness = evaluator(genome)
-                except RuntimeError as e:
-                    if "out of memory" in str(e).lower():
-                        genome.fitness = -float('inf')
-                        if isinstance(genome, NeuralGenome):
-                            self.resource_monitor.offload_to_disk(genome.get_signature())
-                    else:
-                        # Catch other evaluation-time errors
-                        genome.fitness = -float('inf')
-                        print(f"ERROR: Evaluator failed for genome {genome.get_signature()[:10]}...: {e}", file=sys.stderr)
+                    genome.fitness = evaluator(genome, model=model) if model else evaluator(genome)
                 except Exception as e:
                     genome.fitness = -float('inf')
-                    print(f"ERROR: A non-runtime error occurred in evaluator for genome {genome.get_signature()[:10]}...: {e}", file=sys.stderr)
-            
-            # Free memory between batches
+                    if "out of memory" in str(e).lower() and isinstance(genome, NeuralGenome):
+                        self.resource_monitor.offload_to_disk(genome.get_signature())
+                    else:
+                        print(f"ERROR: Evaluator failed for {genome.get_signature()[:10]}: {e}", file=sys.stderr)
+
             if batch_idx < len(batches) - 1:
                 gc.collect()
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
-
-# ============================================================================
-# NEURAL GENOME
-# ============================================================================
-
-@dataclass
-class TensorShape:
-    """Enhanced tensor shape with automatic compatibility checking"""
-    batch: Optional[int] = None
-    channels: Optional[int] = None
-    height: Optional[int] = None
-    width: Optional[int] = None
-    sequence: Optional[int] = None
-    features: Optional[int] = None
-    
-    def get_flat_features(self) -> int:
-        """Calculate total features when flattened"""
-        if self.features:
-            return self.features
-        if self.channels and self.height and self.width:
-            return self.channels * self.height * self.width
-        if self.channels:
-            return self.channels * (self.height or 1) * (self.width or 1)
-        if self.sequence and self.features:
-            return self.sequence * self.features
-        return 1
-    
-    def is_compatible_with(self, other: 'TensorShape') -> bool:
-        """Check if shapes can be connected (with implicit flattening)"""
-        # Feature to feature
-        if self.features is not None and other.features is not None:
-            return self.features == other.features
-        
-        # Spatial to feature (implicit flattening)
-        if self.features is None and other.features is not None:
-            return self.get_flat_features() == other.features
-        
-        # Feature to spatial requires explicit reshape
-        if self.features is not None and other.features is None:
-            return False
-        
-        # Spatial to spatial (channels can be adapted)
-        if self.channels is not None and other.channels is not None:
-            return True
-        
-        return True
-
-@dataclass
-class LayerSpec:
-    """Neural network layer specification"""
-    layer_type: str
-    params: Dict[str, Any]
-    input_shape: Optional[TensorShape] = None
-    output_shape: Optional[TensorShape] = None
-    computation_cost: float = 0.0
-    memory_cost: float = 0.0
-    
-    def __hash__(self):
-        return hash((self.layer_type, json.dumps(self.params, sort_keys=True)))
-
-class DynamicNeuralModel(nn.Module):
-    """PyTorch model dynamically created from NeuralGenome"""
-    def __init__(self, genome: NeuralGenome):
-        super().__init__()
-        self.genome = genome
-        self.layers = nn.ModuleList()
-        self.skip_connections = genome.skip_connections
-        self._build_layers()
-    
-    def _build_layers(self):
-        """Build PyTorch layers from genome specification"""
-        for spec in self.genome.layers:
-            layer = self._create_layer(spec)
-            if layer:
-                self.layers.append(layer)
-    
-    def _create_layer(self, spec: LayerSpec) -> Optional[nn.Module]:
-        """Create PyTorch layer from specification"""
-        lt = spec.layer_type
-        p = spec.params
-        
-        # Map layer types to PyTorch modules
-        try:
-            if lt == 'linear':
-                return nn.Linear(p.get('in_features', 128), p['out_features'], p.get('bias', True))
-            elif lt == 'conv2d':
-                return nn.Conv2d(p.get('in_channels', 3), p['out_channels'],
-                               p['kernel_size'], p.get('stride', 1), p.get('padding', 0))
-            elif lt == 'batchnorm2d':
-                # Ensure num_features is an integer
-                num_features = int(p['num_features'])
-                return nn.BatchNorm2d(num_features)
-            elif lt == 'relu':
-                return nn.ReLU()
-            elif lt == 'dropout':
-                return nn.Dropout(p.get('p', 0.5))
-            elif lt == 'maxpool2d':
-                return nn.MaxPool2d(p.get('kernel_size', 2), p.get('stride', 2))
-        except (TypeError, KeyError) as e:
-             print(f"Error creating layer {lt} with params {p}: {e}", file=sys.stderr)
-
-        return None
-    
-    def forward(self, x):
-        """Forward pass with skip connections"""
-        outputs = {}
-        
-        for i, layer in enumerate(self.layers):
-            # Apply layer
-            if isinstance(layer, nn.Linear) and len(x.shape) > 2:
-                x = torch.flatten(x, 1)  # Implicit flattening
-            x = layer(x)
-            outputs[i] = x
-            
-            # Handle incoming skip connections
-            if i in [dest for srcs in self.skip_connections.values() for dest, _ in srcs]:
-                for src, dests in self.skip_connections.items():
-                    for dest, merge_type in dests:
-                        if dest == i and src in outputs:
-                            x = self._merge_tensors(x, outputs[src], merge_type)
-        
-        return x
-    
-    def _merge_tensors(self, t1: torch.Tensor, t2: torch.Tensor, merge_type: str) -> torch.Tensor:
-        """Merge tensors according to strategy"""
-        # Ensure shape compatibility
-        if t1.shape != t2.shape:
-            # Use adaptive pooling or linear projection to match shapes
-            if len(t1.shape) == 4 and len(t2.shape) == 4:  # Conv features
-                t2 = F.adaptive_avg_pool2d(t2, (t1.shape[2], t1.shape[3]))
-                if t1.shape[1] != t2.shape[1]:  # Channel mismatch
-                    conv = nn.Conv2d(t2.shape[1], t1.shape[1], 1).to(t1.device)
-                    t2 = conv(t2)
-        
-        if merge_type == 'add':
-            return t1 + t2
-        elif merge_type == 'concat':
-            return torch.cat([t1, t2], dim=1)
-        elif merge_type == 'mul':
-            return t1 * t2
-        else:
-            return t1 + t2  # Default to add
+                if torch.cuda.is_available(): torch.cuda.empty_cache()
 
 # ============================================================================
 # Q-LEARNING INTEGRATION
@@ -1647,13 +1479,11 @@ class QLearningGuide:
         self.discount_factor = 0.95
         self.epsilon = 0.1
         
-        # Separate Q-tables for different genome types
         self.q_tables = {
             GenomeType.ALGORITHM: defaultdict(lambda: defaultdict(float)),
             GenomeType.NEURAL: defaultdict(lambda: defaultdict(float))
         }
         
-        # Action spaces
         self.action_spaces = {
             GenomeType.ALGORITHM: ['ADD', 'SUB', 'MUL', 'DIV', 'IF', 'GT', 'AND'],
             GenomeType.NEURAL: ['conv2d', 'linear', 'batchnorm', 'dropout', 'relu', 'skip']
@@ -1662,12 +1492,9 @@ class QLearningGuide:
     def get_state(self, genome: BaseGenome) -> str:
         """Extract state representation from genome"""
         if isinstance(genome, AlgorithmGenome):
-            # Last N operations
-            ops = [i.operation for i in genome.instructions[-self.state_features:] 
-                  if isinstance(i, Instruction)]
+            ops = [i.operation for i in genome.instructions[-self.state_features:] if isinstance(i, Instruction)]
             return '|'.join(ops)
         elif isinstance(genome, NeuralGenome):
-            # Last N layer types
             types = [l.layer_type for l in genome.layers[-self.state_features:]]
             return '|'.join(types)
         return ""
@@ -1695,292 +1522,154 @@ class QLearningGuide:
         genome_type = genome.genome_type
         
         current_q = self.q_tables[genome_type][state][action]
-        next_max_q = max(self.q_tables[genome_type][next_state].values()) \
-                    if self.q_tables[genome_type][next_state] else 0
+        next_max_q = max(self.q_tables[genome_type][next_state].values()) if self.q_tables[genome_type][next_state] else 0
         
-        new_q = current_q + self.learning_rate * (
-            reward + self.discount_factor * next_max_q - current_q
-        )
+        new_q = current_q + self.learning_rate * (reward + self.discount_factor * next_max_q - current_q)
         self.q_tables[genome_type][state][action] = new_q
     
     def guide_mutation(self, genome: BaseGenome) -> BaseGenome:
         """Use Q-learning to guide mutation decisions"""
+        # (Simplified example of guided mutation)
         action = self.choose_action(genome)
         mutated = copy.deepcopy(genome)
         
-        if isinstance(mutated, AlgorithmGenome):
-            # Add instruction based on Q-learning suggestion
-            # Implementation depends on instruction format
-            pass
-        elif isinstance(mutated, NeuralGenome):
-            # Add layer based on Q-learning suggestion
-            # Implementation depends on layer factory
-            pass
-        
+        if isinstance(mutated, NeuralGenome) and action in ['conv2d', 'linear', 'relu']:
+            new_layer = LayerSpec(action, {}) # Params would be more complex
+            mutated.layers.append(new_layer)
         return mutated
 
+
 # ============================================================================
-# EXAMPLE USAGE
+# SERIALIZATION & RESULTS MANAGEMENT
 # ============================================================================
 
-if __name__ == "__main__":
-    print("=== Unified Evolvo Framework Demo ===\n")
+class RobustSerializer:
+    """
+    Multi-level fallback serialization system.
+    Priority: dill -> pickle -> json
+    """
     
-    # 1. Algorithm Evolution Example
-    print("1. Algorithm Evolution:")
-    print("-" * 40)
+    @staticmethod
+    def make_json_safe(obj: Any, max_depth: int = 10, current_depth: int = 0) -> Any:
+        if current_depth > max_depth: return f"<max_depth_exceeded:{type(obj).__name__}>"
+        if obj is None or isinstance(obj, (bool, int, float, str)): return obj
+        if isinstance(obj, np.ndarray): return obj.tolist()
+        if isinstance(obj, (np.integer, np.int32, np.int64)): return int(obj)
+        if isinstance(obj, (np.floating, np.float32, np.float64)): return float(obj)
+        if isinstance(obj, np.bool_): return bool(obj)
+        if isinstance(obj, float):
+            if np.isnan(obj): return "NaN"
+            if np.isinf(obj): return "Inf" if obj > 0 else "-Inf"
+        if isinstance(obj, dict):
+            return {str(k): RobustSerializer.make_json_safe(v, max_depth, current_depth + 1) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [RobustSerializer.make_json_safe(item, max_depth, current_depth + 1) for item in obj]
+        if isinstance(obj, set): return list(obj)
+        if isinstance(obj, BaseGenome):
+            return {
+                'type': obj.__class__.__name__,
+                'fitness': obj.fitness,
+                'signature': obj.get_signature()[:16],
+            }
+        if hasattr(obj, '__dict__'):
+            try:
+                return {'_type': obj.__class__.__name__, '_data': RobustSerializer.make_json_safe(obj.__dict__, max_depth, current_depth + 1)}
+            except:
+                return f"<{obj.__class__.__name__}>"
+        return str(obj)
     
-    # Setup data configuration
-    data_config = {
-        'b#': ['true', 'false'],
-        'd#': ['pi', 'e', 'one'],
-        'b$' : ['result_bool'],
-        'd$' : ['x', 'y', 'temp']
-    }
+    @staticmethod
+    def save_with_fallbacks(data: Any, base_path: Union[str, Path], verbose: bool = True) -> bool:
+        base_path = Path(base_path)
+        base_path.parent.mkdir(parents=True, exist_ok=True)
+        strategies = [
+            ('dill', '.dill', lambda d, p: dill.dump(d, open(p, 'wb'))),
+            ('pickle', '.pkl', lambda d, p: pickle.dump(d, open(p, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)),
+            ('json', '.json', lambda d, p: json.dump(RobustSerializer.make_json_safe(d), open(p, 'w'), indent=2)),
+        ]
+        saved = False
+        for name, ext, func in strategies:
+            filepath = base_path.with_suffix(ext)
+            try:
+                func(data, filepath)
+                if verbose: print(f"✓ Saved {name} to {filepath}")
+                saved = True
+            except Exception as e:
+                if verbose: print(f"✗ Failed {name}: {str(e)[:100]}")
+        return saved
     
-    # Create instruction set
-    instruction_set = EnhancedInstructionSet()
+    @staticmethod
+    def load_with_fallbacks(base_path: Union[str, Path], verbose: bool = True) -> Any:
+        base_path = Path(base_path)
+        strategies = [('.dill', dill.load, 'rb'), ('.pkl', pickle.load, 'rb'), ('.json', json.load, 'r')]
+        for ext, loader, mode in strategies:
+            filepath = base_path.with_suffix(ext)
+            if filepath.exists():
+                try:
+                    with open(filepath, mode) as f:
+                        data = loader(f)
+                    if verbose: print(f"✓ Loaded from {filepath}")
+                    return data
+                except Exception as e:
+                    if verbose: print(f"✗ Failed to load {filepath}: {str(e)[:100]}")
+        return None
+
+class FormulaResultsManager:
+    """Manages formula discovery results with JSON-only output."""
+    def __init__(self, results_dir: str = "results_v7"):
+        self.results_dir = Path(results_dir)
+        self.results_dir.mkdir(parents=True, exist_ok=True)
+        self.serializer = RobustSerializer()
     
-    # Create algorithm genome
-    algo_genome = AlgorithmGenome(data_config, instruction_set)
-    
-    # Add some instructions
-    algo_genome.add_instruction(Instruction(
-        target=('d$', 2),  # temp
-        operation='MUL', args=[('d$' , 0), ('d#', 2)]  # x * one
-    ))
-    algo_genome.add_instruction(Instruction(
-        target=('d$', 1),  # y
-        operation='ADD',
-        args=[('d$', 2), ('d#', 1)]  # temp + e
-    ))
-    algo_genome.mark_output(('d$' , 1))  # y is output
-    
-    # Validate and simplify
-    valid, errors = algo_genome.validate()
-    print(f"Algorithm valid: {valid}")
-    if errors:
-        print(f"Errors: {errors}")
-    
-    print(f"Signature: {algo_genome.get_signature()[:16]}...")
-    
-    # 2. Neural Architecture Evolution with Resource Management
-    print("\n2. Neural Architecture Evolution with Resource Management:")
-    print("-" * 40)
-    
-    # Initialize resource monitor
-    resource_monitor = ResourceMonitor(max_vram_usage=0.7, max_ram_usage=0.8)
-    
-    # Check available resources
-    vram_used, vram_total = resource_monitor.get_vram_info()
-    ram_used, ram_total = resource_monitor.get_ram_info()
-    
-    print(f"Available VRAM: {vram_total - vram_used:.0f}/{vram_total:.0f} MB")
-    print(f"Available RAM: {(ram_total - ram_used):.0f}/{ram_total:.0f} MB")
-    print(f"Device: {resource_monitor.device}")
-    
-    # Define shapes with resource constraints
-    input_shape = TensorShape(batch=None, channels=3, height=224, width=224)
-    output_shape = TensorShape(features=1000)
-    
-    # Calculate maximum model size based on available resources
-    max_memory = min(
-        (vram_total - vram_used) * 0.5 if vram_total > 0 else float('inf'),
-        (ram_total - ram_used) * 0.3
-    )
-    max_params = int((max_memory * 1024**2) / 4)  # 4 bytes per param
-    
-    print(f"Maximum model parameters: {max_params/1e6:.1f}M")
-    
-    # Create neural genome with resource constraints
-    neural_genome = NeuralGenome(
-        input_shape, 
-        output_shape,
-        max_params=max_params,
-        max_memory_mb=max_memory
-    )
-    
-    # Add layers (will respect resource constraints)
-    layers_added = 0
-    layer_specs = [
-        LayerSpec('conv2d', {'in_channels': 3, 'out_channels': 64, 'kernel_size': 7, 'stride': 2},
-                 input_shape=input_shape,
-                 output_shape=TensorShape(channels=64, height=112, width=112)),
-        LayerSpec('batchnorm2d', {'num_features': 64},
-                 output_shape=TensorShape(channels=64, height=112, width=112)),
-        LayerSpec('relu', {},
-                 output_shape=TensorShape(channels=64, height=112, width=112)),
-        LayerSpec('conv2d', {'in_channels': 64, 'out_channels': 128, 'kernel_size': 3},
-                 output_shape=TensorShape(channels=128, height=112, width=112)),
-    ]
-    
-    for spec in layer_specs:
-        if neural_genome.add_layer(spec):
-            layers_added += 1
-            print(f"Added {spec.layer_type} - Total params: {neural_genome.estimated_params/1e6:.2f}M, "
-                  f"Memory: {neural_genome.estimated_memory_mb:.1f}MB")
-        else:
-            print(f"Cannot add {spec.layer_type} - would exceed resource limits")
-    
-    # 3. Parallel Evolution with Resource Management
-    print("\n3. Parallel Evolution with Resource Management:")
-    print("-" * 40)
-    
-    # Create resource-aware evolver
-    evolver = ResourceAwareEvolver(
-        GenomeType.NEURAL, 
-        population_size=10,
-        max_model_params=max_params,
-        resource_monitor=resource_monitor
-    )
-    
-    # Generate initial population of small models
-    for i in range(10):
-        genome = NeuralGenome(
-            input_shape, 
-            output_shape,
-            max_params=max_params,
-            max_memory_mb=max_memory
-        )
+    def save_cycle_results(self, cycle: int, formula_discoveries: Dict, 
+                          nn_results: Dict = None, base_invariance: float = None):
+        cycle_dir = self.results_dir / f"cycle_{cycle:03d}"
+        cycle_dir.mkdir(parents=True, exist_ok=True)
         
-        # Add random small architecture
-        num_layers = random.randint(3, 7)
-        channels = 32
+        formulas_data = self._process_formula_discoveries(formula_discoveries)
+        cycle_data = {
+            'cycle': cycle,
+            'timestamp': datetime.now().isoformat(),
+            'formula_results': formulas_data,
+            'neural_results': self._process_nn_results(nn_results),
+            'base_invariance': base_invariance,
+            'summary': self._create_summary(formulas_data, nn_results)
+        }
         
-        for j in range(num_layers):
-            if j % 3 == 0:
-                # Conv layer
-                layer = LayerSpec('conv2d', 
-                                {'in_channels': channels if j > 0 else 3, 
-                                 'out_channels': channels,
-                                 'kernel_size': 3})
-            elif j % 3 == 1:
-                # Batch norm
-                layer = LayerSpec('batchnorm2d', {'num_features': channels})
-            else:
-                # Activation
-                layer = LayerSpec('relu', {})
-            
-            if not genome.add_layer(layer):
-                break  # Hit resource limit
+        self.serializer.save_with_fallbacks(cycle_data, cycle_dir / 'cycle_data')
         
-        evolver.add_genome(genome)
-    
-    # Define evaluation function that works with resource manager
-    def evaluate_with_resources(genome: NeuralGenome, model: Optional[nn.Module] = None) -> float:
-        """Evaluate model with automatic resource management"""
-        if model is None:
-            model_id = genome.get_signature()
-            model = resource_monitor.get_model(model_id, genome)
-        
-        if model is None:
-            return -float('inf')  # Model couldn't be created
-        
-        # Simple fitness based on parameter efficiency
-        # In practice, this would involve actual training/evaluation
-        param_count = genome.estimated_params
-        if param_count == 0:
-            return -float('inf')
-        
-        # Favor models that use resources efficiently
-        efficiency = 1000 / (param_count / 1e6)  # Inverse of millions of parameters
-        memory_penalty = genome.estimated_memory_mb / max_memory
-        
-        return efficiency - memory_penalty
-    
-    # Evolve with parallel batch evaluation
-    print("Starting evolution with resource-aware batch processing...")
-    evolver.evaluate_population_parallel(evaluate_with_resources, batch_size=3)
-    
-    # Report results
-    evolver.population.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
-    if evolver.population:
-        best = evolver.population[0]
-    
-        print(f"\nBest genome:")
-        print(f"  Fitness: {best.fitness:.2f}")
-        print(f"  Parameters: {best.estimated_params/1e6:.2f}M")
-        print(f"  Memory: {best.estimated_memory_mb:.1f}MB")
-        print(f"  Layers: {len(best.layers)}")
-    
-    # Show resource utilization
-    print(f"\nResource utilization:")
-    print(f"  Models in VRAM: {sum(1 for loc in resource_monitor.model_locations.values() if loc == 'vram')}")
-    print(f"  Models in RAM: {sum(1 for loc in resource_monitor.model_locations.values() if loc == 'ram')}")
-    print(f"  Models on disk: {sum(1 for loc in resource_monitor.model_locations.values() if loc == 'disk')}")
-    
-    # 4. Fine-tuning Example
-    print("\n4. Fine-tuning with Frozen Layers:")
-    print("-" * 40)
-    
-    # Take best model and prepare for fine-tuning
-    if evolver.population:
-        best_genome = evolver.population[0]
-        if isinstance(best_genome, NeuralGenome) and len(best_genome.layers) > 3:
-            # Freeze early layers
-            freeze_point = len(best_genome.layers) // 2
-            best_genome.freeze_layers(freeze_point)
-            print(f"Frozen first {freeze_point} layers for fine-tuning")
-            
-            # Now mutations will only affect layers after freeze_point
-            mutated = evolver.mutate(best_genome)
-            print(f"Mutated genome still has {freeze_point} frozen layers")
-    
-    # 5. Q-Learning Integration Example
-    print("\n5. Q-Learning Guided Evolution:")
-    print("-" * 40)
-    
-    q_guide = QLearningGuide()
-    
-    # Simulate learning from experience
-    if evolver.population:
-        for i in range(20):
-            genome = random.choice(evolver.population)
-            action = q_guide.choose_action(genome)
-            
-            # Apply guided mutation
-            original_fitness = genome.fitness or 0
-            mutated = evolver.mutate(genome)
-            
-            # Evaluate mutated genome
-            if isinstance(mutated, NeuralGenome):
-                with resource_monitor.model_context(mutated.get_signature(), mutated) as model:
-                    if model:
-                        mutated.fitness = evaluate_with_resources(mutated, model)
-                    else:
-                        mutated.fitness = -float('inf')
-            else: # Fallback for other genome types
-                mutated.fitness = -1 
-            
-            # Calculate reward
-            reward = mutated.fitness - original_fitness
-            
-            # Update Q-values
-            q_guide.update(genome, action, reward, mutated)
-            
-            if i % 5 == 0:
-                print(f"  Iteration {i}: Explored {len(q_guide.q_tables[GenomeType.NEURAL])} states")
-    
-    print(f"\nQ-Learning explored {len(q_guide.q_tables[GenomeType.NEURAL])} unique states")
-    
-    # Cleanup
-    print("\n6. Cleanup:")
-    print("-" * 40)
-    resource_monitor.cleanup_cache()
-    print("Cache cleaned up")
-    
-    # Final resource status
-    vram_used_end, _ = resource_monitor.get_vram_info()
-    ram_used_end, _ = resource_monitor.get_ram_info()
-    print(f"VRAM freed: {vram_used - vram_used_end:.0f} MB")
-    print(f"RAM freed: {ram_used - ram_used_end:.0f} MB")
-    
-    print("\n=== Demo Complete ===")
-    print("\nKey Features Demonstrated:")
-    print("- Automatic VRAM/RAM/Disk tiering for models")
-    print("- Resource-aware population evolution")
-    print("- Parallel batch evaluation with memory management")
-    print("- Model size constraints based on available resources")
-    print("- Fine-tuning with frozen layers")
-    print("- Q-learning integration for guided evolution")
-    print("- Automatic cleanup and resource monitoring")
+        if formulas_data and 'top_formulas' in formulas_data:
+            for i, formula in enumerate(formulas_data['top_formulas'][:20]):
+                with open(cycle_dir / f'formula_{i:02d}.json', 'w') as f:
+                    json.dump(formula, f, indent=2)
+
+    def _process_formula_discoveries(self, d: Dict) -> Dict:
+        if not d: return {}
+        result = {
+            'total_unique_genomes': d.get('total_unique_genomes', 0),
+            'top_formulas': []
+        }
+        for info in d.get('top_discoveries', [])[:50]:
+            decoded = info.get('decoded', {})
+            result['top_formulas'].append({
+                'rank': info.get('rank', 0), 'signature': info.get('signature', ''),
+                'scores': {'fitness': info.get('fitness', 0), 'combined': info.get('combined_score', 0)},
+                'metrics': info.get('metrics', {}),
+                'structure': {'effective_length': decoded.get('effective_length', 0), 'ops': decoded.get('unique_operations', [])},
+                'formula': {'symbolic': decoded.get('symbolic_formula', [])}
+            })
+        if 'generation_history' in d:
+            result['evolution_progress'] = {'total_generations': len(d['generation_history'])}
+        return result
+
+    def _process_nn_results(self, r: Dict) -> Dict:
+        if not r: return {}
+        return {'fitness': r.get('fitness', 0), 'architecture': r.get('architecture', '')}
+
+    def _create_summary(self, formulas_data: Dict, nn_results: Dict) -> Dict:
+        summary = {'best_formula_fitness': 0, 'best_nn_fitness': 0}
+        if formulas_data and formulas_data.get('top_formulas'):
+            summary['best_formula_fitness'] = max(f['scores']['fitness'] for f in formulas_data['top_formulas'])
+        if nn_results:
+            summary['best_nn_fitness'] = nn_results.get('fitness', 0)
+        return summary
