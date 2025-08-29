@@ -66,7 +66,7 @@ class Config:
     
     # Resource management
     max_model_params: int = int(1e8)  # 100M parameters max
-    max_memory_mb: float = 2048 * 6  # 12GB max total model memory footprint
+    max_memory_mb: float = 0.8  # 12GB max total model memory footprint
     
     # Files
     state_file: str = "sieve_echo_state_v7.dill" # Use dill for better object support
@@ -354,7 +354,7 @@ class SieveEchoDiscoverySystem:
         self.results = {}
         self.serializer = RobustSerializer()
         self.results_manager = FormulaResultsManager(CONFIG.results_dir)
-        self.resource_monitor = evolvo.ResourceMonitor(max_memory_mb=CONFIG.max_memory_mb)
+        self.resource_monitor = evolvo.ResourceMonitor(max_ram_usage=CONFIG.max_memory_mb)
         self.load_state()
 
     def save_state(self):
