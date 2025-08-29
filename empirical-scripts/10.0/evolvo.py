@@ -52,6 +52,7 @@ from contextlib import contextmanager
 import dill
 from datetime import datetime
 
+
 # ============================================================================
 # BASE GENOME SYSTEM
 # ============================================================================
@@ -121,13 +122,10 @@ class DataType:
         if self.category != other.category:
             return False
         if self.category == 'tensor' and self.shape and other.shape:
-            # Check tensor shape compatibility (allowing for broadcasting/reshaping)
             return self._can_reshape_to(self.shape, other.shape)
         return True
     
     def _can_reshape_to(self, from_shape: Tuple, to_shape: Tuple) -> bool:
-        """Check if tensor can be reshaped/adapted from one shape to another"""
-        # Simplified check - in practice would be more sophisticated
         from_elements = np.prod(from_shape) if from_shape else 1
         to_elements = np.prod(to_shape) if to_shape else 1
         return from_elements == to_elements or from_elements == 1 or to_elements == 1
@@ -151,9 +149,7 @@ class UnifiedDataStore:
         self.config = config
         self.stores: Dict[str, List[Any]] = {}
         self.types: Dict[str, DataType] = {}
-        self.name_map: Dict[str, Tuple[str, int]] = {}  # name -> (store_type, index)
-        
-        # Initialize stores
+        self.name_map: Dict[str, Tuple[str, int]] = {}
         for store_type, names in config.items():
             self.stores[store_type] = [self._default_value(store_type)] * len(names)
             for i, name in enumerate(names):
@@ -161,91 +157,63 @@ class UnifiedDataStore:
                 self.types[name] = self._create_data_type(store_type)
     
     def _default_value(self, store_type: str) -> Any:
-        """Get default value for store type"""
-        if store_type.startswith('b'):
-            return False
-        elif store_type.startswith('d'):
-            return np.float64(0)
-        elif store_type.startswith('t'):
-            return None  # Tensor placeholder
+        if store_type.startswith('b'): return False
+        if store_type.startswith('d'): return np.float64(0)
         return None
     
     def _create_data_type(self, store_type: str) -> DataType:
-        """Create DataType from store type string"""
         category = {'b': 'bool', 'd': 'decimal', 't': 'tensor'}.get(store_type[0], 'unknown')
         is_constant = store_type.endswith('#')
         return DataType(category=category, is_constant=is_constant)
     
     def set(self, name: str, value: Any) -> bool:
-        """Set value with type checking. Returns success status."""
-        if name not in self.name_map:
-            return False
-        
+        if name not in self.name_map: return False
         store_type, index = self.name_map[name]
         data_type = self.types[name]
-        
-        # Type checking and conversion
         try:
-            if data_type.category == 'bool':
-                value = bool(value)
-            elif data_type.category == 'decimal':
-                value = np.float64(value)
-            elif data_type.category == 'tensor' and not isinstance(value, torch.Tensor):
-                value = torch.tensor(value)
-            
+            if data_type.category == 'bool': value = bool(value)
+            elif data_type.category == 'decimal': value = np.float64(value)
             self.stores[store_type][index] = value
             return True
-        except (ValueError, TypeError):
-            return False
+        except (ValueError, TypeError): return False
     
     def get(self, name: str, default: Any = None) -> Any:
-        """Get value by name with optional default"""
-        if name not in self.name_map:
-            return default
+        if name not in self.name_map: return default
         store_type, index = self.name_map[name]
         return self.stores[store_type][index]
     
     def reset(self):
-        """Reset all variables to default values"""
         for store_type in self.stores:
-            if store_type.endswith('$'):  # Only reset variables, not constants
+            if store_type.endswith('$'):
                 self.stores[store_type] = [self._default_value(store_type)] * len(self.stores[store_type])
+
+    
 
 # ============================================================================
 # INSTRUCTION SET AND OPERATIONS
 # ============================================================================
 
 class Operation:
-    """Enhanced operation definition with error handling and type inference"""
     def __init__(self, name: str, func: Callable, arg_types: List[str], 
                  return_type: str, category: str = 'arithmetic'):
         self.name = name
         self.func = func
-        self.arg_types = arg_types  # ['decimal', 'decimal'] or ['bool', 'bool']
+        self.arg_types = arg_types
         self.return_type = return_type
-        self.category = category  # 'arithmetic', 'logical', 'control', 'tensor'
+        self.category = category
         self.error_default = self._get_error_default()
     
     def _get_error_default(self) -> Any:
-        """Default value to return on error"""
-        if self.return_type == 'bool':
-            return False
-        elif self.return_type == 'decimal':
-            return np.float64(0)
-        else:
-            return None
+        if self.return_type == 'bool': return False
+        if self.return_type == 'decimal': return np.float64(0)
+        return None
     
     def execute(self, *args) -> Any:
-        """Execute operation with error handling"""
         try:
-            # The registered safe functions already handle internal errors,
-            # but this outer try-except catches any unexpected issues.
-            if self.func is None:
-                return self.error_default
+            if self.func is None: return self.error_default
             return self.func(*args)
-        except Exception:
-            # Graceful error handling for any unexpected failures
-            return self.error_default
+        except Exception: return self.error_default
+
 
 class EnhancedInstructionSet:
     """
@@ -261,55 +229,21 @@ class EnhancedInstructionSet:
     # These functions ensure numerical stability by checking for invalid inputs (NaN, inf)
     # and catching overflows, returning a default value (0.0) instead of crashing.
 
-    def _safe_op(self, func, *args):
-        """A wrapper to catch any floating point errors and check finiteness."""
-        try:
-            # Ensure all args are finite floats
-            args_float = []
-            for arg in args:
-                f_arg = np.float64(arg)
-                if not np.isfinite(f_arg):
-                    return np.float64(0)
-                args_float.append(f_arg)
-
-            with np.errstate(all='raise'):
-                result = func(*args_float)
-                if not np.isfinite(result):
-                    return np.float64(0)
-                return result
-        except (FloatingPointError, ValueError, TypeError):
-            return np.float64(0)
-
     def _safe_add(self, a, b): return self._safe_op(lambda x, y: x + y, a, b)
     def _safe_sub(self, a, b): return self._safe_op(lambda x, y: x - y, a, b)
-    def _safe_mul(self, a, b): return self._safe_op(lambda x, y: x * y, a, b)
-    def _safe_div(self, a, b):
-        if abs(np.float64(b)) < 1e-9: return np.float64(0)
-        return self._safe_op(lambda x, y: x / y, a, b)
+    def _safe_mul(self, a, b): return self._safe_op(lambda x, y: x * y, a, b)   
     def _safe_mod(self, a, b):
         if abs(np.float64(b)) < 1e-9: return np.float64(0)
         return self._safe_op(np.fmod, a, b)
-    def _safe_pow(self, a, b):
-        a_f, b_f = np.float64(a), np.float64(b)
-        if not (np.isfinite(a_f) and np.isfinite(b_f)): return np.float64(0)
-        if a_f < 0 and b_f % 1 != 0: return np.float64(0) # Avoid complex
-        if abs(b_f) > 50: return np.float64(0) # Avoid extreme exponents
-        return self._safe_op(np.power, a_f, b_f)
-    
+   
     def _safe_exp(self, a):
         a_f = np.float64(a)
         if a_f > 700: return np.float64(np.inf) # Consistent with numpy
         return self._safe_op(np.exp, a_f)
-    def _safe_log(self, a):
-        a_f = np.float64(a)
-        if a_f <= 1e-9: return np.float64(-np.inf) # Consistent with numpy
-        return self._safe_op(np.log, a_f)
+   
     def _safe_sin(self, a): return self._safe_op(np.sin, a)
     def _safe_cos(self, a): return self._safe_op(np.cos, a)
-    def _safe_sqrt(self, a):
-        a_f = np.float64(a)
-        if a_f < 0: return np.float64(0)
-        return self._safe_op(np.sqrt, a_f)
+    
     def _safe_abs(self, a): return self._safe_op(np.abs, a)
     
     # --- Comparison helpers to ensure type safety ---
@@ -322,20 +256,19 @@ class EnhancedInstructionSet:
     def _register_default_operations(self):
         """Register standard mathematical and logical operations"""
         # Arithmetic operations
-        self.register('ADD', self._safe_add, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('SUB', self._safe_sub, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('MUL', self._safe_mul, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('DIV', self._safe_div, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('MOD', self._safe_mod, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('POW', self._safe_pow, ['decimal', 'decimal'], 'decimal', 'arithmetic')
+        self.register('ADD', lambda a, b: self._safe_op(lambda x,y: x+y, a, b), ['decimal', 'decimal'], 'decimal')
+        self.register('SUB', lambda a, b: self._safe_op(lambda x,y: x-y, a, b), ['decimal', 'decimal'], 'decimal')
+        self.register('MUL', lambda a, b: self._safe_op(lambda x,y: x*y, a, b), ['decimal', 'decimal'], 'decimal')
+        self.register('DIV', self._safe_div, ['decimal', 'decimal'], 'decimal')
+        self.register('POW', self._safe_pow, ['decimal', 'decimal'], 'decimal')
+        self.register('LOG', self._safe_log, ['decimal'], 'decimal')
+        self.register('SQRT', self._safe_sqrt, ['decimal'], 'decimal')
+        self.register('SIN', lambda a: self._safe_op(np.sin, a), ['decimal'], 'decimal')
+        self.register('COS', lambda a: self._safe_op(np.cos, a), ['decimal'], 'decimal')
+        self.register('ABS', lambda a: self._safe_op(np.abs, a), ['decimal'], 'decimal')
         
         # Mathematical functions
         self.register('EXP', self._safe_exp, ['decimal'], 'decimal', 'math')
-        self.register('LOG', self._safe_log, ['decimal'], 'decimal', 'math')
-        self.register('SIN', self._safe_sin, ['decimal'], 'decimal', 'math')
-        self.register('COS', self._safe_cos, ['decimal'], 'decimal', 'math')
-        self.register('SQRT', self._safe_sqrt, ['decimal'], 'decimal', 'math')
-        self.register('ABS', self._safe_abs, ['decimal'], 'decimal', 'math')
         
         # Logical operations
         self.register('NOT', lambda a: not a, ['bool'], 'bool', 'logical')
@@ -358,9 +291,35 @@ class EnhancedInstructionSet:
         # Assignment (identity function)
         self.register('ASSIGN', lambda a: a, ['any'], 'any', 'control')
     
+    def _safe_op(self, func, *args):
+        try:
+            args_float = [np.float64(arg) for arg in args]
+            if not all(np.isfinite(arg) for arg in args_float): return np.float64(0)
+            with np.errstate(all='raise'):
+                result = func(*args_float)
+                return result if np.isfinite(result) else np.float64(0)
+        except (FloatingPointError, ValueError, TypeError): return np.float64(0)
+
+    def _safe_div(self, a, b):
+        if abs(np.float64(b)) < 1e-9: return np.float64(0)
+        return self._safe_op(lambda x, y: x / y, a, b)
+    def _safe_log(self, a):
+        a_f = np.float64(a)
+        if a_f <= 1e-9: return np.float64(-np.inf)
+        return self._safe_op(np.log, a_f)
+    def _safe_sqrt(self, a):
+        a_f = np.float64(a)
+        if a_f < 0: return np.float64(0)
+        return self._safe_op(np.sqrt, a_f)
+    def _safe_pow(self, a, b):
+        a_f, b_f = np.float64(a), np.float64(b)
+        if not (np.isfinite(a_f) and np.isfinite(b_f)): return np.float64(0)
+        if a_f < 0 and b_f % 1 != 0: return np.float64(0)
+        if abs(b_f) > 50: return np.float64(0)
+        return self._safe_op(np.power, a_f, b_f)
+    
     def register(self, name: str, func: Optional[Callable], arg_types: List[str], 
                 return_type: Optional[str], category: str = 'custom'):
-        """Register a new operation"""
         op = Operation(name, func, arg_types, return_type, category)
         self.operations[name] = op
         self.categories[category].append(name)
@@ -387,25 +346,24 @@ class EnhancedInstructionSet:
 
 @dataclass
 class Instruction:
-    """Single instruction in an algorithm"""
-    target: Tuple[str, int]  # (store_type, index) e.g., ('d$', 0)
-    operation: str  # Operation name
-    args: List[Tuple[str, int]]  # List of (store_type, index) for arguments
+    target: Tuple[str, int]
+    operation: str
+    args: List[Tuple[str, int]]
+    def get_dependencies(self) -> Set[Tuple[str, int]]: return set(self.args)
+    def get_output(self) -> Tuple[str, int]: return self.target
+
+
+class CompiledAlgorithm:
+    def __init__(self, genome: AlgorithmGenome):
+        self.genome = genome
     
-    def to_list(self) -> List:
-        """Convert to legacy list format for compatibility"""
-        result = list(self.target) + [self.operation]
-        for arg in self.args:
-            result.extend(arg)
-        return result
-    
-    def get_dependencies(self) -> Set[Tuple[str, int]]:
-        """Get all data dependencies for this instruction"""
-        return set(self.args)
-    
-    def get_output(self) -> Tuple[str, int]:
-        """Get the output location of this instruction"""
-        return self.target
+    def execute(self, data_store: UnifiedDataStore) -> Dict[str, Any]:
+        for instr in self.genome.instructions:
+            op = self.genome.instruction_set.operations[instr.operation]
+            args = [data_store.get(f"{t}_{i}") for t, i in instr.args]
+            result = op.execute(*args)
+            data_store.set(f"{instr.target[0]}_{instr.target[1]}", result)
+        return {f"{t}_{i}": data_store.get(f"{t}_{i}") for t, i in self.genome.outputs}
 
 class AlgorithmGenome(BaseGenome):
     """
@@ -1549,7 +1507,7 @@ class RobustSerializer:
     """
     
     @staticmethod
-    def make_json_safe(obj: Any, max_depth: int = 10, current_depth: int = 0) -> Any:
+    def make_json_safe(obj: Any, max_depth: int = 10, current_depth: int = 0, discoverer_instance=None) -> Any:
         if current_depth > max_depth: return f"<max_depth_exceeded:{type(obj).__name__}>"
         if obj is None or isinstance(obj, (bool, int, float, str)): return obj
         if isinstance(obj, np.ndarray): return obj.tolist()
@@ -1560,10 +1518,17 @@ class RobustSerializer:
             if np.isnan(obj): return "NaN"
             if np.isinf(obj): return "Inf" if obj > 0 else "-Inf"
         if isinstance(obj, dict):
-            return {str(k): RobustSerializer.make_json_safe(v, max_depth, current_depth + 1) for k, v in obj.items()}
+            return {str(k): RobustSerializer.make_json_safe(v, max_depth, current_depth + 1, discoverer_instance) for k, v in obj.items()}
         if isinstance(obj, (list, tuple)):
-            return [RobustSerializer.make_json_safe(item, max_depth, current_depth + 1) for item in obj]
+            return [RobustSerializer.make_json_safe(item, max_depth, current_depth + 1, discoverer_instance) for item in obj]
         if isinstance(obj, set): return list(obj)
+        
+        # --- START: ENHANCED GENOME SERIALIZATION ---
+        if isinstance(obj, AlgorithmGenome) and discoverer_instance:
+             # Use the discoverer's own method to get a rich, serializable dict
+             return discoverer_instance._decode_genome(obj)
+        # --- END: ENHANCED GENOME SERIALIZATION ---
+        
         if isinstance(obj, BaseGenome):
             return {
                 'type': obj.__class__.__name__,
@@ -1572,19 +1537,19 @@ class RobustSerializer:
             }
         if hasattr(obj, '__dict__'):
             try:
-                return {'_type': obj.__class__.__name__, '_data': RobustSerializer.make_json_safe(obj.__dict__, max_depth, current_depth + 1)}
+                return {'_type': obj.__class__.__name__, '_data': RobustSerializer.make_json_safe(obj.__dict__, max_depth, current_depth + 1, discoverer_instance)}
             except:
                 return f"<{obj.__class__.__name__}>"
         return str(obj)
     
     @staticmethod
-    def save_with_fallbacks(data: Any, base_path: Union[str, Path], verbose: bool = True) -> bool:
+    def save_with_fallbacks(data: Any, base_path: Union[str, Path], verbose: bool = True, discoverer_instance=None) -> bool:
         base_path = Path(base_path)
         base_path.parent.mkdir(parents=True, exist_ok=True)
         strategies = [
             ('dill', '.dill', lambda d, p: dill.dump(d, open(p, 'wb'))),
             ('pickle', '.pkl', lambda d, p: pickle.dump(d, open(p, 'wb'), protocol=pickle.HIGHEST_PROTOCOL)),
-            ('json', '.json', lambda d, p: json.dump(RobustSerializer.make_json_safe(d), open(p, 'w'), indent=2)),
+            ('json', '.json', lambda d, p: json.dump(RobustSerializer.make_json_safe(d, discoverer_instance=discoverer_instance), open(p, 'w'), indent=2)),
         ]
         saved = False
         for name, ext, func in strategies:
@@ -1594,12 +1559,13 @@ class RobustSerializer:
                 if verbose: print(f"✓ Saved {name} to {filepath}")
                 saved = True
             except Exception as e:
-                if verbose: print(f"✗ Failed {name}: {str(e)[:100]}")
+                if verbose: print(f"✗ Failed {name}: {str(e)[:150]}")
         return saved
     
     @staticmethod
     def load_with_fallbacks(base_path: Union[str, Path], verbose: bool = True) -> Any:
         base_path = Path(base_path)
+        # Prioritize dill/pickle as they preserve object types
         strategies = [('.dill', dill.load, 'rb'), ('.pkl', pickle.load, 'rb'), ('.json', json.load, 'r')]
         for ext, loader, mode in strategies:
             filepath = base_path.with_suffix(ext)
@@ -1621,27 +1587,31 @@ class FormulaResultsManager:
         self.serializer = RobustSerializer()
     
     def save_cycle_results(self, cycle: int, formula_discoveries: Dict, 
-                          nn_results: Dict = None, base_invariance: float = None):
+                          nn_results: Dict = None, base_invariance: float = None, discoverer_instance=None):
         cycle_dir = self.results_dir / f"cycle_{cycle:03d}"
         cycle_dir.mkdir(parents=True, exist_ok=True)
         
-        formulas_data = self._process_formula_discoveries(formula_discoveries)
         cycle_data = {
             'cycle': cycle,
             'timestamp': datetime.now().isoformat(),
-            'formula_results': formulas_data,
+            'formula_results': formula_discoveries, # Already processed by the discoverer
             'neural_results': self._process_nn_results(nn_results),
             'base_invariance': base_invariance,
-            'summary': self._create_summary(formulas_data, nn_results)
         }
         
-        self.serializer.save_with_fallbacks(cycle_data, cycle_dir / 'cycle_data')
+        # Pass the discoverer instance to the serializer for intelligent genome handling
+        self.serializer.save_with_fallbacks(cycle_data, cycle_dir / 'cycle_data', discoverer_instance=discoverer_instance)
         
-        if formulas_data and 'top_formulas' in formulas_data:
-            for i, formula in enumerate(formulas_data['top_formulas'][:20]):
+        # Save top formulas individually for easy access
+        if formula_discoveries and 'top_discoveries' in formula_discoveries:
+            for i, formula in enumerate(formula_discoveries['top_discoveries'][:50]): # Save top 50
                 with open(cycle_dir / f'formula_{i:02d}.json', 'w') as f:
                     json.dump(formula, f, indent=2)
 
+    def _process_nn_results(self, r: Dict) -> Dict:
+        if not r: return {}
+        return {'fitness': r.get('fitness', 0), 'architecture': r.get('architecture', '')}
+    
     def _process_formula_discoveries(self, d: Dict) -> Dict:
         if not d: return {}
         result = {
@@ -1659,11 +1629,7 @@ class FormulaResultsManager:
             })
         if 'generation_history' in d:
             result['evolution_progress'] = {'total_generations': len(d['generation_history'])}
-        return result
-
-    def _process_nn_results(self, r: Dict) -> Dict:
-        if not r: return {}
-        return {'fitness': r.get('fitness', 0), 'architecture': r.get('architecture', '')}
+        return result   
 
     def _create_summary(self, formulas_data: Dict, nn_results: Dict) -> Dict:
         summary = {'best_formula_fitness': 0, 'best_nn_fitness': 0}
