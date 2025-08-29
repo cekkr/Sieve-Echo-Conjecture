@@ -1,100 +1,56 @@
-# -*- coding: utf-8 -*-
+
+#!/usr/bin/env python3
 """
-Unified Evolvo Library - Genetic Evolution Framework
-=====================================================
-
-A unified genetic evolution system for both algorithmic sequences and neural architectures.
-
-Key Design Principles:
-1. **Canonical Representation**: Each genome has a unique canonical form to avoid redundant descriptions
-2. **Valid-by-Construction**: Generation methods ensure syntactic validity, avoiding dead-ends
-3. **Implicit Shape Inference**: Automatic shape/type propagation reduces configuration errors
-4. **Modular Evolution**: Common evolution framework for both algorithms and neural networks
-5. **Q-Learning Integration**: Built-in support for reinforcement learning guidance
-6. **Graceful Error Handling**: Algorithms handle errors without crashing
-
-Core Components:
-- BaseGenome: Abstract base for all evolvable structures
-- AlgorithmGenome: Represents instruction sequences with bool/decimal separation
-- NeuralGenome: Represents neural network architectures with shape tracking
-- UnifiedEvolver: Common evolution engine for all genome types
-- QLearningGuide: Reinforcement learning for guided evolution
+Sieve Echo Conjecture - Unified Evolvo Discovery Engine v10
+Key improvements:
+- Uses unified evolvo library instead of split evolvo_model/evolvo_nn
+- Multi-base NDR pattern discovery 
+- Proper evolutionary approach to finding patterns
+- Co-evolution of formulas and neural architectures
 
 ---
 
-## Core Unification Strategy
+## Major Changes from v9 to v10:
 
-### 1. **Common Base Architecture**
-- `BaseGenome` abstract class provides a unified interface for all genome types
-- Shared signature generation to prevent redundant descriptions with different orderings
-- Common validation and simplification methods
+### 1. **Multi-Base NDR Discovery**
+- Tests patterns across 13 different prime bases (2, 3, 5, 7, 10, 11, 13, 16, 17, 19, 23, 29, 31)
+- Computes base invariance metrics (coefficient of variation) to verify pattern consistency
+- Aggregates features across all bases (mean entropy, std, kurtosis, etc.)
 
-### 2. **Unified Data System**
-- `UnifiedDataStore` handles both algorithmic variables (bool/decimal with constant/variable separation) and tensor shapes
-- `DataType` class provides type compatibility checking across both systems
-- Graceful error handling that returns defaults instead of crashing
+### 2. **Proper Evolvo Integration**
+- Uses `evolvo.AlgorithmGenome` for formula evolution
+- Uses `evolvo.NeuralGenome` for neural architecture search  
+- Implements `evolvo.ResourceAwareEvolver` for memory-managed evolution
+- Includes `evolvo.ResourceMonitor` for VRAM/RAM management
+- Uses `evolvo.QLearningGuide` for guided evolution
 
-### 3. **Enhanced Instruction System**
-- `Operation` class wraps functions with automatic error handling (try-except built in)
-- `EnhancedInstructionSet` supports both mathematical operations and tensor operations
-- Operations return sensible defaults on errors (0 for decimals, False for bools)
+### 3. **Co-Evolution System**
+- Evolves formulas and neural networks together
+- Shares learning between both systems via Q-learning
+- Allows mutual feedback between symbolic and neural approaches
 
-### 4. **Canonical Representations**
-Both genome types now generate canonical signatures that:
-- Use dependency analysis to eliminate order-dependent redundancy
-- Identify "dead code" that doesn't contribute to outputs
-- Support the `simplify()` method to remove unnecessary instructions/layers
+### 4. **Key Improvements**
+- **Base Invariance Testing**: Verifies that patterns are structurally similar across different bases
+- **Proper Genome Creation**: Creates valid instruction sequences using the new Instruction class
+- **Resource Management**: Prevents memory overflow when evolving multiple neural networks
+- **Parallel Evaluation**: Uses batch processing for neural network evaluation
 
-### 5. **Unified Evolution Engine**
-- Single `UnifiedEvolver` class handles both algorithm and neural evolution
-- Shared crossover/mutation logic with type-specific implementations
-- Multi-objective optimization with Pareto frontiers
-- Adaptive mutation rates based on population diversity
+### 5. **Critical Fixes**
+- No longer computes simple correlations - uses evolution to discover patterns
+- Properly normalizes digits to [0,1] interval (NDR framework)
+- Tests pattern structure across bases, not expecting identical values
+- Lets evolution discover feature combinations rather than pre-specifying them
 
-### 6. **Q-Learning Integration**
-- Single `QLearningGuide` class that works with both genome types
-- Learns which operations/layers work best in different contexts
-- Can guide both instruction selection and layer selection
+## How It Works:
 
-## Key Features for Q-Learning Compatibility
+1. **Data Generation**: For each n, computes NDR patterns in all test bases
+2. **Feature Aggregation**: Calculates mean/std of entropy, kurtosis, length across bases
+3. **Formula Evolution**: Uses genetic algorithms to evolve mathematical formulas
+4. **Neural Evolution**: Evolves neural architectures with resource constraints
+5. **Co-Evolution**: Both systems evolve together, sharing insights via Q-learning
+6. **Base Invariance Check**: Verifies patterns are consistent (CV < 0.1 is good)
 
-1. **State Extraction**: Consistent state representation from genome history
-2. **Action Spaces**: Well-defined action sets for each genome type
-3. **Canonical Forms**: Ensures same genome always has same representation regardless of instruction ordering
-4. **Dead Code Elimination**: The `simplify()` method identifies which instructions actually contribute to outputs
-
-## Fine-Tuning Support
-
-For neural networks:
-- `freeze_layers()` method to protect trained layers during evolution
-- Mutations respect frozen layer boundaries
-- Support for gradual architecture growth
-
-## Error Handling
-
-- All operations wrapped with try-except
-- Invalid operations return defaults instead of crashing
-- Validation methods identify structural problems before execution
-- No infinite retry loops - operations fail gracefully
-
-## Example Usage Patterns
-
-```python
-# Algorithm evolution with specific outputs
-algo_genome = AlgorithmGenome(data_config, instruction_set)
-algo_genome.mark_output(('d$', 1))  # Mark which variables are outputs
-simplified = algo_genome.simplify()  # Remove dead code
-
-# Neural evolution with fine-tuning
-neural_genome = NeuralGenome(input_shape, output_shape)
-neural_genome.freeze_layers(10)  # Freeze first 10 layers
-# Mutations will only affect layers after index 10
-
-# Q-learning guided evolution
-q_guide = QLearningGuide()
-action = q_guide.choose_action(genome)
-mutated = q_guide.guide_mutation(genome)
-q_guide.update(genome, action, reward, mutated)
+The script now properly implements the evolutionary discovery approach you intended, where patterns emerge from evolution rather than being predetermined, and critically tests across multiple numerical bases to find universal patterns rather than base-specific artifacts.
 
 """
 
@@ -115,6 +71,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from abc import ABC, abstractmethod
 import traceback
+import sys
 
 # ============================================================================
 # BASE GENOME SYSTEM
@@ -302,12 +259,13 @@ class Operation:
     def execute(self, *args) -> Any:
         """Execute operation with error handling"""
         try:
+            # The registered safe functions already handle internal errors,
+            # but this outer try-except catches any unexpected issues.
+            if self.func is None:
+                return self.error_default
             return self.func(*args)
-        except (ValueError, TypeError, ZeroDivisionError, OverflowError) as e:
-            # Graceful error handling - return default instead of crashing
-            return self.error_default
         except Exception:
-            # Unexpected errors also handled gracefully
+            # Graceful error handling for any unexpected failures
             return self.error_default
 
 class EnhancedInstructionSet:
@@ -319,30 +277,86 @@ class EnhancedInstructionSet:
         self.operations: Dict[str, Operation] = {}
         self.categories: Dict[str, List[str]] = defaultdict(list)
         self._register_default_operations()
+
+    # --- Robust Mathematical Helper Functions ---
+    # These functions ensure numerical stability by checking for invalid inputs (NaN, inf)
+    # and catching overflows, returning a default value (0.0) instead of crashing.
+
+    def _safe_op(self, func, *args):
+        """A wrapper to catch any floating point errors and check finiteness."""
+        try:
+            # Ensure all args are finite floats
+            args_float = []
+            for arg in args:
+                f_arg = np.float64(arg)
+                if not np.isfinite(f_arg):
+                    return np.float64(0)
+                args_float.append(f_arg)
+
+            with np.errstate(all='raise'):
+                result = func(*args_float)
+                if not np.isfinite(result):
+                    return np.float64(0)
+                return result
+        except (FloatingPointError, ValueError, TypeError):
+            return np.float64(0)
+
+    def _safe_add(self, a, b): return self._safe_op(lambda x, y: x + y, a, b)
+    def _safe_sub(self, a, b): return self._safe_op(lambda x, y: x - y, a, b)
+    def _safe_mul(self, a, b): return self._safe_op(lambda x, y: x * y, a, b)
+    def _safe_div(self, a, b):
+        if abs(np.float64(b)) < 1e-9: return np.float64(0)
+        return self._safe_op(lambda x, y: x / y, a, b)
+    def _safe_mod(self, a, b):
+        if abs(np.float64(b)) < 1e-9: return np.float64(0)
+        return self._safe_op(np.fmod, a, b)
+    def _safe_pow(self, a, b):
+        a_f, b_f = np.float64(a), np.float64(b)
+        if not (np.isfinite(a_f) and np.isfinite(b_f)): return np.float64(0)
+        if a_f < 0 and b_f % 1 != 0: return np.float64(0) # Avoid complex
+        if abs(b_f) > 50: return np.float64(0) # Avoid extreme exponents
+        return self._safe_op(np.power, a_f, b_f)
     
+    def _safe_exp(self, a):
+        a_f = np.float64(a)
+        if a_f > 700: return np.float64(np.inf) # Consistent with numpy
+        return self._safe_op(np.exp, a_f)
+    def _safe_log(self, a):
+        a_f = np.float64(a)
+        if a_f <= 1e-9: return np.float64(-np.inf) # Consistent with numpy
+        return self._safe_op(np.log, a_f)
+    def _safe_sin(self, a): return self._safe_op(np.sin, a)
+    def _safe_cos(self, a): return self._safe_op(np.cos, a)
+    def _safe_sqrt(self, a):
+        a_f = np.float64(a)
+        if a_f < 0: return np.float64(0)
+        return self._safe_op(np.sqrt, a_f)
+    def _safe_abs(self, a): return self._safe_op(np.abs, a)
+    
+    # --- Comparison helpers to ensure type safety ---
+    def _safe_eq(self, a, b): return abs(np.float64(a) - np.float64(b)) < 1e-9
+    def _safe_gt(self, a, b): return np.float64(a) > np.float64(b)
+    def _safe_lt(self, a, b): return np.float64(a) < np.float64(b)
+    def _safe_gte(self, a, b): return np.float64(a) >= np.float64(b)
+    def _safe_lte(self, a, b): return np.float64(a) <= np.float64(b)
+
     def _register_default_operations(self):
         """Register standard mathematical and logical operations"""
         # Arithmetic operations
-        self.register('ADD', lambda a, b: a + b, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('SUB', lambda a, b: a - b, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('MUL', lambda a, b: a * b, ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('DIV', lambda a, b: a / b if b != 0 else np.float64(0), 
-                     ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('MOD', lambda a, b: a % b if b != 0 else np.float64(0),
-                     ['decimal', 'decimal'], 'decimal', 'arithmetic')
-        self.register('POW', lambda a, b: a ** b if abs(a) < 1e10 and abs(b) < 10 else np.float64(0),
-                     ['decimal', 'decimal'], 'decimal', 'arithmetic')
+        self.register('ADD', self._safe_add, ['decimal', 'decimal'], 'decimal', 'arithmetic')
+        self.register('SUB', self._safe_sub, ['decimal', 'decimal'], 'decimal', 'arithmetic')
+        self.register('MUL', self._safe_mul, ['decimal', 'decimal'], 'decimal', 'arithmetic')
+        self.register('DIV', self._safe_div, ['decimal', 'decimal'], 'decimal', 'arithmetic')
+        self.register('MOD', self._safe_mod, ['decimal', 'decimal'], 'decimal', 'arithmetic')
+        self.register('POW', self._safe_pow, ['decimal', 'decimal'], 'decimal', 'arithmetic')
         
         # Mathematical functions
-        self.register('EXP', lambda a: np.exp(a) if a < 700 else np.float64(np.inf),
-                     ['decimal'], 'decimal', 'math')
-        self.register('LOG', lambda a: np.log(a) if a > 0 else np.float64(-np.inf),
-                     ['decimal'], 'decimal', 'math')
-        self.register('SIN', lambda a: np.sin(a), ['decimal'], 'decimal', 'math')
-        self.register('COS', lambda a: np.cos(a), ['decimal'], 'decimal', 'math')
-        self.register('SQRT', lambda a: np.sqrt(a) if a >= 0 else np.float64(0),
-                     ['decimal'], 'decimal', 'math')
-        self.register('ABS', lambda a: abs(a), ['decimal'], 'decimal', 'math')
+        self.register('EXP', self._safe_exp, ['decimal'], 'decimal', 'math')
+        self.register('LOG', self._safe_log, ['decimal'], 'decimal', 'math')
+        self.register('SIN', self._safe_sin, ['decimal'], 'decimal', 'math')
+        self.register('COS', self._safe_cos, ['decimal'], 'decimal', 'math')
+        self.register('SQRT', self._safe_sqrt, ['decimal'], 'decimal', 'math')
+        self.register('ABS', self._safe_abs, ['decimal'], 'decimal', 'math')
         
         # Logical operations
         self.register('NOT', lambda a: not a, ['bool'], 'bool', 'logical')
@@ -351,11 +365,11 @@ class EnhancedInstructionSet:
         self.register('XOR', lambda a, b: a != b, ['bool', 'bool'], 'bool', 'logical')
         
         # Comparison operations
-        self.register('EQ', lambda a, b: abs(a - b) < 1e-10, ['decimal', 'decimal'], 'bool', 'comparison')
-        self.register('GT', lambda a, b: a > b, ['decimal', 'decimal'], 'bool', 'comparison')
-        self.register('LT', lambda a, b: a < b, ['decimal', 'decimal'], 'bool', 'comparison')
-        self.register('GTE', lambda a, b: a >= b, ['decimal', 'decimal'], 'bool', 'comparison')
-        self.register('LTE', lambda a, b: a <= b, ['decimal', 'decimal'], 'bool', 'comparison')
+        self.register('EQ', self._safe_eq, ['decimal', 'decimal'], 'bool', 'comparison')
+        self.register('GT', self._safe_gt, ['decimal', 'decimal'], 'bool', 'comparison')
+        self.register('LT', self._safe_lt, ['decimal', 'decimal'], 'bool', 'comparison')
+        self.register('GTE', self._safe_gte, ['decimal', 'decimal'], 'bool', 'comparison')
+        self.register('LTE', self._safe_lte, ['decimal', 'decimal'], 'bool', 'comparison')
         
         # Control flow (special handling required)
         self.register('IF', None, ['bool'], None, 'control')
@@ -435,7 +449,7 @@ class AlgorithmGenome(BaseGenome):
         
         # Validate argument count
         op = self.instruction_set.operations[instruction.operation]
-        if len(instruction.args) != len(op.arg_types):
+        if op.func is not None and len(instruction.args) != len(op.arg_types):
             return False
         
         # Type checking would go here (simplified for brevity)
@@ -518,8 +532,8 @@ class AlgorithmGenome(BaseGenome):
                     continue
                 
                 # Check argument types (simplified)
-                if len(instr.args) != len(op.arg_types):
-                    errors.append(f"Instruction {i}: Argument count mismatch")
+                if op.func is not None and len(instr.args) != len(op.arg_types):
+                    errors.append(f"Instruction {i}: Argument count mismatch for {op.name}")
         
         # Check control flow balance
         if_count = sum(1 for i in self.instructions if isinstance(i, dict) and i['type'] == 'IF')
@@ -641,13 +655,13 @@ class ResourceMonitor:
         # Device management
         self.device = self._get_best_device()
         self.has_cuda = torch.cuda.is_available()
-        self.has_mps = torch.backends.mps.is_available()
+        self.has_mps = hasattr(torch.backends, 'mps') and torch.backends.mps.is_available()
         
     def _get_best_device(self) -> torch.device:
         """Get the best available device"""
         if torch.cuda.is_available():
             return torch.device('cuda')
-        elif torch.backends.mps.is_available():
+        elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
             return torch.device('mps')
         else:
             return torch.device('cpu')
@@ -656,7 +670,7 @@ class ResourceMonitor:
         """Get VRAM usage (used_mb, total_mb)"""
         if self.has_cuda:
             return (torch.cuda.memory_allocated() / 1024**2,
-                   torch.cuda.max_memory_allocated() / 1024**2)
+                   torch.cuda.get_device_properties(0).total_memory / 1024**2)
         elif self.has_mps:
             # MPS doesn't provide direct memory querying
             # Estimate based on system
@@ -671,23 +685,7 @@ class ResourceMonitor:
     
     def estimate_model_size(self, genome: 'NeuralGenome') -> float:
         """Estimate model memory footprint in MB"""
-        total_params = 0
-        
-        for layer in genome.layers:
-            if layer.layer_type == 'linear':
-                in_f = layer.params.get('in_features', 1)
-                out_f = layer.params.get('out_features', 1)
-                total_params += in_f * out_f + out_f
-            elif layer.layer_type == 'conv2d':
-                in_c = layer.params.get('in_channels', 1)
-                out_c = layer.params.get('out_channels', 1)
-                k = layer.params.get('kernel_size', 3)
-                if isinstance(k, (list, tuple)):
-                    k = k[0] * k[1]
-                else:
-                    k = k * k
-                total_params += in_c * out_c * k + out_c
-            # Add more layer types as needed
+        total_params = genome.estimated_params
         
         # 4 bytes per parameter + overhead
         size_mb = (total_params * 4) / 1024**2 * 1.5  # 1.5x for overhead
@@ -717,7 +715,8 @@ class ResourceMonitor:
         try:
             model.cpu()
             self.model_locations[model_id] = 'ram'
-            torch.cuda.empty_cache() if self.has_cuda else None
+            if self.has_cuda:
+                torch.cuda.empty_cache()
             return True
         except Exception:
             return False
@@ -795,7 +794,7 @@ class ResourceMonitor:
             self.loaded_models[model_id] = model
             return model
         except RuntimeError as e:
-            if "out of memory" in str(e):
+            if "out of memory" in str(e).lower():
                 # Try to free memory and retry
                 self._free_memory(size_mb * 2)
                 return self.get_model(model_id, genome)
@@ -848,7 +847,10 @@ class ResourceMonitor:
     def cleanup_cache(self):
         """Clean up disk cache"""
         for cache_file in self.cache_dir.glob("*.pkl"):
-            cache_file.unlink()
+            try:
+                cache_file.unlink()
+            except OSError:
+                pass
 
 
 ####
@@ -862,7 +864,7 @@ class NeuralGenome(BaseGenome):
     Supports automatic shape inference and fine-tuning.
     """
 
-    def __init__(self, input_shape: TensorShape, output_shape: TensorShape,
+    def __init__(self, input_shape: 'TensorShape', output_shape: 'TensorShape',
                  max_params: Optional[int] = None, max_memory_mb: Optional[float] = None):
         super().__init__(GenomeType.NEURAL)
         self.input_shape = input_shape
@@ -877,7 +879,7 @@ class NeuralGenome(BaseGenome):
         self.estimated_params: int = 0
         self.estimated_memory_mb: float = 0
 
-    def add_layer(self, layer_spec: LayerSpec) -> bool:
+    def add_layer(self, layer_spec: 'LayerSpec') -> bool:
         """Add layer with automatic shape inference and resource checking"""
         if self.layers:
             prev_shape = self.layers[-1].output_shape
@@ -901,7 +903,7 @@ class NeuralGenome(BaseGenome):
         self._signature = None
         return True
 
-    def _estimate_layer_params(self, layer: LayerSpec) -> int:
+    def _estimate_layer_params(self, layer: 'LayerSpec') -> int:
         """Estimate number of parameters in a layer"""
         params = 0
         if layer.layer_type == 'linear':
@@ -924,7 +926,7 @@ class NeuralGenome(BaseGenome):
         # Add more layer types as needed
         return params
 
-    def _estimate_layer_memory(self, layer: LayerSpec) -> float:
+    def _estimate_layer_memory(self, layer: 'LayerSpec') -> float:
         """Estimate memory usage of a layer in MB"""
         params = self._estimate_layer_params(layer)
         # 4 bytes per parameter + activation memory (estimated)
@@ -1164,6 +1166,8 @@ class UnifiedEvolver:
                 else:
                     return # Skip adding complex/untyped operations
 
+                if not genome.data_config.get(target_store): return
+
                 target_idx = random.randint(0, len(genome.data_config[target_store]) - 1)
                 target = (target_store, target_idx)
                 
@@ -1172,18 +1176,20 @@ class UnifiedEvolver:
                 for arg_type in op_info.arg_types:
                     if arg_type in ['decimal', 'any']:
                         store_type = 'd#' if random.random() < 0.7 else 'd$'
+                        if not genome.data_config.get(store_type): continue
                         idx = random.randint(0, len(genome.data_config[store_type]) - 1)
                         args.append((store_type, idx))
                     elif arg_type == 'bool':
                         store_type = 'b#' if random.random() < 0.5 else 'b$'
+                        if not genome.data_config.get(store_type): continue
                         idx = random.randint(0, len(genome.data_config[store_type]) - 1)
                         args.append((store_type, idx))
 
-                new_instruction = Instruction(target, op_name, args)
-                
-                # Insert at a random position
-                insert_pos = random.randint(0, len(genome.instructions))
-                genome.instructions.insert(insert_pos, new_instruction)
+                if len(args) == len(op_info.arg_types):
+                    new_instruction = Instruction(target, op_name, args)
+                    # Insert at a random position
+                    insert_pos = random.randint(0, len(genome.instructions))
+                    genome.instructions.insert(insert_pos, new_instruction)
             # --- END: IMPLEMENTED 'add' MUTATION ---
         
         elif mutation_type == 'remove' and len(genome.instructions) > 1:
@@ -1198,30 +1204,48 @@ class UnifiedEvolver:
         """Mutate neural genome respecting frozen layers"""
         start_idx = genome.frozen_until  # Don't mutate frozen layers
         
-        if len(genome.layers) <= start_idx:
-            return
+        # Allow mutation if there are non-frozen layers
+        if len(genome.layers) <= start_idx and len(genome.layers) > 0:
+            start_idx = len(genome.layers) -1 # Mutate at least the last layer if all are frozen
+        elif not genome.layers:
+             return # Cannot mutate empty genome
         
         mutation_type = random.choice(['modify', 'add', 'remove', 'skip'])
         
-        if mutation_type == 'modify':
+        if mutation_type == 'modify' and len(genome.layers) > start_idx:
             # Modify layer parameters
             idx = random.randint(start_idx, len(genome.layers) - 1)
             layer = genome.layers[idx]
             # Modify random parameter
             if layer.params:
-                param = random.choice(list(layer.params.keys()))
-                # Generate new value (simplified)
-                if isinstance(layer.params[param], bool):
-                    layer.params[param] = not layer.params[param]
-                elif isinstance(layer.params[param], (int, float)):
-                    layer.params[param] *= random.uniform(0.5, 2.0)
+                param_key = random.choice(list(layer.params.keys()))
+                original_value = layer.params[param_key]
+
+                # --- START: BUG FIX ---
+                if isinstance(original_value, bool):
+                    layer.params[param_key] = not original_value
+                elif isinstance(original_value, int):
+                    # Mutate and keep as int, ensure it's at least 1
+                    new_val = int(round(original_value * random.uniform(0.75, 1.25)))
+                    layer.params[param_key] = max(1, new_val)
+                elif isinstance(original_value, float):
+                    # Mutate and keep as float
+                    layer.params[param_key] *= random.uniform(0.5, 2.0)
+                # --- END: BUG FIX ---
         
         elif mutation_type == 'add':
             # Add new layer
             idx = random.randint(start_idx, len(genome.layers))
             # Create appropriate layer based on context
-            # Implementation depends on layer factory
-            pass
+            # (Implementation depends on a layer factory, simplified here)
+            # This part can be expanded to create more diverse layers
+            if idx > 0 and isinstance(genome.layers[idx-1], LayerSpec):
+                 prev_layer_params = genome.layers[idx-1].params
+                 if 'out_features' in prev_layer_params:
+                     in_feat = prev_layer_params['out_features']
+                     out_feat = random.choice([32, 64, 128, in_feat])
+                     new_layer = LayerSpec('linear', {'in_features': in_feat, 'out_features': out_feat})
+                     genome.layers.insert(idx, new_layer)
         
         elif mutation_type == 'remove' and len(genome.layers) > start_idx + 1:
             # Remove layer
@@ -1232,14 +1256,18 @@ class UnifiedEvolver:
             # Add or remove skip connection
             if genome.skip_connections and random.random() < 0.5:
                 # Remove random skip
-                src = random.choice(list(genome.skip_connections.keys()))
-                genome.skip_connections.pop(src)
+                if genome.skip_connections:
+                    src = random.choice(list(genome.skip_connections.keys()))
+                    if genome.skip_connections[src]:
+                        genome.skip_connections[src].pop(random.randrange(len(genome.skip_connections[src])))
+                        if not genome.skip_connections[src]:
+                            del genome.skip_connections[src]
             else:
                 # Add random skip
-                if len(genome.layers) > 2:
+                if len(genome.layers) - start_idx > 2:
                     src = random.randint(start_idx, len(genome.layers) - 2)
                     dest = random.randint(src + 1, len(genome.layers) - 1)
-                    genome.skip_connections[src].append((dest, 'add'))
+                    genome.add_skip_connection(src, dest, 'add')
     
     def evolve(self, generations: int, evaluator: Callable[[BaseGenome], float],
               multi_objective: bool = False) -> List[BaseGenome]:
@@ -1253,7 +1281,7 @@ class UnifiedEvolver:
                 if genome.fitness is None:
                     try:
                         genome.fitness = evaluator(genome)
-                    except Exception as e:
+                    except Exception:
                         genome.fitness = -float('inf')  # Penalize errors
             
             # Sort by fitness
@@ -1273,8 +1301,11 @@ class UnifiedEvolver:
             max_attempts = self.population_size * 10 # Allow 10 attempts per slot
 
             while len(new_population) < self.population_size and attempts < max_attempts:
-                parent1 = self._tournament_select()
-                parent2 = self._tournament_select()
+                try:
+                    parent1 = self._tournament_select()
+                    parent2 = self._tournament_select()
+                except ValueError: # Handle empty population case
+                    break
                 
                 if random.random() < self.crossover_rate:
                     child = self.crossover(parent1, parent2)
@@ -1292,7 +1323,7 @@ class UnifiedEvolver:
                 attempts += 1
 
             # If the loop timed out, fill the rest with mutated elites
-            if len(new_population) < self.population_size:
+            if len(new_population) < self.population_size and self.population:
                 print(f"WARN: Population diversity exhausted. Filling with {self.population_size - len(new_population)} mutated elites.")
                 while len(new_population) < self.population_size:
                     elite = copy.deepcopy(self.population[0])
@@ -1308,14 +1339,17 @@ class UnifiedEvolver:
                 self._adapt_rates()
             
             # Report progress
-            best = self.population[0]
-            print(f"Generation {gen}: Best fitness = {best.fitness:.4f}, "
-                  f"Unique genomes = {len(self.diversity_cache)}")
+            if self.population:
+                best = self.population[0]
+                print(f"Generation {gen}: Best fitness = {best.fitness:.4f}, "
+                      f"Unique genomes = {len(self.diversity_cache)}")
         
         return self.population
     
     def _tournament_select(self, tournament_size: int = 3) -> BaseGenome:
         """Tournament selection"""
+        if not self.population:
+            raise ValueError("Cannot select from an empty population.")
         tournament = random.sample(self.population, min(tournament_size, len(self.population)))
         return max(tournament, key=lambda g: g.fitness or -float('inf'))
     
@@ -1323,7 +1357,9 @@ class UnifiedEvolver:
         """Adapt evolution rates based on progress"""
         # Check for stagnation
         if len(self.hall_of_fame) >= 5:
-            recent_fitness = [g.fitness for g in self.hall_of_fame[:5]]
+            recent_fitness = [g.fitness for g in self.hall_of_fame[:5] if g.fitness is not None]
+            if not recent_fitness: return
+            
             if all(abs(f - recent_fitness[0]) < 0.001 for f in recent_fitness):
                 # Increase mutation to escape local optimum
                 self.mutation_rate = min(0.8, self.mutation_rate * 1.2)
@@ -1369,9 +1405,7 @@ class ResourceAwareEvolver(UnifiedEvolver):
             if not self.resource_monitor.can_fit_in_ram(size_mb * 1.5):  # 1.5x for safety
                 return False
             
-            # Estimate parameter count
-            estimated_params = (size_mb * 1024**2) / 4
-            if estimated_params > self.max_model_params:
+            if genome.estimated_params > self.max_model_params:
                 return False
         
         return True
@@ -1537,21 +1571,25 @@ class DynamicNeuralModel(nn.Module):
         p = spec.params
         
         # Map layer types to PyTorch modules
-        if lt == 'linear':
-            return nn.Linear(p.get('in_features', 128), p['out_features'], p.get('bias', True))
-        elif lt == 'conv2d':
-            return nn.Conv2d(p.get('in_channels', 3), p['out_channels'],
-                           p['kernel_size'], p.get('stride', 1), p.get('padding', 0))
-        elif lt == 'batchnorm2d':
-            return nn.BatchNorm2d(p['num_features'])
-        elif lt == 'relu':
-            return nn.ReLU()
-        elif lt == 'dropout':
-            return nn.Dropout(p.get('p', 0.5))
-        elif lt == 'maxpool2d':
-            return nn.MaxPool2d(p.get('kernel_size', 2), p.get('stride', 2))
-        # Add more layer types as needed
-        
+        try:
+            if lt == 'linear':
+                return nn.Linear(p.get('in_features', 128), p['out_features'], p.get('bias', True))
+            elif lt == 'conv2d':
+                return nn.Conv2d(p.get('in_channels', 3), p['out_channels'],
+                               p['kernel_size'], p.get('stride', 1), p.get('padding', 0))
+            elif lt == 'batchnorm2d':
+                # Ensure num_features is an integer
+                num_features = int(p['num_features'])
+                return nn.BatchNorm2d(num_features)
+            elif lt == 'relu':
+                return nn.ReLU()
+            elif lt == 'dropout':
+                return nn.Dropout(p.get('p', 0.5))
+            elif lt == 'maxpool2d':
+                return nn.MaxPool2d(p.get('kernel_size', 2), p.get('stride', 2))
+        except (TypeError, KeyError) as e:
+             print(f"Error creating layer {lt} with params {p}: {e}", file=sys.stderr)
+
         return None
     
     def forward(self, x):
@@ -1856,13 +1894,14 @@ if __name__ == "__main__":
     
     # Report results
     evolver.population.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
-    best = evolver.population[0]
+    if evolver.population:
+        best = evolver.population[0]
     
-    print(f"\nBest genome:")
-    print(f"  Fitness: {best.fitness:.2f}")
-    print(f"  Parameters: {best.estimated_params/1e6:.2f}M")
-    print(f"  Memory: {best.estimated_memory_mb:.1f}MB")
-    print(f"  Layers: {len(best.layers)}")
+        print(f"\nBest genome:")
+        print(f"  Fitness: {best.fitness:.2f}")
+        print(f"  Parameters: {best.estimated_params/1e6:.2f}M")
+        print(f"  Memory: {best.estimated_memory_mb:.1f}MB")
+        print(f"  Layers: {len(best.layers)}")
     
     # Show resource utilization
     print(f"\nResource utilization:")
@@ -1875,16 +1914,17 @@ if __name__ == "__main__":
     print("-" * 40)
     
     # Take best model and prepare for fine-tuning
-    best_genome = evolver.population[0]
-    if isinstance(best_genome, NeuralGenome) and len(best_genome.layers) > 3:
-        # Freeze early layers
-        freeze_point = len(best_genome.layers) // 2
-        best_genome.freeze_layers(freeze_point)
-        print(f"Frozen first {freeze_point} layers for fine-tuning")
-        
-        # Now mutations will only affect layers after freeze_point
-        mutated = evolver.mutate(best_genome)
-        print(f"Mutated genome still has {freeze_point} frozen layers")
+    if evolver.population:
+        best_genome = evolver.population[0]
+        if isinstance(best_genome, NeuralGenome) and len(best_genome.layers) > 3:
+            # Freeze early layers
+            freeze_point = len(best_genome.layers) // 2
+            best_genome.freeze_layers(freeze_point)
+            print(f"Frozen first {freeze_point} layers for fine-tuning")
+            
+            # Now mutations will only affect layers after freeze_point
+            mutated = evolver.mutate(best_genome)
+            print(f"Mutated genome still has {freeze_point} frozen layers")
     
     # 5. Q-Learning Integration Example
     print("\n5. Q-Learning Guided Evolution:")
@@ -1893,29 +1933,33 @@ if __name__ == "__main__":
     q_guide = QLearningGuide()
     
     # Simulate learning from experience
-    for i in range(20):
-        genome = random.choice(evolver.population)
-        action = q_guide.choose_action(genome)
-        
-        # Apply guided mutation
-        original_fitness = genome.fitness or 0
-        mutated = evolver.mutate(genome)
-        
-        # Evaluate mutated genome
-        with resource_monitor.model_context(mutated.get_signature(), mutated) as model:
-            if model:
-                mutated.fitness = evaluate_with_resources(mutated, model)
-            else:
-                mutated.fitness = -float('inf')
-        
-        # Calculate reward
-        reward = mutated.fitness - original_fitness
-        
-        # Update Q-values
-        q_guide.update(genome, action, reward, mutated)
-        
-        if i % 5 == 0:
-            print(f"  Iteration {i}: Explored {len(q_guide.q_tables[GenomeType.NEURAL])} states")
+    if evolver.population:
+        for i in range(20):
+            genome = random.choice(evolver.population)
+            action = q_guide.choose_action(genome)
+            
+            # Apply guided mutation
+            original_fitness = genome.fitness or 0
+            mutated = evolver.mutate(genome)
+            
+            # Evaluate mutated genome
+            if isinstance(mutated, NeuralGenome):
+                with resource_monitor.model_context(mutated.get_signature(), mutated) as model:
+                    if model:
+                        mutated.fitness = evaluate_with_resources(mutated, model)
+                    else:
+                        mutated.fitness = -float('inf')
+            else: # Fallback for other genome types
+                mutated.fitness = -1 
+            
+            # Calculate reward
+            reward = mutated.fitness - original_fitness
+            
+            # Update Q-values
+            q_guide.update(genome, action, reward, mutated)
+            
+            if i % 5 == 0:
+                print(f"  Iteration {i}: Explored {len(q_guide.q_tables[GenomeType.NEURAL])} states")
     
     print(f"\nQ-Learning explored {len(q_guide.q_tables[GenomeType.NEURAL])} unique states")
     
