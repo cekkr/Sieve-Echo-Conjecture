@@ -1587,26 +1587,87 @@ class FormulaResultsManager:
         self.serializer = RobustSerializer()
     
     def save_cycle_results(self, cycle: int, formula_discoveries: Dict, 
-                          nn_results: Dict = None, base_invariance: float = None, discoverer_instance=None):
+                      nn_results: Dict = None, base_invariance: float = None, discoverer_instance=None):
+        """Save cycle results with proper algorithm serialization."""
         cycle_dir = self.results_dir / f"cycle_{cycle:03d}"
         cycle_dir.mkdir(parents=True, exist_ok=True)
         
         cycle_data = {
             'cycle': cycle,
             'timestamp': datetime.now().isoformat(),
-            'formula_results': formula_discoveries, # Already processed by the discoverer
+            'formula_results': formula_discoveries,
             'neural_results': self._process_nn_results(nn_results),
             'base_invariance': base_invariance,
         }
         
-        # Pass the discoverer instance to the serializer for intelligent genome handling
+        # Save main cycle data with all results
         self.serializer.save_with_fallbacks(cycle_data, cycle_dir / 'cycle_data', discoverer_instance=discoverer_instance)
         
-        # Save top formulas individually for easy access
+        # Save top formulas individually with full algorithm structure
         if formula_discoveries and 'top_discoveries' in formula_discoveries:
-            for i, formula in enumerate(formula_discoveries['top_discoveries'][:50]): # Save top 50
-                with open(cycle_dir / f'formula_{i:02d}.json', 'w') as f:
-                    json.dump(formula, f, indent=2)
+            for i, discovery in enumerate(formula_discoveries['top_discoveries'][:50]):
+                # Create properly structured formula data
+                formula_data = {
+                    'rank': discovery.get('rank', i + 1),
+                    'fitness': discovery.get('fitness', 0),
+                    'timestamp': datetime.now().isoformat(),
+                }
+                
+                # Extract and serialize the complete algorithm structure
+                if 'genome' in discovery and discovery['genome'] is not None:
+                    genome = discovery['genome']
+                    
+                    # Build the complete algorithm representation
+                    if hasattr(genome, 'instructions'):
+                        instructions_data = []
+                        for idx, instr in enumerate(genome.instructions):
+                            if hasattr(instr, 'target'):  # Regular instruction
+                                instructions_data.append({
+                                    'index': idx,
+                                    'type': 'instruction',
+                                    'target': {'store': instr.target[0], 'index': instr.target[1]},
+                                    'operation': instr.operation,
+                                    'args': [{'store': arg[0], 'index': arg[1]} for arg in instr.args]
+                                })
+                            else:  # Control flow structure
+                                instructions_data.append({
+                                    'index': idx,
+                                    'type': 'control_flow',
+                                    'control_type': instr.get('type'),
+                                    'condition': instr.get('condition')
+                                })
+                        
+                        # Include data configuration for reconstruction
+                        data_config = {}
+                        if hasattr(genome, 'data_config'):
+                            data_config = genome.data_config
+                        
+                        formula_data['algorithm'] = {
+                            'instructions': instructions_data,
+                            'outputs': [{'store': out[0], 'index': out[1]} for out in genome.outputs] if hasattr(genome, 'outputs') else [],
+                            'signature': genome.get_signature() if hasattr(genome, 'get_signature') else None,
+                            'data_config': data_config,
+                            'instruction_count': len(instructions_data)
+                        }
+                    
+                    # Add human-readable decoded version
+                    if discoverer_instance and hasattr(discoverer_instance, '_decode_genome'):
+                        try:
+                            decoded = discoverer_instance._decode_genome(genome)
+                            formula_data['decoded'] = decoded
+                        except Exception as e:
+                            print(f"Warning: Could not decode genome {i}: {e}")
+                            formula_data['decoded'] = {'error': str(e)}
+                
+                # Save the complete formula with algorithm structure
+                formula_path = cycle_dir / f'formula_{i:02d}.json'
+                try:
+                    with open(formula_path, 'w') as f:
+                        json.dump(self.serializer.make_json_safe(formula_data, discoverer_instance=discoverer_instance), 
+                                f, indent=2, default=str)
+                    print(f"  ✓ Saved formula {i:02d} with {formula_data.get('algorithm', {}).get('instruction_count', 0)} instructions")
+                except Exception as e:
+                    print(f"  ✗ Failed to save formula {i:02d}: {e}")
 
     def _process_nn_results(self, r: Dict) -> Dict:
         if not r: return {}
