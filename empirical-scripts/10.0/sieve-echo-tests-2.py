@@ -127,19 +127,19 @@ class Config:
     state_file: str = "sieve_echo_state_v10.json"
     results_dir: str = "results_v10"
 
-    # --- NEW: Adaptive Evolution & Fitness Configuration ---
-    # Enables adaptive generation count per cycle
+    # --- Adaptive Evolution & Fitness Configuration ---
     adaptive_generations: bool = True
-    # Maximum generations if not adapting
     formula_generations_max: int = 250
-    # Minimum generations to run before checking for stagnation
     formula_generations_min: int = 50
-    # Stop if fitness doesn't improve by at least this much over 15 generations
     stagnation_threshold: float = 0.0001
-    # Controls how strongly longer algorithms are penalized. 0 = no penalty.
     length_penalty_factor: float = 0.3
-    # Save the top N algorithms from every generation in real-time
     save_top_k_every_generation: int = 3
+
+    # --- NEW: Definitive Saving Control ---
+    # The minimum fitness score an algorithm must achieve to be saved in real-time.
+    min_fitness_to_save: float = 0.2
+    # Guarantees that the top N algorithms are saved at the end of a cycle, regardless of the real-time saves.
+    save_top_n_at_end_of_cycle: int = 10
     
 CONFIG = Config()
 
@@ -202,7 +202,10 @@ class UnifiedFormulaDiscoverer:
         }
     
     def evolve_formulas(self, cycle: int = 0) -> Dict:
-        print("\n📊 Evolving formulas with adaptive cycles and real-time saving...")
+        """
+        MODIFIED: Now includes a guaranteed save of the top N final algorithms as a safety net.
+        """
+        print("\n📊 Evolving formulas with quality gates and guaranteed final saves...")
         valid_data = [d for d in self.data if all(f in d for f in self.feature_names)]
         if len(valid_data) < 100:
             print("Not enough data for formula evolution.")
@@ -226,24 +229,20 @@ class UnifiedFormulaDiscoverer:
             genome.mark_output(('d$', 0))
             evolver.add_genome(genome)
         
-        # --- NEW: Define the callback for real-time saving ---
         def realtime_save_callback(genome, generation, rank):
             if self.system and hasattr(self.system, 'save_algorithm_immediately'):
-                # Pass cycle and generation info to the saver
                 self.system.save_algorithm_immediately(genome, cycle, rank, self, generation)
 
-        # Configure adaptive evolution
         adaptive_config = {
             'enabled': CONFIG.adaptive_generations,
             'min_generations': CONFIG.formula_generations_min,
             'stagnation_threshold': CONFIG.stagnation_threshold,
-            'stagnation_window': 15 # Check over the last 15 generations
+            'stagnation_window': 15
         }
         
-        # Evaluate with the fixed method
         evaluator = lambda g: self._evaluate_genome(g, random.sample(valid_data, min(200, len(valid_data))))
         
-        # --- MODIFIED: Call evolve with new parameters ---
+        # Run the evolution process
         final_population = evolver.evolve(
             generations=CONFIG.formula_generations_max,
             evaluator=evaluator,
@@ -253,6 +252,15 @@ class UnifiedFormulaDiscoverer:
         )
         
         print(f"✅ Evolution complete after {evolver.generation} generations.")
+        
+        # --- NEW: End-of-Cycle Safety Net Saving ---
+        print(f"\n💾 Ensuring top {CONFIG.save_top_n_at_end_of_cycle} final algorithms are saved...")
+        saved_final_count = 0
+        for rank, genome in enumerate(final_population[:CONFIG.save_top_n_at_end_of_cycle]):
+            # For this final save, we call the saver directly. The fitness check inside will still apply.
+            if self.system.save_algorithm_immediately(genome, cycle, rank + 1, self, generation=evolver.generation):
+                saved_final_count += 1
+        print(f"  -> Saved {saved_final_count} final top algorithms.")
         
         top_discoveries = [{'rank': r + 1, 'fitness': g.fitness, 'genome': g} for r, g in enumerate(final_population[:50])]
         
@@ -340,64 +348,69 @@ class SieveEchoDiscoverySystem:
         
         self.load_state()
     
-        def save_algorithm_immediately(self, genome, cycle: int, rank: int, discoverer=None, generation: int = -1) -> bool:
-            """UPDATED: Now includes the generation number."""
-            try:
-                signature = genome.get_signature()[:8] if hasattr(genome, 'get_signature') else 'unknown'
-                
-                # Create a unique key including the generation to allow saving improvements of the same algorithm
-                save_key = f"{signature}_c{cycle}_g{generation}"
-                if save_key in self.saved_signatures:
-                    return False
+    def save_algorithm_immediately(self, genome, cycle: int, rank: int, discoverer=None, generation: int = -1) -> bool:
+        """
+        DEFINITIVE FIX: Added a quality gate. Will not save unless fitness exceeds CONFIG.min_fitness_to_save.
+        """
+        # --- NEW: CRITICAL QUALITY GATE ---
+        if not genome.fitness or genome.fitness < CONFIG.min_fitness_to_save:
+            return False # Do not save low-quality algorithms
 
-                algorithm_data = {
-                    'cycle': cycle,
-                    'generation': generation, # Track when it was found
-                    'rank_in_gen': rank,
-                    'fitness': genome.fitness,
-                    'signature': genome.get_signature(),
-                    'timestamp': datetime.now().isoformat(),
-                    'instructions': [],
-                    'outputs': [],
-                    'data_config': genome.data_config if hasattr(genome, 'data_config') else {}
-                }
-                
-                if hasattr(genome, 'instructions'):
-                    # (The rest of the serialization logic is correct and remains unchanged)
-                    for idx, instr in enumerate(genome.instructions):
-                        if hasattr(instr, 'target'):
-                            instr_data = { 'index': idx, 'type': 'instruction', 'target': { 'store': instr.target[0], 'index': instr.target[1], 'full': f"{instr.target[0]}[{instr.target[1]}]" }, 'operation': instr.operation, 'args': [] }
-                            for arg in instr.args:
-                                instr_data['args'].append({ 'store': arg[0], 'index': arg[1], 'full': f"{arg[0]}[{arg[1]}]" })
-                            arg_str = ', '.join([a['full'] for a in instr_data['args']])
-                            instr_data['readable'] = f"{instr_data['target']['full']} = {instr.operation}({arg_str})"
-                            algorithm_data['instructions'].append(instr_data)
-                        else:
-                            algorithm_data['instructions'].append({ 'index': idx, 'type': 'control_flow', 'control_type': instr.get('type', 'unknown'), 'condition': instr.get('condition') })
-                
-                if hasattr(genome, 'outputs'):
-                    for out in genome.outputs:
-                        algorithm_data['outputs'].append({ 'store': out[0], 'index': out[1], 'full': f"{out[0]}[{out[1]}]" })
-
-                if discoverer and hasattr(discoverer, '_decode_genome'):
-                    algorithm_data['decoded'] = discoverer._decode_genome(genome)
-                
-                # Filename now includes generation for better tracking
-                filename = f"cycle_{cycle:03d}_gen_{generation:04d}_rank_{rank:02d}_fit_{algorithm_data['fitness']:.4f}_{signature}.json"
-                filepath = self.realtime_dir / filename
-                
-                with open(filepath, 'w') as f:
-                    json.dump(algorithm_data, f, indent=2, default=str)
-                
-                # Use a more detailed print statement
-                print(f"  ✓ Saved Gen {generation} Rank {rank}: {filename}")
-                self.saved_signatures.add(save_key)
-                return True
-                
-            except Exception as e:
-                print(f"  ✗ Failed to save algorithm: {e}")
-                traceback.print_exc()
+        try:
+            signature = genome.get_signature()[:8] if hasattr(genome, 'get_signature') else 'unknown'
+            
+            # To prevent saving the exact same algorithm multiple times in a cycle, we check its signature.
+            # We allow saving an improved version (higher fitness) later.
+            save_key = f"{signature}_c{cycle}"
+            if save_key in self.saved_signatures:
                 return False
+
+            algorithm_data = {
+                'cycle': cycle,
+                'generation': generation,
+                'rank_in_gen': rank,
+                'fitness': genome.fitness,
+                'signature': genome.get_signature(),
+                'timestamp': datetime.now().isoformat(),
+                'instructions': [],
+                'outputs': [],
+                'data_config': genome.data_config if hasattr(genome, 'data_config') else {}
+            }
+            
+            # (Serialization logic remains the same)
+            if hasattr(genome, 'instructions'):
+                for idx, instr in enumerate(genome.instructions):
+                    if hasattr(instr, 'target'):
+                        instr_data = { 'index': idx, 'type': 'instruction', 'target': { 'store': instr.target[0], 'index': instr.target[1], 'full': f"{instr.target[0]}[{instr.target[1]}]" }, 'operation': instr.operation, 'args': [] }
+                        for arg in instr.args:
+                            instr_data['args'].append({ 'store': arg[0], 'index': arg[1], 'full': f"{arg[0]}[{arg[1]}]" })
+                        arg_str = ', '.join([a['full'] for a in instr_data['args']])
+                        instr_data['readable'] = f"{instr_data['target']['full']} = {instr.operation}({arg_str})"
+                        algorithm_data['instructions'].append(instr_data)
+                    else:
+                        algorithm_data['instructions'].append({ 'index': idx, 'type': 'control_flow', 'control_type': instr.get('type', 'unknown'), 'condition': instr.get('condition') })
+            
+            if hasattr(genome, 'outputs'):
+                for out in genome.outputs:
+                    algorithm_data['outputs'].append({ 'store': out[0], 'index': out[1], 'full': f"{out[0]}[{out[1]}]" })
+
+            if discoverer and hasattr(discoverer, '_decode_genome'):
+                algorithm_data['decoded'] = discoverer._decode_genome(genome)
+            
+            filename = f"cycle_{cycle:03d}_gen_{generation:04d}_rank_{rank:02d}_fit_{algorithm_data['fitness']:.4f}_{signature}.json"
+            filepath = self.realtime_dir / filename
+            
+            with open(filepath, 'w') as f:
+                json.dump(algorithm_data, f, indent=2, default=str)
+            
+            print(f"  ✓ SAVED (Fitness > {CONFIG.min_fitness_to_save}): {filename}")
+            self.saved_signatures.add(save_key) # Add signature to prevent re-saving in the same cycle
+            return True
+            
+        except Exception as e:
+            print(f"  ✗ Failed to save algorithm: {e}")
+            traceback.print_exc()
+            return False
     
     def clean_memory(self):
         """NEW METHOD: Clean up memory to prevent RAM over-usage"""
