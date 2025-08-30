@@ -1274,7 +1274,7 @@ class UnifiedEvolver:
         genome.estimated_params = sum(genome._estimate_layer_params(l) for l in genome.layers)
         genome.estimated_memory_mb = sum(genome._estimate_layer_memory(genome._estimate_layer_params(l), l.output_shape) for l in genome.layers)
     
-        def evolve(self, generations: int, evaluator: Callable[[BaseGenome], float],
+    def evolve(self, generations: int, evaluator: Callable[[BaseGenome], float],
               adaptive_config: Optional[Dict] = None,
               generation_callback: Optional[Callable] = None,
               callback_top_k: int = 0) -> List[BaseGenome]:
