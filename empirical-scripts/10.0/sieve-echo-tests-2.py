@@ -1,11 +1,72 @@
 #!/usr/bin/env python3
 """
 Sieve Echo Conjecture - Unified Evolvo Discovery Engine v10
+
+Key improvements:
+- Uses unified evolvo library instead of split evolvo_model/evolvo_nn
+- Multi-base NDR pattern discovery 
+- Proper evolutionary approach to finding patterns
+- Co-evolution of formulas and neural architectures
+
+---
+
+## Major Changes from v8 to v9:
+
+### 1. **Multi-Base NDR Discovery**
+- Tests patterns across 13 different prime bases (2, 3, 5, 7, 10, 11, 13, 16, 17, 19, 23, 29, 31)
+- Computes base invariance metrics (coefficient of variation) to verify pattern consistency
+- Aggregates features across all bases (mean entropy, std, kurtosis, etc.)
+
+### 2. **Proper Evolvo Integration**
+- Uses `evolvo.AlgorithmGenome` for formula evolution
+- Uses `evolvo.NeuralGenome` for neural architecture search  
+- Implements `evolvo.ResourceAwareEvolver` for memory-managed evolution
+- Includes `evolvo.ResourceMonitor` for VRAM/RAM management
+- Uses `evolvo.QLearningGuide` for guided evolution
+
+### 3. **Co-Evolution System**
+- Evolves formulas and neural networks together
+- Shares learning between both systems via Q-learning
+- Allows mutual feedback between symbolic and neural approaches
+
+### 4. **Key Improvements**
+- **Base Invariance Testing**: Verifies that patterns are structurally similar across different bases
+- **Proper Genome Creation**: Creates valid instruction sequences using the new Instruction class
+- **Resource Management**: Prevents memory overflow when evolving multiple neural networks
+- **Parallel Evaluation**: Uses batch processing for neural network evaluation
+
+### 5. **Critical Fixes**
+- No longer computes simple correlations - uses evolution to discover patterns
+- Properly normalizes digits to [0,1] interval (NDR framework)
+- Tests pattern structure across bases, not expecting identical values
+- Lets evolution discover feature combinations rather than pre-specifying them
+
+## How It Works:
+
+1. **Data Generation**: For each n, computes NDR patterns in all test bases
+2. **Feature Aggregation**: Calculates mean/std of entropy, kurtosis, length across bases
+3. **Formula Evolution**: Uses genetic algorithms to evolve mathematical formulas
+4. **Neural Evolution**: Evolves neural architectures with resource constraints
+5. **Co-Evolution**: Both systems evolve together, sharing insights via Q-learning
+6. **Base Invariance Check**: Verifies patterns are consistent (CV < 0.1 is good)
+
+The script now properly implements the evolutionary discovery approach you intended, where patterns emerge from evolution rather than being predetermined, and critically tests across multiple numerical bases to find universal patterns rather than base-specific artifacts.
+
+v10:
+
 Key improvements:
 - Moves utility classes (Serializer, ResultsManager) into the evolvo library.
 - Implements a complexity bonus in the fitness function to reward longer, more diverse algorithms.
 - Fixes serialization crashes by saving a curated state dictionary instead of entire class instances.
 - Increases the number of saved top formulas per cycle to 50.
+
+Is important also a ratio "effective algorithm longness / accuracy", because a long algorithm that achieve a great accuracy can hide an important pattern. 
+Then, seen various combinations of pattern, most important algorithms have to be save belong the realtime processing, and not only "one at cycle" or "one at the end of script running"
+
+- Adaptive Cycles: The evolution process will now stop a cycle early if it detects that fitness has stagnated, saving valuable computation time on unproductive cycles.
+- Parsimony Pressure (Complexity vs. Accuracy): The fitness function has been updated to penalize overly long algorithms. This prioritizes finding elegant, concise patterns, as you requested.
+- Real-Time, Intra-Cycle Saving: The system will now save promising algorithms during the evolution of a single cycle, not just at the end. If a great algorithm is found in generation 50 of 200, it is saved immediately, ensuring no discoveries are lost.
+
 """
 import copy
 import gc
@@ -48,21 +109,37 @@ warnings.filterwarnings('ignore', category=UserWarning)
 # ==============================================================================
 # CONFIGURATION
 # ==============================================================================
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
 @dataclass
 class Config:
     perpetual_mode: bool = True
     max_cycles: int = 100
     data_chunk_size: int = 1000
     test_bases: List[int] = field(default_factory=lambda: [2, 3, 5, 7, 10, 11, 13, 17, 19, 23, 29, 31])
-    formula_generations: int = 200
     formula_population_size: int = 1000
     nn_generations: int = 50
     nn_population_size: int = 200
     max_algorithm_length: int = 60
     max_model_params: int = int(1e8)
     max_memory_mb: float = 4096 
-    state_file: str = "sieve_echo_state_v10.json" # Use JSON for safe state
+    state_file: str = "sieve_echo_state_v10.json"
     results_dir: str = "results_v10"
+
+    # --- NEW: Adaptive Evolution & Fitness Configuration ---
+    # Enables adaptive generation count per cycle
+    adaptive_generations: bool = True
+    # Maximum generations if not adapting
+    formula_generations_max: int = 250
+    # Minimum generations to run before checking for stagnation
+    formula_generations_min: int = 50
+    # Stop if fitness doesn't improve by at least this much over 15 generations
+    stagnation_threshold: float = 0.0001
+    # Controls how strongly longer algorithms are penalized. 0 = no penalty.
+    length_penalty_factor: float = 0.3
+    # Save the top N algorithms from every generation in real-time
+    save_top_k_every_generation: int = 3
     
 CONFIG = Config()
 
@@ -114,9 +191,9 @@ class MultiBaseNDRComputer:
 # EVOLVO-BASED FORMULA DISCOVERER
 # ==============================================================================
 class UnifiedFormulaDiscoverer:
-    def __init__(self, data: List[Dict], system=None):  # ADD system parameter
+    def __init__(self, data: List[Dict], system=None):
         self.data = data
-        self.system = system  # Store reference to main system
+        self.system = system
         self.instruction_set = evolvo.EnhancedInstructionSet()
         self.feature_names = ['kurtosis_mean', 'length_mean', 'entropy_mean', 'entropy_cv', 'n', 'phi', 'tau']
         self.data_config = {
@@ -124,9 +201,8 @@ class UnifiedFormulaDiscoverer:
             'b$': [f'b{i}' for i in range(4)], 'd$': [f'd{i}' for i in range(8)]
         }
     
-    def evolve_formulas(self, cycle: int = 0) -> Dict:  # ADD cycle parameter
-        """FIXED: Actually saves algorithms during evolution"""
-        print("\n📊 Evolving formulas...")
+    def evolve_formulas(self, cycle: int = 0) -> Dict:
+        print("\n📊 Evolving formulas with adaptive cycles and real-time saving...")
         valid_data = [d for d in self.data if all(f in d for f in self.feature_names)]
         if len(valid_data) < 100:
             print("Not enough data for formula evolution.")
@@ -137,7 +213,8 @@ class UnifiedFormulaDiscoverer:
         # Generate initial population
         for _ in range(CONFIG.formula_population_size):
             genome = evolvo.AlgorithmGenome(self.data_config, self.instruction_set)
-            for _ in range(random.randint(5, CONFIG.max_algorithm_length)):
+            initial_length = random.randint(5, CONFIG.max_algorithm_length)
+            for _ in range(initial_length):
                 op_name = random.choice(list(self.instruction_set.operations.keys()))
                 op_info = self.instruction_set.operations[op_name]
                 if op_info.return_type != 'decimal': continue
@@ -149,32 +226,37 @@ class UnifiedFormulaDiscoverer:
             genome.mark_output(('d$', 0))
             evolver.add_genome(genome)
         
+        # --- NEW: Define the callback for real-time saving ---
+        def realtime_save_callback(genome, generation, rank):
+            if self.system and hasattr(self.system, 'save_algorithm_immediately'):
+                # Pass cycle and generation info to the saver
+                self.system.save_algorithm_immediately(genome, cycle, rank, self, generation)
+
+        # Configure adaptive evolution
+        adaptive_config = {
+            'enabled': CONFIG.adaptive_generations,
+            'min_generations': CONFIG.formula_generations_min,
+            'stagnation_threshold': CONFIG.stagnation_threshold,
+            'stagnation_window': 15 # Check over the last 15 generations
+        }
+        
         # Evaluate with the fixed method
         evaluator = lambda g: self._evaluate_genome(g, random.sample(valid_data, min(200, len(valid_data))))
-        evolver.evolve(CONFIG.formula_generations, evaluator)
         
-        # CRITICAL FIX: Actually save the algorithms NOW
-        top_discoveries = []
-        saved_count = 0
+        # --- MODIFIED: Call evolve with new parameters ---
+        final_population = evolver.evolve(
+            generations=CONFIG.formula_generations_max,
+            evaluator=evaluator,
+            adaptive_config=adaptive_config,
+            generation_callback=realtime_save_callback,
+            callback_top_k=CONFIG.save_top_k_every_generation
+        )
         
-        for rank, genome in enumerate(evolver.population[:50]):
-            if genome.fitness and genome.fitness > 0.1:
-                discovery = {'rank': rank + 1, 'fitness': genome.fitness, 'genome': genome}
-                top_discoveries.append(discovery)
-                
-                # ACTUALLY SAVE IT HERE - Check if system has the save method
-                if self.system and hasattr(self.system, 'save_algorithm_immediately'):
-                    success = self.system.save_algorithm_immediately(
-                        genome, cycle, rank + 1, self
-                    )
-                    if success:
-                        saved_count += 1
-                        discovery['saved'] = True
-                    else:
-                        discovery['saved'] = False
+        print(f"✅ Evolution complete after {evolver.generation} generations.")
         
-        print(f"✅ Saved {saved_count}/{len(top_discoveries)} algorithms to disk")
-        return {'top_discoveries': top_discoveries, 'saved_count': saved_count}
+        top_discoveries = [{'rank': r + 1, 'fitness': g.fitness, 'genome': g} for r, g in enumerate(final_population[:50])]
+        
+        return {'top_discoveries': top_discoveries}
 
     def _decode_genome(self, genome: evolvo.AlgorithmGenome) -> Dict:
         decoded = {'symbolic_formula': [], 'unique_operations': set(), 'effective_length': len(genome.instructions)}
@@ -195,6 +277,15 @@ class UnifiedFormulaDiscoverer:
 
     def _evaluate_genome(self, genome: evolvo.AlgorithmGenome, data_sample: List[Dict]) -> float:
         try:
+            # --- NEW: Parsimony Pressure (Penalize long algorithms) ---
+            num_instructions = len(genome.instructions)
+            if num_instructions == 0: return 0.0
+            
+            # Calculate length penalty. It's 1.0 for short algorithms and decreases towards 0 for long ones.
+            # The penalty starts after a certain length to not punish minimal complexity.
+            normalized_length = max(0, num_instructions - 5) / CONFIG.max_algorithm_length
+            length_penalty = max(0, 1.0 - (normalized_length * CONFIG.length_penalty_factor))
+
             compiled = genome.to_executable()
             data_store = evolvo.UnifiedDataStore(self.data_config)
             predictions, actuals = [], []
@@ -211,12 +302,16 @@ class UnifiedFormulaDiscoverer:
             if not predictions: return 0.0
             
             mse = np.mean((np.array(predictions) - np.array(actuals))**2)
-            # --- START: COMPLEXITY BONUS ---
-            complexity_score = len(genome.instructions) + len(set(i.operation for i in genome.instructions if isinstance(i, evolvo.Instruction))) * 2
-            fitness = (1 / (1 + mse)) + complexity_score * 0.001
-            # --- END: COMPLEXITY BONUS ---
-            return fitness
-        except Exception: return 0.0
+            accuracy_fitness = 1 / (1 + mse)
+            
+            # Bonus for using a diverse set of operations
+            complexity_bonus = len(set(i.operation for i in genome.instructions if isinstance(i, evolvo.Instruction))) * 0.01
+            
+            # Final fitness combines accuracy, a penalty for length, and a bonus for complexity
+            final_fitness = (accuracy_fitness + complexity_bonus) * length_penalty
+            
+            return final_fitness
+        except Exception: return 0.0    
     
 
 # ==============================================================================
@@ -245,111 +340,64 @@ class SieveEchoDiscoverySystem:
         
         self.load_state()
     
-    def save_algorithm_immediately(self, genome, cycle: int, rank: int, discoverer=None) -> bool:
-        """NEW METHOD: Save algorithm as soon as it's discovered"""
-        try:
-            # Get unique signature
-            signature = genome.get_signature()[:8] if hasattr(genome, 'get_signature') else 'unknown'
-            
-            # Skip if already saved
-            if signature in self.saved_signatures:
-                return False
-            
-            # Build complete algorithm data
-            algorithm_data = {
-                'cycle': cycle,
-                'rank': rank,
-                'fitness': genome.fitness,
-                'signature': genome.get_signature() if hasattr(genome, 'get_signature') else None,
-                'generation': genome.generation if hasattr(genome, 'generation') else 0,
-                'timestamp': datetime.now().isoformat(),
-                'instructions': [],
-                'outputs': [],
-                'data_config': {}
-            }
-            
-            # Extract data config
-            if hasattr(genome, 'data_config'):
-                algorithm_data['data_config'] = genome.data_config
-            
-            # Extract all instructions with full detail
-            if hasattr(genome, 'instructions'):
-                for idx, instr in enumerate(genome.instructions):
-                    if hasattr(instr, 'target'):  # Regular instruction
-                        instr_data = {
-                            'index': idx,
-                            'type': 'instruction',
-                            'target': {
-                                'store': instr.target[0],
-                                'index': instr.target[1],
-                                'full': f"{instr.target[0]}[{instr.target[1]}]"
-                            },
-                            'operation': instr.operation,
-                            'args': []
-                        }
-                        
-                        # Extract arguments
-                        for arg in instr.args:
-                            instr_data['args'].append({
-                                'store': arg[0],
-                                'index': arg[1],
-                                'full': f"{arg[0]}[{arg[1]}]"
-                            })
-                        
-                        # Human-readable form
-                        arg_str = ', '.join([a['full'] for a in instr_data['args']])
-                        instr_data['readable'] = f"{instr_data['target']['full']} = {instr.operation}({arg_str})"
-                        
-                        algorithm_data['instructions'].append(instr_data)
-                    else:  # Control flow
-                        algorithm_data['instructions'].append({
-                            'index': idx,
-                            'type': 'control_flow',
-                            'control_type': instr.get('type', 'unknown'),
-                            'condition': instr.get('condition')
-                        })
-            
-            # Extract outputs
-            if hasattr(genome, 'outputs'):
-                for out in genome.outputs:
-                    algorithm_data['outputs'].append({
-                        'store': out[0],
-                        'index': out[1],
-                        'full': f"{out[0]}[{out[1]}]"
-                    })
-            
-            # Add decoded version if discoverer available
-            if discoverer and hasattr(discoverer, '_decode_genome'):
-                try:
+        def save_algorithm_immediately(self, genome, cycle: int, rank: int, discoverer=None, generation: int = -1) -> bool:
+            """UPDATED: Now includes the generation number."""
+            try:
+                signature = genome.get_signature()[:8] if hasattr(genome, 'get_signature') else 'unknown'
+                
+                # Create a unique key including the generation to allow saving improvements of the same algorithm
+                save_key = f"{signature}_c{cycle}_g{generation}"
+                if save_key in self.saved_signatures:
+                    return False
+
+                algorithm_data = {
+                    'cycle': cycle,
+                    'generation': generation, # Track when it was found
+                    'rank_in_gen': rank,
+                    'fitness': genome.fitness,
+                    'signature': genome.get_signature(),
+                    'timestamp': datetime.now().isoformat(),
+                    'instructions': [],
+                    'outputs': [],
+                    'data_config': genome.data_config if hasattr(genome, 'data_config') else {}
+                }
+                
+                if hasattr(genome, 'instructions'):
+                    # (The rest of the serialization logic is correct and remains unchanged)
+                    for idx, instr in enumerate(genome.instructions):
+                        if hasattr(instr, 'target'):
+                            instr_data = { 'index': idx, 'type': 'instruction', 'target': { 'store': instr.target[0], 'index': instr.target[1], 'full': f"{instr.target[0]}[{instr.target[1]}]" }, 'operation': instr.operation, 'args': [] }
+                            for arg in instr.args:
+                                instr_data['args'].append({ 'store': arg[0], 'index': arg[1], 'full': f"{arg[0]}[{arg[1]}]" })
+                            arg_str = ', '.join([a['full'] for a in instr_data['args']])
+                            instr_data['readable'] = f"{instr_data['target']['full']} = {instr.operation}({arg_str})"
+                            algorithm_data['instructions'].append(instr_data)
+                        else:
+                            algorithm_data['instructions'].append({ 'index': idx, 'type': 'control_flow', 'control_type': instr.get('type', 'unknown'), 'condition': instr.get('condition') })
+                
+                if hasattr(genome, 'outputs'):
+                    for out in genome.outputs:
+                        algorithm_data['outputs'].append({ 'store': out[0], 'index': out[1], 'full': f"{out[0]}[{out[1]}]" })
+
+                if discoverer and hasattr(discoverer, '_decode_genome'):
                     algorithm_data['decoded'] = discoverer._decode_genome(genome)
-                except Exception as e:
-                    algorithm_data['decoded'] = {'error': str(e)}
-            
-            # Save to file immediately
-            filename = f"cycle_{cycle:03d}_rank_{rank:03d}_fit_{algorithm_data['fitness']:.4f}_{signature}.json"
-            filepath = self.realtime_dir / filename
-            
-            with open(filepath, 'w') as f:
-                json.dump(algorithm_data, f, indent=2, default=str)
-            
-            print(f"  ✓ SAVED: {filename} ({len(algorithm_data['instructions'])} instructions)")
-            self.saved_signatures.add(signature)
-            
-            # Also save a simplified version for quick access
-            simple_path = self.realtime_dir / "latest" / f"c{cycle:03d}_r{rank:02d}.json"
-            simple_path.parent.mkdir(exist_ok=True)
-            with open(simple_path, 'w') as f:
-                json.dump({
-                    'fitness': algorithm_data['fitness'],
-                    'instructions': [i['readable'] for i in algorithm_data['instructions'] if 'readable' in i]
-                }, f, indent=2)
-            
-            return True
-            
-        except Exception as e:
-            print(f"  ✗ Failed to save algorithm: {e}")
-            traceback.print_exc()
-            return False
+                
+                # Filename now includes generation for better tracking
+                filename = f"cycle_{cycle:03d}_gen_{generation:04d}_rank_{rank:02d}_fit_{algorithm_data['fitness']:.4f}_{signature}.json"
+                filepath = self.realtime_dir / filename
+                
+                with open(filepath, 'w') as f:
+                    json.dump(algorithm_data, f, indent=2, default=str)
+                
+                # Use a more detailed print statement
+                print(f"  ✓ Saved Gen {generation} Rank {rank}: {filename}")
+                self.saved_signatures.add(save_key)
+                return True
+                
+            except Exception as e:
+                print(f"  ✗ Failed to save algorithm: {e}")
+                traceback.print_exc()
+                return False
     
     def clean_memory(self):
         """NEW METHOD: Clean up memory to prevent RAM over-usage"""
@@ -378,9 +426,9 @@ class SieveEchoDiscoverySystem:
         gc.collect()
     
     def run_discovery(self):
-        """FIXED: Properly passes system reference and cycle number"""
-        print("\n🚀 SIEVE ECHO DISCOVERY ENGINE v10 - FIXED 🚀")
-        print(f"Real-time results will be saved to: {self.realtime_dir}")
+        """MODIFIED: Main loop now supports adaptive cycles and real-time saving."""
+        print("\n🚀 SIEVE ECHO DISCOVERY ENGINE v10 - ADAPTIVE & REAL-TIME 🚀")
+        print(f"Real-time algorithms will be saved to: {self.realtime_dir}")
         
         cycle = max([int(k.split('_')[-1]) for k in self.results.keys() if k.startswith('cycle_')] + [0])
         
@@ -389,37 +437,25 @@ class SieveEchoDiscoverySystem:
                 cycle += 1
                 print(f"\n{'='*30} CYCLE {cycle} {'='*30}")
                 
-                # Memory cleanup
                 self.clean_memory()
-                
-                # Generate data
                 self.generate_data()
+                
                 if len(self.data) < 200:
                     print("Not enough data yet, continuing...")
+                    time.sleep(10)
                     continue
                 
-                # Analyze base invariance
                 base_invariance = self.analyze_base_invariance()
                 
-                # CRITICAL FIX: Pass system reference to discoverer
-                print("\n🔬 Starting formula evolution...")
-                formula_discoverer = UnifiedFormulaDiscoverer(self.data, system=self)  # PASS self
+                # The discoverer now handles the adaptive loop and real-time saving via callbacks
+                formula_discoverer = UnifiedFormulaDiscoverer(self.data, system=self)
+                formula_results = formula_discoverer.evolve_formulas(cycle=cycle)
                 
-                # Call evolve_formulas with cycle number
-                formula_results = formula_discoverer.evolve_formulas(cycle=cycle)  # PASS cycle
+                # Post-cycle reporting
+                final_discoveries = formula_results.get('top_discoveries', [])
+                saved_count = len(list(self.realtime_dir.glob(f"cycle_{cycle:03d}_*.json")))
+                print(f"\n✅ Cycle {cycle} complete: Found {len(final_discoveries)} discoveries. Total {saved_count} algorithms saved for this cycle.")
                 
-                # Report results
-                saved_count = formula_results.get('saved_count', 0)
-                print(f"\n✅ Cycle {cycle} complete: {saved_count} algorithms saved")
-                
-                # Verify files actually exist
-                cycle_files = list(self.realtime_dir.glob(f"cycle_{cycle:03d}_*.json"))
-                if cycle_files:
-                    print(f"📁 Verified: {len(cycle_files)} files in {self.realtime_dir}")
-                else:
-                    print(f"⚠️ WARNING: No files found for cycle {cycle}!")
-                
-                # Store cycle results
                 self.results[f'cycle_{cycle}'] = {
                     'formulas_saved': saved_count,
                     'base_invariance': base_invariance,
@@ -428,13 +464,10 @@ class SieveEchoDiscoverySystem:
                     'current_n': self.current_n
                 }
                 
-                # Save state
                 self.save_state_light()
                 self.save_cycle_summary(cycle, formula_results, base_invariance)
                 
-                # Deep cleanup every 10 cycles
                 if cycle % 10 == 0:
-                    print("\n🧹 Deep memory cleanup...")
                     self.deep_clean_memory()
                     
             except KeyboardInterrupt:

@@ -1274,61 +1274,103 @@ class UnifiedEvolver:
         genome.estimated_params = sum(genome._estimate_layer_params(l) for l in genome.layers)
         genome.estimated_memory_mb = sum(genome._estimate_layer_memory(genome._estimate_layer_params(l), l.output_shape) for l in genome.layers)
     
-    def evolve(self, generations: int, evaluator: Callable[[BaseGenome], float],
-              multi_objective: bool = False) -> List[BaseGenome]:
-        """Main evolution loop"""
-        
-        for gen in range(generations):
-            self.generation = gen
+        def evolve(self, generations: int, evaluator: Callable[[BaseGenome], float],
+              adaptive_config: Optional[Dict] = None,
+              generation_callback: Optional[Callable] = None,
+              callback_top_k: int = 0) -> List[BaseGenome]:
+            """
+            MODIFIED: Main evolution loop with adaptive early stopping and real-time callbacks.
             
-            for genome in self.population:
-                if genome.fitness is None:
-                    try:
-                        genome.fitness = evaluator(genome)
-                    except Exception:
-                        genome.fitness = -float('inf')
+            Args:
+                generations: Maximum number of generations to run.
+                evaluator: The fitness evaluation function.
+                adaptive_config (dict): Optional config for early stopping.
+                    - 'enabled' (bool): Whether to use adaptive generations.
+                    - 'min_generations' (int): Minimum generations to run.
+                    - 'stagnation_window' (int): How many generations to look back for progress.
+                    - 'stagnation_threshold' (float): The minimum fitness improvement required.
+                generation_callback (Callable): A function to call for top genomes every generation.
+                    It receives (genome, generation, rank).
+                callback_top_k (int): How many of the top genomes to pass to the callback.
+            """
             
-            self.population.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
-            
-            self.hall_of_fame.extend(self.population[:5])
-            self.hall_of_fame.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
-            self.hall_of_fame = self.hall_of_fame[:20]
-            
-            elite_size = int(self.population_size * self.elite_ratio)
-            new_population = self.population[:elite_size]
-            
-            attempts = 0
-            max_attempts = self.population_size * 10
+            fitness_history = []
 
-            while len(new_population) < self.population_size and attempts < max_attempts:
-                try:
-                    parent1 = self._tournament_select()
-                    parent2 = self._tournament_select()
-                except ValueError: break
+            for gen in range(generations):
+                self.generation = gen
                 
-                child = self.crossover(parent1, parent2) if random.random() < self.crossover_rate else copy.deepcopy(random.choice([parent1, parent2]))
-                if random.random() < self.mutation_rate:
-                    child = self.mutate(child)
+                # Evaluate any unevaluated genomes
+                for genome in self.population:
+                    if genome.fitness is None:
+                        try:
+                            genome.fitness = evaluator(genome)
+                        except Exception:
+                            genome.fitness = -float('inf')
+                
+                self.population.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
+                
+                # --- NEW: Real-time callback for top genomes ---
+                if generation_callback and callback_top_k > 0:
+                    for i in range(min(callback_top_k, len(self.population))):
+                        generation_callback(self.population[i], gen, i + 1)
+                
+                # Update Hall of Fame
+                self.hall_of_fame.extend(self.population[:5])
+                self.hall_of_fame.sort(key=lambda g: g.fitness or -float('inf'), reverse=True)
+                self.hall_of_fame = self.hall_of_fame[:20]
 
-                if child.get_signature() not in self.diversity_cache:
-                    self.diversity_cache.add(child.get_signature())
-                    new_population.append(child)
-                attempts += 1
+                # --- NEW: Adaptive Early Stopping Logic ---
+                if adaptive_config and adaptive_config.get('enabled', False):
+                    best_fitness = self.population[0].fitness if self.population else -float('inf')
+                    fitness_history.append(best_fitness)
+                    
+                    min_gens = adaptive_config.get('min_generations', 50)
+                    if gen > min_gens:
+                        window = adaptive_config.get('stagnation_window', 15)
+                        threshold = adaptive_config.get('stagnation_threshold', 0.0001)
+                        
+                        if len(fitness_history) > window:
+                            past_fitness = fitness_history[-window]
+                            improvement = best_fitness - past_fitness
+                            if improvement < threshold:
+                                print(f"\nEvolution stagnated at generation {gen}. Best fitness={best_fitness:.4f}. Stopping early.")
+                                break # Exit the loop
 
-            if len(new_population) < self.population_size and self.population:
-                print(f"WARN: Filling with {self.population_size - len(new_population)} mutated elites.")
-                while len(new_population) < self.population_size:
-                    new_population.append(self.mutate(copy.deepcopy(self.population[0])))
+                elite_size = int(self.population_size * self.elite_ratio)
+                new_population = self.population[:elite_size]
+                
+                # Generate new population
+                attempts = 0
+                max_attempts = self.population_size * 10
+                while len(new_population) < self.population_size and attempts < max_attempts:
+                    try:
+                        parent1 = self._tournament_select()
+                        parent2 = self._tournament_select()
+                    except ValueError: break
+                    
+                    child = self.crossover(parent1, parent2) if random.random() < self.crossover_rate else copy.deepcopy(random.choice([parent1, parent2]))
+                    if random.random() < self.mutation_rate:
+                        child = self.mutate(child)
 
-            self.population = new_population[:self.population_size]
+                    if child.get_signature() not in self.diversity_cache:
+                        self.diversity_cache.add(child.get_signature())
+                        new_population.append(child)
+                    attempts += 1
+
+                if len(new_population) < self.population_size and self.population:
+                    print(f"WARN: Filling with {self.population_size - len(new_population)} mutated elites.")
+                    while len(new_population) < self.population_size:
+                        new_population.append(self.mutate(copy.deepcopy(self.population[0])))
+
+                self.population = new_population[:self.population_size]
+                
+                if gen % 10 == 0: self._adapt_rates()
+                
+                if self.population:
+                    best = self.population[0]
+                    print(f"Gen {gen:03d}: Best Fitness={best.fitness:.4f} | Pop Size={len(self.population)} | Unique Genomes={len(self.diversity_cache)}")
             
-            if gen % 10 == 0: self._adapt_rates()
-            
-            if self.population:
-                best = self.population[0]
-                print(f"Gen {gen}: Best fitness = {best.fitness:.4f}, Unique genomes = {len(self.diversity_cache)}")
-        
-        return self.population
+            return self.population
     
     def _tournament_select(self, tournament_size: int = 3) -> BaseGenome:
         """Tournament selection"""
