@@ -1500,6 +1500,70 @@ class QLearningGuide:
 # SERIALIZATION & RESULTS MANAGEMENT
 # ============================================================================
 
+class EnhancedAlgorithmSerializer:
+    """Ensures complete algorithm structure is captured and saved"""
+    
+    @staticmethod
+    def serialize_genome_complete(genome, data_config=None):
+        """Extract COMPLETE algorithm structure from genome"""
+        result = {
+            'signature': genome.get_signature() if hasattr(genome, 'get_signature') else None,
+            'fitness': genome.fitness,
+            'generation': genome.generation if hasattr(genome, 'generation') else 0,
+            'instructions': [],
+            'outputs': [],
+            'data_config': data_config or (genome.data_config if hasattr(genome, 'data_config') else {}),
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        # Extract every instruction with full detail
+        if hasattr(genome, 'instructions'):
+            for idx, instr in enumerate(genome.instructions):
+                if hasattr(instr, 'target'):  # Regular instruction
+                    instr_data = {
+                        'index': idx,
+                        'type': 'instruction',
+                        'target': {
+                            'store': instr.target[0],
+                            'index': instr.target[1],
+                            'full': f"{instr.target[0]}[{instr.target[1]}]"
+                        },
+                        'operation': instr.operation,
+                        'args': []
+                    }
+                    
+                    # Detailed argument extraction
+                    for arg in instr.args:
+                        instr_data['args'].append({
+                            'store': arg[0],
+                            'index': arg[1],
+                            'full': f"{arg[0]}[{arg[1]}]"
+                        })
+                    
+                    # Add human-readable form
+                    arg_str = ', '.join([a['full'] for a in instr_data['args']])
+                    instr_data['readable'] = f"{instr_data['target']['full']} = {instr.operation}({arg_str})"
+                    
+                    result['instructions'].append(instr_data)
+                else:  # Control flow
+                    result['instructions'].append({
+                        'index': idx,
+                        'type': 'control_flow',
+                        'control_type': instr.get('type', 'unknown'),
+                        'condition': instr.get('condition')
+                    })
+        
+        # Extract outputs
+        if hasattr(genome, 'outputs'):
+            for out in genome.outputs:
+                result['outputs'].append({
+                    'store': out[0],
+                    'index': out[1],
+                    'full': f"{out[0]}[{out[1]}]"
+                })
+        
+        return result
+
 class RobustSerializer:
     """
     Multi-level fallback serialization system.
