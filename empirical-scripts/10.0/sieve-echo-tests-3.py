@@ -116,14 +116,14 @@ warnings.filterwarnings('ignore', category=UserWarning)
 class Config:
     perpetual_mode: bool = True
     max_cycles: int = 100
-    data_chunk_size: int = 1000
+    data_chunk_size: int = 10000 # wait, that one or formula_pop_size?
     test_bases: List[int] = field(default_factory=lambda: [2, 3, 4, 5, 6, 7, 10, 12, 11, 13, 15, 17, 19, 23, 29, 31])
     formula_population_size: int = 10000
     nn_generations: int = 50
     nn_population_size: int = 200
     max_algorithm_length: int = 80
     max_model_params: int = int(1e8)
-    max_memory_mb: float = 4096 
+    max_memory_mb: float = 4096 * 2
     state_file: str = "sieve_echo_state_v10.json"
     results_dir: str = "results_v10"
 
