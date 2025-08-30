@@ -8,6 +8,7 @@ Key improvements:
 - Increases the number of saved top formulas per cycle to 50.
 """
 import copy
+import gc
 import traceback
 from pathlib import Path
 
@@ -404,10 +405,9 @@ def evolve_formulas_with_fixes(self):
     # Initialize real-time saver if not exists
     if not hasattr(self, 'realtime_saver'):
         self.realtime_saver = RealTimeSaver()
-    
-    # ... rest of evolution code ...
-    # After getting top_discoveries:
-    
+
+    evolver = evolvo.UnifiedEvolver(evolvo.GenomeType.ALGORITHM, CONFIG.formula_population_size)
+
     top_discoveries = []
     for rank, genome in enumerate(evolver.population[:50]):
         if genome.fitness and genome.fitness > 0.1:
