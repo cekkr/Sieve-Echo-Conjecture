@@ -1,0 +1,249 @@
+{
+  "cycle": 4,
+  "generation": 1,
+  "rank_in_gen": 3,
+  "fitness": 0.7434883095639949,
+  "signature": "c4e83aa25db8ea925ae09da1228c71d7",
+  "timestamp": "2025-08-30T21:25:50.801320",
+  "instructions": [
+    {
+      "index": 0,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "EXP",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        }
+      ],
+      "readable": "d$[4] = EXP(d#[5])"
+    },
+    {
+      "index": 1,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "COS",
+      "args": [
+        {
+          "store": "d#",
+          "index": 2,
+          "full": "d#[2]"
+        }
+      ],
+      "readable": "d$[3] = COS(d#[2])"
+    },
+    {
+      "index": 2,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "DIV",
+      "args": [
+        {
+          "store": "d$",
+          "index": 5,
+          "full": "d$[5]"
+        },
+        {
+          "store": "d#",
+          "index": 2,
+          "full": "d#[2]"
+        }
+      ],
+      "readable": "d$[3] = DIV(d$[5], d#[2])"
+    },
+    {
+      "index": 3,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 0,
+        "full": "d$[0]"
+      },
+      "operation": "LOG",
+      "args": [
+        {
+          "store": "d#",
+          "index": 6,
+          "full": "d#[6]"
+        }
+      ],
+      "readable": "d$[0] = LOG(d#[6])"
+    },
+    {
+      "index": 4,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "LOG",
+      "args": [
+        {
+          "store": "d#",
+          "index": 8,
+          "full": "d#[8]"
+        }
+      ],
+      "readable": "d$[3] = LOG(d#[8])"
+    },
+    {
+      "index": 5,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "ADD",
+      "args": [
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        },
+        {
+          "store": "d#",
+          "index": 1,
+          "full": "d#[1]"
+        }
+      ],
+      "readable": "d$[4] = ADD(d#[0], d#[1])"
+    },
+    {
+      "index": 6,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "SUB",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        },
+        {
+          "store": "d#",
+          "index": 7,
+          "full": "d#[7]"
+        }
+      ],
+      "readable": "d$[3] = SUB(d#[5], d#[7])"
+    },
+    {
+      "index": 7,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "SQRT",
+      "args": [
+        {
+          "store": "d$",
+          "index": 5,
+          "full": "d$[5]"
+        }
+      ],
+      "readable": "d$[3] = SQRT(d$[5])"
+    },
+    {
+      "index": 8,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 5,
+        "full": "d$[5]"
+      },
+      "operation": "SIN",
+      "args": [
+        {
+          "store": "d#",
+          "index": 1,
+          "full": "d#[1]"
+        }
+      ],
+      "readable": "d$[5] = SIN(d#[1])"
+    }
+  ],
+  "outputs": [
+    {
+      "store": "d$",
+      "index": 0,
+      "full": "d$[0]"
+    }
+  ],
+  "data_config": {
+    "b#": [],
+    "d#": [
+      "kurtosis_mean",
+      "length_mean",
+      "entropy_mean",
+      "entropy_cv",
+      "n",
+      "phi",
+      "tau",
+      "one",
+      "pi",
+      "e"
+    ],
+    "b$": [
+      "b0",
+      "b1",
+      "b2",
+      "b3"
+    ],
+    "d$": [
+      "d0",
+      "d1",
+      "d2",
+      "d3",
+      "d4",
+      "d5",
+      "d6",
+      "d7"
+    ]
+  },
+  "decoded": {
+    "symbolic_formula": [
+      "d$4 = EXP(phi)",
+      "d$3 = COS(entropy_mean)",
+      "d$3 = (d$5 / entropy_mean)",
+      "d$0 = LOG(tau)",
+      "d$3 = LOG(pi)",
+      "d$4 = (kurtosis_mean + length_mean)",
+      "d$3 = (phi - one)",
+      "d$3 = SQRT(d$5)",
+      "d$5 = SIN(length_mean)"
+    ],
+    "unique_operations": [
+      "DIV",
+      "EXP",
+      "ADD",
+      "SUB",
+      "COS",
+      "SQRT",
+      "LOG",
+      "SIN"
+    ],
+    "effective_length": 9
+  }
+}

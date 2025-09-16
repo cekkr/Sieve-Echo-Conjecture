@@ -1,0 +1,629 @@
+{
+  "cycle": 10,
+  "generation": 4,
+  "rank_in_gen": 4,
+  "fitness": 0.9509617262653232,
+  "signature": "6f975aba641cad7e6c0a68c4a6b3e8e6",
+  "timestamp": "2025-08-31T22:57:53.125318",
+  "instructions": [
+    {
+      "index": 0,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "ADD",
+      "args": [
+        {
+          "store": "d$",
+          "index": 7,
+          "full": "d$[7]"
+        },
+        {
+          "store": "d#",
+          "index": 9,
+          "full": "d#[9]"
+        }
+      ],
+      "readable": "d$[4] = ADD(d$[7], d#[9])"
+    },
+    {
+      "index": 1,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 6,
+        "full": "d$[6]"
+      },
+      "operation": "EXP",
+      "args": [
+        {
+          "store": "d$",
+          "index": 5,
+          "full": "d$[5]"
+        }
+      ],
+      "readable": "d$[6] = EXP(d$[5])"
+    },
+    {
+      "index": 2,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "COS",
+      "args": [
+        {
+          "store": "d$",
+          "index": 4,
+          "full": "d$[4]"
+        }
+      ],
+      "readable": "d$[4] = COS(d$[4])"
+    },
+    {
+      "index": 3,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 5,
+        "full": "d$[5]"
+      },
+      "operation": "COS",
+      "args": [
+        {
+          "store": "d#",
+          "index": 2,
+          "full": "d#[2]"
+        }
+      ],
+      "readable": "d$[5] = COS(d#[2])"
+    },
+    {
+      "index": 4,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 6,
+        "full": "d$[6]"
+      },
+      "operation": "DIV",
+      "args": [
+        {
+          "store": "d$",
+          "index": 4,
+          "full": "d$[4]"
+        },
+        {
+          "store": "d#",
+          "index": 4,
+          "full": "d#[4]"
+        }
+      ],
+      "readable": "d$[6] = DIV(d$[4], d#[4])"
+    },
+    {
+      "index": 5,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 7,
+        "full": "d$[7]"
+      },
+      "operation": "SIN",
+      "args": [
+        {
+          "store": "d#",
+          "index": 9,
+          "full": "d#[9]"
+        }
+      ],
+      "readable": "d$[7] = SIN(d#[9])"
+    },
+    {
+      "index": 6,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 6,
+        "full": "d$[6]"
+      },
+      "operation": "ABS",
+      "args": [
+        {
+          "store": "d#",
+          "index": 2,
+          "full": "d#[2]"
+        }
+      ],
+      "readable": "d$[6] = ABS(d#[2])"
+    },
+    {
+      "index": 7,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "COS",
+      "args": [
+        {
+          "store": "d$",
+          "index": 7,
+          "full": "d$[7]"
+        }
+      ],
+      "readable": "d$[4] = COS(d$[7])"
+    },
+    {
+      "index": 8,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "ABS",
+      "args": [
+        {
+          "store": "d$",
+          "index": 1,
+          "full": "d$[1]"
+        }
+      ],
+      "readable": "d$[4] = ABS(d$[1])"
+    },
+    {
+      "index": 9,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 0,
+        "full": "d$[0]"
+      },
+      "operation": "COS",
+      "args": [
+        {
+          "store": "d$",
+          "index": 4,
+          "full": "d$[4]"
+        }
+      ],
+      "readable": "d$[0] = COS(d$[4])"
+    },
+    {
+      "index": 10,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 2,
+        "full": "d$[2]"
+      },
+      "operation": "ADD",
+      "args": [
+        {
+          "store": "d$",
+          "index": 0,
+          "full": "d$[0]"
+        },
+        {
+          "store": "d$",
+          "index": 7,
+          "full": "d$[7]"
+        }
+      ],
+      "readable": "d$[2] = ADD(d$[0], d$[7])"
+    },
+    {
+      "index": 11,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 0,
+        "full": "d$[0]"
+      },
+      "operation": "EXP",
+      "args": [
+        {
+          "store": "d$",
+          "index": 3,
+          "full": "d$[3]"
+        }
+      ],
+      "readable": "d$[0] = EXP(d$[3])"
+    },
+    {
+      "index": 12,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 7,
+        "full": "d$[7]"
+      },
+      "operation": "SQRT",
+      "args": [
+        {
+          "store": "d#",
+          "index": 2,
+          "full": "d#[2]"
+        }
+      ],
+      "readable": "d$[7] = SQRT(d#[2])"
+    },
+    {
+      "index": 13,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 1,
+        "full": "d$[1]"
+      },
+      "operation": "POW",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        },
+        {
+          "store": "d$",
+          "index": 0,
+          "full": "d$[0]"
+        }
+      ],
+      "readable": "d$[1] = POW(d#[5], d$[0])"
+    },
+    {
+      "index": 14,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "POW",
+      "args": [
+        {
+          "store": "d$",
+          "index": 5,
+          "full": "d$[5]"
+        },
+        {
+          "store": "d#",
+          "index": 7,
+          "full": "d#[7]"
+        }
+      ],
+      "readable": "d$[3] = POW(d$[5], d#[7])"
+    },
+    {
+      "index": 15,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 1,
+        "full": "d$[1]"
+      },
+      "operation": "SIN",
+      "args": [
+        {
+          "store": "d$",
+          "index": 4,
+          "full": "d$[4]"
+        }
+      ],
+      "readable": "d$[1] = SIN(d$[4])"
+    },
+    {
+      "index": 16,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "LOG",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        }
+      ],
+      "readable": "d$[3] = LOG(d#[5])"
+    },
+    {
+      "index": 17,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 2,
+        "full": "d$[2]"
+      },
+      "operation": "EXP",
+      "args": [
+        {
+          "store": "d$",
+          "index": 2,
+          "full": "d$[2]"
+        }
+      ],
+      "readable": "d$[2] = EXP(d$[2])"
+    },
+    {
+      "index": 18,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 2,
+        "full": "d$[2]"
+      },
+      "operation": "ADD",
+      "args": [
+        {
+          "store": "d#",
+          "index": 3,
+          "full": "d#[3]"
+        },
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        }
+      ],
+      "readable": "d$[2] = ADD(d#[3], d#[0])"
+    },
+    {
+      "index": 19,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "LOG",
+      "args": [
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        }
+      ],
+      "readable": "d$[4] = LOG(d#[0])"
+    },
+    {
+      "index": 20,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "SUB",
+      "args": [
+        {
+          "store": "d#",
+          "index": 4,
+          "full": "d#[4]"
+        },
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        }
+      ],
+      "readable": "d$[4] = SUB(d#[4], d#[5])"
+    },
+    {
+      "index": 21,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 7,
+        "full": "d$[7]"
+      },
+      "operation": "SIN",
+      "args": [
+        {
+          "store": "d#",
+          "index": 7,
+          "full": "d#[7]"
+        }
+      ],
+      "readable": "d$[7] = SIN(d#[7])"
+    },
+    {
+      "index": 22,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 6,
+        "full": "d$[6]"
+      },
+      "operation": "MUL",
+      "args": [
+        {
+          "store": "d$",
+          "index": 0,
+          "full": "d$[0]"
+        },
+        {
+          "store": "d#",
+          "index": 3,
+          "full": "d#[3]"
+        }
+      ],
+      "readable": "d$[6] = MUL(d$[0], d#[3])"
+    },
+    {
+      "index": 23,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 5,
+        "full": "d$[5]"
+      },
+      "operation": "SQRT",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        }
+      ],
+      "readable": "d$[5] = SQRT(d#[5])"
+    },
+    {
+      "index": 24,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 0,
+        "full": "d$[0]"
+      },
+      "operation": "EXP",
+      "args": [
+        {
+          "store": "d$",
+          "index": 0,
+          "full": "d$[0]"
+        }
+      ],
+      "readable": "d$[0] = EXP(d$[0])"
+    },
+    {
+      "index": 25,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 6,
+        "full": "d$[6]"
+      },
+      "operation": "MUL",
+      "args": [
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        },
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        }
+      ],
+      "readable": "d$[6] = MUL(d#[0], d#[0])"
+    },
+    {
+      "index": 26,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 2,
+        "full": "d$[2]"
+      },
+      "operation": "SUB",
+      "args": [
+        {
+          "store": "d#",
+          "index": 7,
+          "full": "d#[7]"
+        },
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        }
+      ],
+      "readable": "d$[2] = SUB(d#[7], d#[5])"
+    }
+  ],
+  "outputs": [
+    {
+      "store": "d$",
+      "index": 0,
+      "full": "d$[0]"
+    }
+  ],
+  "data_config": {
+    "b#": [],
+    "d#": [
+      "kurtosis_mean",
+      "length_mean",
+      "entropy_mean",
+      "entropy_cv",
+      "n",
+      "phi",
+      "tau",
+      "one",
+      "pi",
+      "e"
+    ],
+    "b$": [
+      "b0",
+      "b1",
+      "b2",
+      "b3"
+    ],
+    "d$": [
+      "d0",
+      "d1",
+      "d2",
+      "d3",
+      "d4",
+      "d5",
+      "d6",
+      "d7"
+    ]
+  },
+  "decoded": {
+    "symbolic_formula": [
+      "d$4 = (d$7 + e)",
+      "d$6 = EXP(d$5)",
+      "d$4 = COS(d$4)",
+      "d$5 = COS(entropy_mean)",
+      "d$6 = (d$4 / n)",
+      "d$7 = SIN(e)",
+      "d$6 = ABS(entropy_mean)",
+      "d$4 = COS(d$7)",
+      "d$4 = ABS(d$1)",
+      "d$0 = COS(d$4)",
+      "d$2 = (d$0 + d$7)",
+      "d$0 = EXP(d$3)",
+      "d$7 = SQRT(entropy_mean)",
+      "d$1 = (phi ** d$0)",
+      "d$3 = (d$5 ** one)",
+      "d$1 = SIN(d$4)",
+      "d$3 = LOG(phi)",
+      "d$2 = EXP(d$2)",
+      "d$2 = (entropy_cv + kurtosis_mean)",
+      "d$4 = LOG(kurtosis_mean)",
+      "d$4 = (n - phi)",
+      "d$7 = SIN(one)",
+      "d$6 = (d$0 * entropy_cv)",
+      "d$5 = SQRT(phi)",
+      "d$0 = EXP(d$0)",
+      "d$6 = (kurtosis_mean * kurtosis_mean)",
+      "d$2 = (one - phi)"
+    ],
+    "unique_operations": [
+      "DIV",
+      "MUL",
+      "EXP",
+      "ADD",
+      "ABS",
+      "SUB",
+      "POW",
+      "COS",
+      "SQRT",
+      "LOG",
+      "SIN"
+    ],
+    "effective_length": 27
+  }
+}

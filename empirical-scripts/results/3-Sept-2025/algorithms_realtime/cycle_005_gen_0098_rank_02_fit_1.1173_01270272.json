@@ -1,0 +1,449 @@
+{
+  "cycle": 5,
+  "generation": 98,
+  "rank_in_gen": 2,
+  "fitness": 1.1173481995338592,
+  "signature": "012702722ca9222005f847382d355fb5",
+  "timestamp": "2025-08-31T07:08:40.567746",
+  "instructions": [
+    {
+      "index": 0,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 0,
+        "full": "d$[0]"
+      },
+      "operation": "COS",
+      "args": [
+        {
+          "store": "d#",
+          "index": 2,
+          "full": "d#[2]"
+        }
+      ],
+      "readable": "d$[0] = COS(d#[2])"
+    },
+    {
+      "index": 1,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 5,
+        "full": "d$[5]"
+      },
+      "operation": "SIN",
+      "args": [
+        {
+          "store": "d#",
+          "index": 8,
+          "full": "d#[8]"
+        }
+      ],
+      "readable": "d$[5] = SIN(d#[8])"
+    },
+    {
+      "index": 2,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 1,
+        "full": "b$[1]"
+      },
+      "operation": "OR",
+      "args": [
+        {
+          "store": "b$",
+          "index": 2,
+          "full": "b$[2]"
+        },
+        {
+          "store": "b$",
+          "index": 0,
+          "full": "b$[0]"
+        }
+      ],
+      "readable": "b$[1] = OR(b$[2], b$[0])"
+    },
+    {
+      "index": 3,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 3,
+        "full": "b$[3]"
+      },
+      "operation": "AND",
+      "args": [
+        {
+          "store": "d#",
+          "index": 4,
+          "full": "d#[4]"
+        },
+        {
+          "store": "d#",
+          "index": 7,
+          "full": "d#[7]"
+        }
+      ],
+      "readable": "b$[3] = AND(d#[4], d#[7])"
+    },
+    {
+      "index": 4,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 2,
+        "full": "b$[2]"
+      },
+      "operation": "EQ",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        },
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        }
+      ],
+      "readable": "b$[2] = EQ(d#[5], d#[0])"
+    },
+    {
+      "index": 5,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 0,
+        "full": "b$[0]"
+      },
+      "operation": "AND",
+      "args": [
+        {
+          "store": "d#",
+          "index": 8,
+          "full": "d#[8]"
+        },
+        {
+          "store": "d#",
+          "index": 6,
+          "full": "d#[6]"
+        }
+      ],
+      "readable": "b$[0] = AND(d#[8], d#[6])"
+    },
+    {
+      "index": 6,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 3,
+        "full": "d$[3]"
+      },
+      "operation": "SUB",
+      "args": [
+        {
+          "store": "d#",
+          "index": 2,
+          "full": "d#[2]"
+        },
+        {
+          "store": "d$",
+          "index": 4,
+          "full": "d$[4]"
+        }
+      ],
+      "readable": "d$[3] = SUB(d#[2], d$[4])"
+    },
+    {
+      "index": 7,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 5,
+        "full": "d$[5]"
+      },
+      "operation": "ADD",
+      "args": [
+        {
+          "store": "d$",
+          "index": 0,
+          "full": "d$[0]"
+        },
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        }
+      ],
+      "readable": "d$[5] = ADD(d$[0], d#[0])"
+    },
+    {
+      "index": 8,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 0,
+        "full": "d$[0]"
+      },
+      "operation": "LOG",
+      "args": [
+        {
+          "store": "d$",
+          "index": 3,
+          "full": "d$[3]"
+        }
+      ],
+      "readable": "d$[0] = LOG(d$[3])"
+    },
+    {
+      "index": 9,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 0,
+        "full": "b$[0]"
+      },
+      "operation": "GTE",
+      "args": [
+        {
+          "store": "d$",
+          "index": 1,
+          "full": "d$[1]"
+        },
+        {
+          "store": "d#",
+          "index": 4,
+          "full": "d#[4]"
+        }
+      ],
+      "readable": "b$[0] = GTE(d$[1], d#[4])"
+    },
+    {
+      "index": 10,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "POW",
+      "args": [
+        {
+          "store": "d$",
+          "index": 0,
+          "full": "d$[0]"
+        },
+        {
+          "store": "d#",
+          "index": 0,
+          "full": "d#[0]"
+        }
+      ],
+      "readable": "d$[4] = POW(d$[0], d#[0])"
+    },
+    {
+      "index": 11,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 7,
+        "full": "d$[7]"
+      },
+      "operation": "DIV",
+      "args": [
+        {
+          "store": "d$",
+          "index": 5,
+          "full": "d$[5]"
+        },
+        {
+          "store": "d#",
+          "index": 8,
+          "full": "d#[8]"
+        }
+      ],
+      "readable": "d$[7] = DIV(d$[5], d#[8])"
+    },
+    {
+      "index": 12,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 1,
+        "full": "b$[1]"
+      },
+      "operation": "GT",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        },
+        {
+          "store": "d#",
+          "index": 1,
+          "full": "d#[1]"
+        }
+      ],
+      "readable": "b$[1] = GT(d#[5], d#[1])"
+    },
+    {
+      "index": 13,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 4,
+        "full": "d$[4]"
+      },
+      "operation": "EXP",
+      "args": [
+        {
+          "store": "d#",
+          "index": 5,
+          "full": "d#[5]"
+        }
+      ],
+      "readable": "d$[4] = EXP(d#[5])"
+    },
+    {
+      "index": 14,
+      "type": "instruction",
+      "target": {
+        "store": "d$",
+        "index": 5,
+        "full": "d$[5]"
+      },
+      "operation": "ABS",
+      "args": [
+        {
+          "store": "d$",
+          "index": 4,
+          "full": "d$[4]"
+        }
+      ],
+      "readable": "d$[5] = ABS(d$[4])"
+    },
+    {
+      "index": 15,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 3,
+        "full": "b$[3]"
+      },
+      "operation": "NOT",
+      "args": [
+        {
+          "store": "b$",
+          "index": 3,
+          "full": "b$[3]"
+        }
+      ],
+      "readable": "b$[3] = NOT(b$[3])"
+    },
+    {
+      "index": 16,
+      "type": "instruction",
+      "target": {
+        "store": "b$",
+        "index": 1,
+        "full": "b$[1]"
+      },
+      "operation": "LTE",
+      "args": [
+        {
+          "store": "d#",
+          "index": 4,
+          "full": "d#[4]"
+        },
+        {
+          "store": "d#",
+          "index": 1,
+          "full": "d#[1]"
+        }
+      ],
+      "readable": "b$[1] = LTE(d#[4], d#[1])"
+    }
+  ],
+  "outputs": [
+    {
+      "store": "d$",
+      "index": 0,
+      "full": "d$[0]"
+    }
+  ],
+  "data_config": {
+    "b#": [],
+    "d#": [
+      "kurtosis_mean",
+      "length_mean",
+      "entropy_mean",
+      "entropy_cv",
+      "n",
+      "phi",
+      "tau",
+      "one",
+      "pi",
+      "e"
+    ],
+    "b$": [
+      "b0",
+      "b1",
+      "b2",
+      "b3"
+    ],
+    "d$": [
+      "d0",
+      "d1",
+      "d2",
+      "d3",
+      "d4",
+      "d5",
+      "d6",
+      "d7"
+    ]
+  },
+  "decoded": {
+    "symbolic_formula": [
+      "d$0 = COS(entropy_mean)",
+      "d$5 = SIN(pi)",
+      "b$1 = OR(d$2, d$0)",
+      "b$3 = AND(n, one)",
+      "b$2 = EQ(phi, kurtosis_mean)",
+      "b$0 = AND(pi, tau)",
+      "d$3 = (entropy_mean - d$4)",
+      "d$5 = (d$0 + kurtosis_mean)",
+      "d$0 = LOG(d$3)",
+      "b$0 = GTE(d$1, n)",
+      "d$4 = (d$0 ** kurtosis_mean)",
+      "d$7 = (d$5 / pi)",
+      "b$1 = GT(phi, length_mean)",
+      "d$4 = EXP(phi)",
+      "d$5 = ABS(d$4)",
+      "b$3 = NOT(d$3)",
+      "b$1 = LTE(n, length_mean)"
+    ],
+    "unique_operations": [
+      "DIV",
+      "NOT",
+      "OR",
+      "LTE",
+      "EXP",
+      "SUB",
+      "ADD",
+      "ABS",
+      "POW",
+      "COS",
+      "EQ",
+      "GT",
+      "GTE",
+      "LOG",
+      "AND",
+      "SIN"
+    ],
+    "effective_length": 17
+  }
+}

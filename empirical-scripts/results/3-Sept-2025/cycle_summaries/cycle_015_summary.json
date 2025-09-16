@@ -1,0 +1,15 @@
+{
+  "cycle": 15,
+  "timestamp": "2025-09-01T23:24:39.437343",
+  "formulas_discovered": 50,
+  "base_invariance": 0.12999155381458544,
+  "data_points": 15000,
+  "current_n": 150002,
+  "memory_usage_mb": 2741.16796875,
+  "ndr_cache_size": 0,
+  "top_fitnesses": [
+    1.1080654910129235,
+    1.1080654910129235,
+    1.1080654910129235
+  ]
+}
