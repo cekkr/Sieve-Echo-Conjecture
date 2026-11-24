@@ -6,7 +6,7 @@ Fast-access operational reference for AI agents working in this repository. Read
 
 **What it is not.** It is not a proof, and no script so far is a rigorous demonstration. It is not the Evolvo library: Evolvo is a separate repository vendored as the git submodule [`libs/evolvo`](libs/evolvo) with its own [`AGENTS.md`](libs/evolvo/AGENTS.md). The copies named `evolvo*.py` inside old version folders are historical forks of that library, not the library to use.
 
-**Current goal.** Build **version 11** in `empirical-scripts/11.0/` (planned, not yet created): one reproducible, leakage-free execution script that tests every claim of the current paper [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) and uses the submodule [`libs/evolvo`](libs/evolvo) for all evolutionary search. The step plan lives in [`ROADMAP.md`](ROADMAP.md).
+**Current goal.** Build **version 11** in [`empirical-scripts/11.0/`](empirical-scripts/11.0) (scaffold, dataset, claim verdicts and report exist; Evolvo search is planned): one reproducible, leakage-free execution script that tests every claim of the current paper [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) and uses the submodule [`libs/evolvo`](libs/evolvo) for all evolutionary search. The step plan lives in [`ROADMAP.md`](ROADMAP.md).
 
 ## Read This First
 
@@ -14,7 +14,7 @@ Source-of-truth order. When two sources disagree, the higher one wins, and the a
 
 1. **This file's [Directives](#standing-directives-from-the-project-owner)** — standing instructions from the project owner.
 2. [`ROADMAP.md`](ROADMAP.md) — the v11 implementation plan and its live status. It governs *what to do next*; it never proves that something exists.
-3. Executable code: [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo) (the library) and, once created, `empirical-scripts/11.0/`. Evolvo's own rules are in [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) and its specs in [`libs/evolvo/papers/`](libs/evolvo/papers).
+3. Executable code: [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo) (the library) and [`empirical-scripts/11.0/`](empirical-scripts/11.0). Evolvo's own rules are in [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) and its specs in [`libs/evolvo/papers/`](libs/evolvo/papers).
 4. [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) — the current paper. It states the claims that v11 must test. Its numbers are **claims to re-verify**, not facts (see [Known gaps](#known-gaps)).
 5. Stored results under [`empirical-scripts/results/`](empirical-scripts/results) and `empirical-scripts/<ver>/results/` — evidence of what past runs produced, with the methodological defects listed below.
 6. Older papers ([`studies/7/`](studies/7), [`studies/8/future.md`](studies/8/future.md)), the notes in [`studies/claude/`](studies/claude), and commit messages — history only. Commit messages in this repo carry no technical information.
@@ -37,7 +37,7 @@ These are mandatory for every task from v11 onward.
 - **Task start:** read this file and [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) if the task touches Evolvo; run `git status` in both the root and `libs/evolvo`; read the relevant [`ROADMAP.md`](ROADMAP.md) step.
 - **Task end:** update this file, [`ROADMAP.md`](ROADMAP.md) and, when Evolvo changed, Evolvo's `AGENTS.md`/`README.md`. Report what was run and what was not.
 - **Submodule commits:** commit Evolvo changes inside `libs/evolvo` on `main` first, then `git add libs/evolvo` in the root and commit the pointer. A pointer to an unpushed Evolvo commit breaks fresh clones; push both repositories only when the owner asks, and say so in the handoff when they are not pushed.
-- **Results are data, not source.** v11 runs write under `empirical-scripts/11.0/results/<run-id>/` (planned path). Commit only small summaries (JSON/Markdown/PNG) that the paper or roadmap cites; never commit caches, pickles of large datasets, or per-generation dumps like the 300+ files in [`empirical-scripts/results/3-Sept-2025/algorithms_realtime/`](empirical-scripts/results/3-Sept-2025/algorithms_realtime).
+- **Results are data, not source.** v11 runs write under `empirical-scripts/11.0/results/<run-id>/`; its `cache/` is git-ignored. Commit only small summaries (JSON/Markdown/PNG) that the paper or roadmap cites; never commit caches, pickles of large datasets, or per-generation dumps like the 300+ files in [`empirical-scripts/results/3-Sept-2025/algorithms_realtime/`](empirical-scripts/results/3-Sept-2025/algorithms_realtime).
 - **Paper claims need a run.** Any number written into a paper or this file must name the script, config, and seed that produced it.
 - Preserve unrelated user changes; never clean the tree destructively. `.DS_Store` files exist untracked-or-tracked in places; leave them alone.
 
@@ -46,7 +46,7 @@ These are mandatory for every task from v11 onward.
 - **ω(n)** — number of distinct prime factors. **Ω(n)** — with multiplicity. **τ(n)** — number of divisors. **φ(n)** — Euler totient. **λ(n)** — Carmichael function.
 - **Repetend** — the repeating block of `1/n` in base `b`. Defined only when `gcd(n, b) = 1`; then it is purely periodic with length `L = ord_n(b)`, the multiplicative order of `b` modulo `n`.
 - **NDR** (Normalized Digit Representation) — the repetend digits divided by the base. The paper (Definition 1.1) uses `d/b`; v10 used `d/(b-1)`. See [pitfall](#ndr-normalization-and-entropy-definition-drift).
-- **H_NDR** (NDR entropy) — Shannon entropy of the normalized power spectrum of the NDR sequence (paper Definition 1.2).
+- **H_NDR** (NDR entropy) — Shannon entropy of the normalized power spectrum of the NDR sequence (paper Definition 1.2). v11 names: `H_paper` (all L bins, DC kept), `H_nodc` (DC dropped), `Hn_*` (divided by log length), `H_v8`/`H_v10` (historical definitions, reproduction only). Definitions in [`ndr.py`](empirical-scripts/11.0/ndr.py), tag `ndr-v11.1`.
 - **Base invariance** — coefficient of variation (CV = std/mean) of H_NDR across bases below 0.1.
 - **GFSL** — Genetic Fixed Structure Language, the slot-encoded genome language implemented by Evolvo. **GFSL-NN** — its neural-architecture variant (`evolvo.nnarch`).
 
@@ -84,7 +84,7 @@ These are mandatory for every task from v11 onward.
 
 ## Architecture and Data/Control Flow
 
-Planned v11 flow (none of it exists yet; see [`ROADMAP.md`](ROADMAP.md)):
+v11 flow (everything up to the **statistical claim tests** and the **report** exists; Evolvo search and held-out evaluation of evolved models are planned — see [`ROADMAP.md`](ROADMAP.md)):
 
 `11.0` entry script + config → **dataset builder** (integers, factorization labels, coprime bases, `ord_n(b)`, digit sequences, NDR, spectra, per-base and cross-base features, cached to disk) → **split** by `n` → **statistical claim tests** (paper §2 and §4 claims, each with baseline and null) → **Evolvo symbolic search** (`GFSLEvolver` formulas on allowed features) and **Evolvo GFSL-NN search** (`evolvo.nnarch.ArchitectureSearch` + `TorchTask`) → **held-out evaluation** → **report** (JSON + Markdown + figures, claim-by-claim verdict table).
 
@@ -100,7 +100,7 @@ Verified against `libs/evolvo` at commit `4ab85e5`:
 - `register_custom_operation(name, target_type, function, arity=…, …)` in [`libs/evolvo/src/evolvo/custom_ops.py`](libs/evolvo/src/evolvo/custom_ops.py) adds domain operations (for example `GCD`, `LOG`) without forking.
 - How random genomes learn that inputs `d$0..d$k` exist is **Unknown — verify before writing the v11 formula search** (`initialize_population` takes no input count; see `_append_random_instruction_fast` in `evolver.py`).
 - `evolvo.nnarch`: `ArchSpace(inputs, n_out, max_rows, max_params)`, `TorchTask((x_tr, y_tr), (x_val, y_val), lr)`, `ArchitectureSearch(space, task, seed, knowledge)`, `.run(generations, patience)`, `Knowledge.load/save` — see [`libs/evolvo/README.md`](libs/evolvo/README.md).
-- Tests: `PYTHONPATH=src python3 -m unittest discover -s tests` from `libs/evolvo` passes 14 tests (1 skipped, torch absent) on `/opt/homebrew/bin/python3` 3.15.2 without NumPy installed (they cover `nnarch` only).
+- Tests: `PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests` from `libs/evolvo` passes all 14 tests (torch 2.15 present; they cover `nnarch` only). With the system `python3` (no torch) 1 is skipped.
 
 ## Linked Source Tree and File Reference
 
@@ -108,7 +108,7 @@ Verified against `libs/evolvo` at commit `4ab85e5`:
 
 Current paper (revised draft, August 2025). Defines NDR (Def. 1.1), H_NDR (Def. 1.2), the Sieve Echo Law (Conj. 1.3), and reports Theorems 2.2–4.3. Change it only to replace claims with v11-verified results, citing the run.
 
-- **Claims v11 must test:** §2.2 fit `H = -0.468·log ω + 1.917`, R² = 0.234; §2.3 prime-power correlation r = -0.843; §2.4 base invariance 6%; §3.1 three-feature 98.8% accuracy; §4.1 correlation with `n^-s`; §4.2 `H·log n` vs PNT r = 0.946; §4.3 residue-class variance mod 6/30/210; §5 table vs theoretical α = -1.599, β = 4.933.
+- **Claims v11 must test:** §2.2 fit `H = -0.468·log ω + 1.917`, R² = 0.234 (the code fitted `log(ω+1)`); §2.3 prime-power correlation r = -0.843 (actually corr(ω, is_prime_power) from a v7.0 log — no entropy involved); §2.4 base invariance 6% (first 100 integers only); §3.1 three-feature 98.8% accuracy (v7.0 run, training set); §4.1 correlation with `n^-s`; §4.2 `H·log n` vs PNT r = 0.946; §4.3 residue-class variance mod 6/30/210; §5 table vs theoretical α = -1.599, β = 4.933.
 - **Common mistakes:** the paper contradicts itself on direction — §1.3 says primes give "pure, low-entropy" patterns, but α < 0 and the v10 data show primes have the *highest* H_NDR (longest repetends). §7.1 item 2 says "higher complexity correlates with higher entropy", which contradicts α < 0. Do not propagate either sentence; v11 must state the measured direction. "Theorem" labels on empirical fits are not theorems.
 
 ### [`studies/8/future.md`](studies/8/future.md)
@@ -126,6 +126,51 @@ The owner's Mathematical Annotation Language proposal. The `level: … connects_
 ### [`studies/claude/`](studies/claude)
 
 `common_mistakes.md` and `attention_notes.md`: notes from earlier AI sessions. Durable lessons: keep Evolvo central (now D2), implement the owner's *relative* thresholds literally (v10 `save_threshold_ratio` = fraction of the top-performer mean, not an absolute value), and carry config values into every function that should use them.
+
+### [`empirical-scripts/11.0/sieve_echo_v11.py`](empirical-scripts/11.0/sieve_echo_v11.py)
+
+v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, report`).
+
+- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED = {"data", "claims", "report"}`.
+- **Contract:** default `--stages` is `data,claims,report`; `formulas` and `nn` exit with their ROADMAP step. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
+
+### [`empirical-scripts/11.0/runtime.py`](empirical-scripts/11.0/runtime.py)
+
+Non-scientific helpers: repo paths, `bootstrap_evolvo()` (submodule only; raises `EvolvoMissingError`), `git_info()` (SHA, dirty flag and changed paths, ignoring `11.0/results/` and `.DS_Store`), `code_sha256()` over the v11 `.py` files, `environment_info()`, `repo_relative()` (keeps home-directory paths out of results), NaN-safe atomic `write_json`, SHA-256 helpers.
+
+### [`empirical-scripts/11.0/ndr.py`](empirical-scripts/11.0/ndr.py)
+
+The canonical, versioned definitions (`NDR_VERSION = "ndr-v11.1"`; the module docstring is the spec). Smallest-prime-factor sieve, `factorize`, `arithmetic_labels` (ω, Ω, τ, φ, λ, μ, is_prime, is_prime_power, squarefree), `multiplicative_order` from λ(n), `repetend_digits` by vector doubling, `ndr = d/b`, `spectral_entropy(x, variant)` with `paper | nodc | v8 | v10`, `pair_features(n, b, L)` returning `PAIR_FEATURES`, and `long_division_repetend` (O(n) reference for tests only).
+
+- **Common mistakes:** changing a definition without bumping `NDR_VERSION` (old caches would then be silently reused — the cache key includes the tag); computing digits with long division in production code; feeding `arithmetic_labels` output to a predictor.
+
+### [`empirical-scripts/11.0/dataset.py`](empirical-scripts/11.0/dataset.py)
+
+Data stage: `sample_integers` (full range + seeded per-ω stratified extra sample), `base_set_members` (seeded sub-sample for sets with `sample`), `compute_pairs` (process pool, chunks balanced by λ(n)·#bases), `aggregate` (mean/std/min/max/CV per base set, NaN-aware), `split_by_n` (stratified by ω, seeded), `allowed_input_columns`, `.npz` cache keyed by `dataset_key`. Column families: `row.*` (inputs), `label.*` and `target_side.*` (never inputs), `pair.*` (long per-(n, b) table), `split` (0/1/2 = train/val/test).
+
+### [`empirical-scripts/11.0/claims.py`](empirical-scripts/11.0/claims.py)
+
+ROADMAP step 2: one function per claim (`c1_law` … `c9_beyond_L`), driven by `run_claims(table, claims_cfg, base_sets, seed, repo_root)`. Each returns `reproduction` (the paper's statistic re-computed the v8.2 way: `H_v8`, n ∈ [2, 9999], in-sample, and for C4/C5 the first 100 integers of the stored v8.2 data order read from the v8 pickle), `tests` (train-fitted, test-reported, `log L`/`log n` controls, percentile bootstrap, permutation null), `verdict` and `reason`.
+
+- **Key parts:** helpers `lstsq`, `r2`, `partial_corr`, `bootstrap`, `perm_p`, `eta_squared`; `Ctx` (table access, masks, seeded RNG stream, v8 order loader with a NumPy-only unpickler); `_per_base_logL` (per-base log L matrix from the pair table); `_length_arithmetic` (lcm of the per-base lengths, its relation to n - 1: functions of n and L only); C9 compares gradient-boosting classifiers of ω (baseline n + per-base L + length arithmetic; + entropy columns; + all NDR columns) with paired bootstrap on test rows, a majority baseline and shuffled-label nulls.
+- **Contract:** settings come from the config's `claims` block over `DEFAULTS`; `PAPER` holds the stored v8.2/v7.0 values. Factorization labels are used only as targets, groupings, or labelled controls (C7 ω dummies).
+- **Common mistakes:** controlling for the *mean* log L only (residue classes change which per-base orders are short — C7 needs per-base log L); a C9 baseline without length arithmetic (trees cannot compute an lcm, so NDR features then look informative); reading `row.wide.*` as if every n had it (sub-sampled).
+
+### [`empirical-scripts/11.0/report.py`](empirical-scripts/11.0/report.py)
+
+`write_report(run_dir)` reads `manifest.json` + `claims.json`, writes `report.md` (run provenance, one verdict table, one section per claim) and `report.json` (verdicts with provenance), and prints the table. No figures yet (step 6).
+
+### [`empirical-scripts/11.0/config/`](empirical-scripts/11.0/config)
+
+`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s) and `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; not yet run). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
+
+### [`empirical-scripts/11.0/tests/`](empirical-scripts/11.0/tests)
+
+`test_ndr.py` (number theory vs SymPy and long division, entropy definitions, exact reproduction of the stored v8 per-base entropies and law fit and of v10 aggregates), `test_dataset.py` (sampling, aggregation, sub-sampled sets, split, leakage guard, cache) and `test_claims.py` (statistics helpers against known answers, length arithmetic for primes, end-to-end C1–C9 on a small dataset, report table). The v8 pickle is loaded with an unpickler that only allows NumPy scalars.
+
+### [`empirical-scripts/11.0/requirements.txt`](empirical-scripts/11.0/requirements.txt)
+
+`pip freeze` of the `.venv` used for the verified runs (Python 3.15.2, torch 2.15.0, NumPy 2.5.5, SciPy 1.18.1, scikit-learn 1.9.1, SymPy 1.14.0).
 
 ### [`empirical-scripts/10.0/sieve-echo-tests-3.py`](empirical-scripts/10.0/sieve-echo-tests-3.py)
 
@@ -151,20 +196,24 @@ Historical "Unified Evolvo" forks (`AlgorithmGenome`, `NeuralGenome`, `UnifiedEv
 
 v9 engine: multi-base NDR, formula discoverer, neural searcher, co-evolution, `RobustSerializer`, `EnhancedResultsHandler`. Superseded by v10.
 
+### [`empirical-scripts/8.0/sieve-echo-tests-2.py`](empirical-scripts/8.0/sieve-echo-tests-2.py)
+
+v8.2 "Unified Sieve Echo Conjecture Analysis System" — the script whose run produced the paper's §2.2, §2.4 and §4 numbers (`8.0/results/1/`, 2025-08-25; verified by key names and by exact re-fit in `tests/test_ndr.py`). n ∈ [2, 9999], 13 bases `[2..7, 9, 10, 11, 13, 14, 15, 16]`, NDR `d/b`, entropy `|FFT|²` over the first ⌊L/2⌋ bins with DC, p ≤ 1e-10 dropped (v11 `H_v8`).
+
+- **Key parts:** `compute_ndr_entropy`, `extract_comprehensive_features`, `analyze_sieve_echo_law` (OLS on `log(ω + 1)`), `test_riemann_zeta_connections` and `test_base_invariance` (both on `self.data[:100]` only), `test_prime_number_theorem_connections` (`H·log n`), `test_modular_patterns` (variance of residue-class means > 0.01 called "significant", no test).
+- **Common mistakes:** see [training-set accuracy](#training-set-accuracy-reported-as-model-accuracy) and [trivial correlations](#correlations-driven-by-n-alone).
+
 ### [`empirical-scripts/8.0/sieve-echo-tests-1.py`](empirical-scripts/8.0/sieve-echo-tests-1.py)
 
-v8.0 "Enhanced Empirical Analysis" — the script whose run produced the paper's numbers (`8.0/results/1/`, 2025-08-25). Uses 13 bases `[2..7, 9, 10, 11, 13, 14, 15, 16]`, NDR `d/b`, power spectrum `|FFT|²` half-length with DC.
-
-- **Key parts:** `BaseInvarianceTester` (CV < 0.1), `RiemannZetaAnalyzer` (correlation of H with `n^-s`), `PrimeNumberTheoremAnalyzer` (`H·log n` product), `CRTValidator`, `MultiplicativeOrderAnalyzer`, `ModularFormsExplorer`, `AdaptiveFeatureDiscovery`, `ParallelSieveAnalyzer` (computes `is_prime_power`), the neural classifier around line 2225 (CrossEntropy, accuracy measured on the training tensors).
-- **Common mistakes:** see [training-set accuracy](#training-set-accuracy-reported-as-model-accuracy) and [trivial correlations](#correlations-driven-by-n-alone).
+v8.0 "Enhanced Empirical Analysis" (20 test bases, two concatenated system classes). Its output files are named `sieve_echo_enhanced_*`; it did **not** produce `8.0/results/1/`. Contains `BaseInvarianceTester`, `RiemannZetaAnalyzer`, `PrimeNumberTheoremAnalyzer`, `CRTValidator`, `ModularFormsExplorer`, and a neural classifier around line 2225 (accuracy measured on the training tensors).
 
 ### [`empirical-scripts/8.0/`](empirical-scripts/8.0) other files
 
-`sieve-echo-tests-2.py` … `-6.py` (v8.2–v8.6 variants: unified analyzer, pattern discovery, "grand unified engine"), `evolvo_model.py`, `evolvo_nn.py`, `evolvo_nn-0.1.py` (historical library forks). Superseded.
+`sieve-echo-tests-3.py` … `-6.py` (v8.3–v8.6 variants: pattern discovery, "grand unified engine"), `evolvo_model.py`, `evolvo_nn.py`, `evolvo_nn-0.1.py` (historical library forks). Superseded.
 
 ### [`empirical-scripts/7.0/`](empirical-scripts/7.0), [`empirical-scripts/6.0/`](empirical-scripts/6.0), [`empirical-scripts/5.0/`](empirical-scripts/5.0), [`empirical-scripts/4.0/`](empirical-scripts/4.0), [`empirical-scripts/3.1/`](empirical-scripts/3.1), [`empirical-scripts/sieve-genetic-test-5.py`](empirical-scripts/sieve-genetic-test-5.py)
 
-Older generations, each a test script plus a forked engine (`evolvo_model.py` / `evolvo_engine.py`). [`empirical-scripts/7.0/results/3/conclusions.md`](empirical-scripts/7.0/results/3/conclusions.md) records the theta-era fit `H = -0.9988·log ω + 2.42`, R² = 0.292, and the origin of the "std, is_prime_power, entropy_min" feature triple. History only.
+Older generations, each a test script plus a forked engine (`evolvo_model.py` / `evolvo_engine.py`). [`empirical-scripts/7.0/results/3/conclusions.md`](empirical-scripts/7.0/results/3/conclusions.md) records the theta-era fit `H = -0.9988·log ω + 2.42`, R² = 0.292, and the origin of the "std, is_prime_power, entropy_min" feature triple. Its log [`sieve_echo_log_20250825_135643.txt`](empirical-scripts/7.0/results/3/sieve_echo_log_20250825_135643.txt) is the source of the paper's "98.8%" (line 187) and "r = -0.843" (line 210, `omega_vs_is_prime_power`: a correlation between two factorization labels). History only.
 
 ### [`empirical-scripts/results/`](empirical-scripts/results)
 
@@ -172,7 +221,7 @@ Stored outputs: `20-Aug-2025/` and `v5_22-Aug-2025/` (text logs/results of v4–
 
 ### [`empirical-scripts/8.0/results/1/`](empirical-scripts/8.0/results/1)
 
-The v8 run cited by the paper: [`sieve_echo_results_20250825_224642.json`](empirical-scripts/8.0/results/1/sieve_echo_results_20250825_224642.json) (config, `sieve_echo_law` α = -0.4681, β = 1.9174, R² = 0.2345, zeta/PNT/modular results, base invariance 0.06, evolvo best fitness 0.24 with formula `DIV`), plus a `.pkl` and a `.png`.
+The v8.2 run cited by the paper: [`sieve_echo_results_20250825_224642.json`](empirical-scripts/8.0/results/1/sieve_echo_results_20250825_224642.json) (config, `sieve_echo_law` α = -0.4681, β = 1.9174, R² = 0.2345, zeta/PNT/modular results, base invariance 0.06, evolvo best fitness 0.24 with formula `DIV`), plus a `.png` and a `.pkl` whose `data` list holds all 9 998 per-n feature dicts (only NumPy scalar globals; load it with a restricted unpickler as in `tests/test_ndr.py`).
 
 ### [`libs/evolvo`](libs/evolvo) (git submodule)
 
@@ -184,19 +233,15 @@ Pre-submodule copies (`evolvo_model.py`, `model_evolver.py`, `evolvo_engine-1.0.
 
 ### [`.gitignore`](.gitignore)
 
-Standard Python template. It does not ignore result directories; v11 must add `empirical-scripts/11.0/results/*/cache/` (planned) before the first large run.
-
-### `empirical-scripts/11.0/` (planned, untracked)
-
-Version 11. Layout and steps are defined in [`ROADMAP.md`](ROADMAP.md). Add a linked subsection per file here as each file is created.
+Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dataset caches, tens of MB per quick run). Other run outputs are not ignored; commit only the small summaries a paper or the roadmap cites.
 
 ## Features and Recurring Development Pitfalls
 
-### Multi-base NDR dataset — Experimental (v8/v10), Planned (v11)
+### Multi-base NDR dataset — Shipped (v11 data stage)
 
-- **Behavior:** for each `n` and coprime base `b`, compute the repetend, NDR, spectrum, entropy; aggregate across bases.
-- **Owners:** v10 `MultiBaseNDRComputer`; v8 `ParallelSieveAnalyzer`. v11 owner planned in [`ROADMAP.md`](ROADMAP.md) step 1.
-- **Gaps:** definitions differ between versions; no tests; O(n) long division per pair.
+- **Behavior:** for each `n` and coprime base `b`, compute the repetend (exact order, vector doubling), NDR, spectrum, entropies; aggregate across four base sets; label, split, cache.
+- **Owners:** [`ndr.py`](empirical-scripts/11.0/ndr.py), [`dataset.py`](empirical-scripts/11.0/dataset.py). Historical: v10 `MultiBaseNDRComputer`, v8.2 `extract_comprehensive_features`.
+- **Gaps:** `config/full.json` not yet built; no Parquet export (`.npz` only).
 
 ### Evolutionary formula search for ω(n) — Experimental
 
@@ -213,8 +258,14 @@ Version 11. Layout and steps are defined in [`ROADMAP.md`](ROADMAP.md). Add a li
 
 - **Symptom:** two versions give different H_NDR for the same `n`.
 - **Cause:** v8 uses `d/b` and power `|FFT|²`; v10 uses `d/(b-1)` and amplitude `|FFT|`; both keep the DC bin (k = 0), which carries the digit mean and dominates the spectrum, depressing entropy. The paper defines power spectrum over all `L` bins and `d/b`.
-- **Safe pattern:** one versioned function; report the paper definition plus a DC-removed variant; normalizing by `b` vs `b-1` only rescales the sequence, so it does not change normalized-spectrum entropy — verify this with a unit test rather than assuming.
-- **Status:** active in old scripts; must not recur in v11.
+- **Safe pattern:** one versioned function; report the paper definition plus a DC-removed variant; normalizing by `b` vs `b-1` only rescales the sequence, so it does not change normalized-spectrum entropy (unit-tested in `test_ndr.py`).
+- **Status:** fixed in v11 (`ndr.py`, `ndr-v11.1`); old scripts unchanged. The DC bin is large: on the quick run, ω = 1 integers have mean `H_paper` 2.65 but `H_nodc` 6.40 (`primes31` set).
+
+### Repetend-length arithmetic hidden in "NDR" predictors
+
+- **Symptom:** NDR features seem to add a lot to an ω classifier that already has every per-base L (quick run: 94.9% → 97.4%).
+- **Cause:** a tree model cannot compute lcm(L_b) or test whether it divides n - 1 (λ(n) and Fermat-type structure); NDR features re-encode part of that.
+- **Safe pattern:** give the baseline the length arithmetic (`claims._length_arithmetic`); with it the baseline is 97.8% and the NDR gain +0.8 points, and entropy columns alone add nothing significant.
 
 ### Training-set accuracy reported as model accuracy
 
@@ -244,13 +295,24 @@ Version 11. Layout and steps are defined in [`ROADMAP.md`](ROADMAP.md). Add a li
 
 ## Interface Ownership Map
 
-- Planned v11 CLI entry point (`empirical-scripts/11.0/sieve_echo_v11.py`, name provisional) → owns config, seed, run directory, stages.
+- [`empirical-scripts/11.0/sieve_echo_v11.py`](empirical-scripts/11.0/sieve_echo_v11.py) → owns config, seed, run directory, manifest, stages.
+- [`ndr.py`](empirical-scripts/11.0/ndr.py) → every number-theory and NDR/entropy definition (`NDR_VERSION`). [`dataset.py`](empirical-scripts/11.0/dataset.py) → sampling, tables, split, cache, allowed-input list.
 - `evolvo.GFSLEvolver`, `evolvo.GFSLExecutor`, `evolvo.register_custom_operation` → [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo).
 - `evolvo.nnarch.ArchitectureSearch`, `TorchTask`, `Knowledge` → [`libs/evolvo/src/evolvo/nnarch/`](libs/evolvo/src/evolvo/nnarch).
 
 ## Build, Run, Debug, and Release
 
-Prerequisites (verified 2026-11-24 on the owner's macOS machine): `/opt/homebrew/bin/python3` is 3.15.2 and `/usr/bin/python3` is 3.9.6; **neither has NumPy, SciPy, SymPy, scikit-learn, or PyTorch installed**. Old scripts need `numpy scipy sympy torch matplotlib` (+ `psutil`, `dill` for v9/v10). Whether PyTorch publishes wheels for Python 3.15 is **Unknown — verify before ROADMAP step 0**; fall back to a 3.12/3.13 interpreter in a venv if not.
+Prerequisites (verified 2026-11-24 on the owner's macOS arm64 machine, 8 cores): the system interpreters (`/opt/homebrew/bin/python3` 3.15.2, `/usr/bin/python3` 3.9.6) have no scientific packages. v11 uses a repo-root `.venv` on Python 3.15.2 (PyTorch publishes 3.15 wheels; torch 2.15.0 sees `mps`). Old scripts additionally need `dill` (v9/v10), not installed.
+
+Create the environment (pins in [`empirical-scripts/11.0/requirements.txt`](empirical-scripts/11.0/requirements.txt)):
+
+```bash
+/opt/homebrew/bin/python3.15 -m venv .venv
+```
+
+```bash
+.venv/bin/pip install --only-binary :all: -r empirical-scripts/11.0/requirements.txt
+```
 
 Initialize the submodule after cloning:
 
@@ -261,17 +323,41 @@ git submodule update --init --recursive
 Run Evolvo's tests:
 
 ```bash
-cd libs/evolvo && PYTHONPATH=src python3 -m unittest discover -s tests
+cd libs/evolvo && PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests
 ```
 
-v11 run commands: Planned — define them in [`ROADMAP.md`](ROADMAP.md) step 0 and copy the verified ones here.
+Run the v11 tests from the repo root (29 tests, ~1 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
+
+```bash
+.venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests -v
+```
+
+Run the v11 quick pipeline (data ~8 s, claims ~2 min, report; writes `empirical-scripts/11.0/results/<run-id>/` and prints the verdict table):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json --run-id quick-s0
+```
+
+Run only some stages, e.g. the data stage:
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json --run-id quick-data --stages data
+```
+
+Resume an existing run (finished stages are skipped; config and seed must match):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json --run-id quick-s0 --resume
+```
+
+`formulas` and `nn` exit with the ROADMAP step that will add them. The full config's data build takes ~20 min on 7 workers; run it in the background.
 
 Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in the background with a resumable state file; use a small `--quick` config for verification.
 
 ## Test Ownership Map
 
 - Evolvo library → [`libs/evolvo/tests/test_nnarch.py`](libs/evolvo/tests/test_nnarch.py) (GFSL-NN only; the GFSL core has no unit tests in the repo — Known gap).
-- This repository → no tests. v11 adds unit tests for the number-theory and NDR layer (planned, ROADMAP step 1).
+- v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py). The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
 
 ## Data, Security, Privacy, and Compatibility Boundaries
 
@@ -286,23 +372,23 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
 - Evolvo submodule at [`libs/evolvo`](libs/evolvo), commit `4ab85e5`.
 
+- v11 scaffold, data stage, claim verdicts and report ([`ROADMAP.md`](ROADMAP.md) steps 0–2): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Markdown/JSON report, 29 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
+
 ### Experimental / Scaffold
 
-- None for v11 yet.
+- v11 stages `formulas` and `nn` are not implemented (steps 3–4); the report has no figures (step 6).
 
 ### Known Gaps
 
-- Paper numbers (§2–§4) come from a single v8 run with leakage, training-set accuracy, and size-driven correlations; none is verified.
+- Paper numbers (§2–§4) come from one v8.2 run (plus a v7.0 log for "98.8%" and "r = -0.843") with leakage, training-set accuracy, 100-row samples and size-driven correlations. v11 reproduces every stored v8.2 statistic and has corrected verdicts for C1–C9 (ROADMAP Results log); the §3.1 three-feature claim is retested in step 4.
 - Paper direction-of-effect statements contradict each other and the data.
-- No Python environment with the scientific stack exists on the machine.
 - Evolvo has no batched executor and no verified input-declaration path for formula search.
 
 ### Near-Term Priorities
 
-1. Environment + v11 skeleton ([`ROADMAP.md`](ROADMAP.md) step 0).
-2. Canonical, tested NDR dataset (step 1).
-3. Claim-by-claim statistical verdicts with baselines (step 2).
-4. Evolvo fixes E1–E3, then evolutionary search (steps 3–4).
+1. Evolvo fixes E0–E7 in `libs/evolvo` ([`ROADMAP.md`](ROADMAP.md) step 3).
+2. Evolutionary formula and GFSL-NN search with S1/S2, against the C9 baselines (step 4).
+3. Scale-up to 10⁶ and the paper revision (steps 5–6).
 
 ## Task Start and Handoff Checklist
 

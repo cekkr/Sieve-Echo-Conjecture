@@ -1,0 +1,143 @@
+{
+  "run_id": "full-s0",
+  "created": "2026-11-24T13:48:49+01:00",
+  "config_path": "empirical-scripts/11.0/config/full.json",
+  "config_sha256": "3990a8d51cec7070481f828831ca2b447c21fbc27803ff9eb7d392257fe4a75d",
+  "config": {
+    "name": "full",
+    "description": "Paper-scale config: all n in [2, 150000] (train split >= 100 000 rows for ROADMAP S1) plus 2000 integers per omega from (1.5*10^5, 10^6].",
+    "seed": 0,
+    "data": {
+      "n_min": 2,
+      "n_max": 150000,
+      "stratified": {
+        "enabled": true,
+        "n_lo": 150001,
+        "n_hi": 1000000,
+        "per_omega": 2000
+      },
+      "base_sets": {
+        "v8": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "v10": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          10,
+          12,
+          11,
+          13,
+          15,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "primes31": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "wide": {
+          "bases": "2..99",
+          "sample": 5000
+        }
+      },
+      "workers": 0
+    },
+    "split": {
+      "train": 0.7,
+      "val": 0.15,
+      "test": 0.15,
+      "stratify": "omega"
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "data": {
+      "status": "done",
+      "finished": "2026-11-24T14:09:18+01:00",
+      "seconds": 1225.33,
+      "dataset_key": "aa7975820df639b9",
+      "cache": "cache/dataset-aa7975820df639b9.npz",
+      "split_file": "split.json",
+      "split_sha256": "08379e07c5eb0bebb1088e81f0d5a9bf59c499f8ebd64fd337f09b777dec520e",
+      "split_counts": {
+        "train": 113404,
+        "val": 24301,
+        "test": 24302
+      },
+      "integers": 162007,
+      "pairs": 2340678,
+      "build_seconds": 1206.98
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/full.json",
+    "--run-id",
+    "full-s0"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "641d9b1ba669eaf612ff82df3c2823075804bcd9",
+      "dirty": true,
+      "changed_paths": [
+        "M .gitignore",
+        " M AGENTS.md",
+        " M ROADMAP.md",
+        "?? empirical-scripts/11.0/"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "4ab85e5db60a2f110c56e681f71b04b252840f47",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "07a16d4a8a48a22db2189696e19121e606ddde5848b7dc95fbe49999173abd59"
+  },
+  "ndr_version": "ndr-v11.1"
+}

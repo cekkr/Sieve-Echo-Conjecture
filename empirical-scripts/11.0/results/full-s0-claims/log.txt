@@ -1,0 +1,14 @@
+[14:17:47] run full-s0-claims seed=0 stages=['data', 'claims', 'report'] dir=empirical-scripts/11.0/results/full-s0-claims
+[14:17:48] data: cache hit dataset-aa7975820df639b9.npz (reused from run full-s0)
+[14:17:48] data: done in 1.5s
+[14:19:07]   C1: reproduced but explained by size/length (78.67s)
+[14:19:23]   C2: not supported (16.1s)
+[14:19:31]   C3: not reproduced (8.09s)
+[14:21:28]   C4: reproduced; no asymptotic emergence (116.82s)
+[14:21:34]   C5: reproduced but explained by size/length (6.33s)
+[14:21:38]   C6: reproduced but explained by size/length (4.29s)
+[14:21:44]   C7: supported (residue structure beyond per-base L and ω) (5.38s)
+[14:21:50]   C8: not supported (6.43s)
+[14:24:19]   C9: supported (148.86s)
+[14:24:19] claims: done in 391.0s
+[14:24:19] report: done in 0.0s

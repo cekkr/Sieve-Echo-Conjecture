@@ -1,0 +1,17 @@
+[13:48:53] run full-s0 seed=0 stages=['data'] dir=empirical-scripts/11.0/results/full-s0
+[13:48:53] data: building dataset
+[13:48:53]   sieve to 1000000 (0.0s)
+[13:48:55]   162007 integers, labels done (2.3s)
+[13:51:00]   pairs: chunk 5/56 (124.0s)
+[13:52:49]   pairs: chunk 10/56 (233.8s)
+[13:54:49]   pairs: chunk 15/56 (353.4s)
+[13:54:56]   pairs: chunk 20/56 (360.1s)
+[13:57:01]   pairs: chunk 25/56 (485.5s)
+[13:59:11]   pairs: chunk 30/56 (615.3s)
+[13:59:30]   pairs: chunk 35/56 (634.1s)
+[14:02:21]   pairs: chunk 40/56 (805.6s)
+[14:05:21]   pairs: chunk 45/56 (985.5s)
+[14:08:33]   pairs: chunk 50/56 (1177.3s)
+[14:08:57]   pairs: chunk 55/56 (1201.3s)
+[14:08:57]   2340678 coprime pairs (1204.5s)
+[14:09:18] data: done in 1225.3s

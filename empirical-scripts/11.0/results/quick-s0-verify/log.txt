@@ -1,0 +1,17 @@
+[13:34:05] run quick-s0-verify seed=0 stages=['data'] dir=empirical-scripts/11.0/results/quick-s0-verify
+[13:34:05] data: building dataset
+[13:34:05]   sieve to 100000 (0.0s)
+[13:34:05]   10523 integers, labels done (0.2s)
+[13:34:07]   pairs: chunk 5/55 (1.9s)
+[13:34:07]   pairs: chunk 10/55 (1.9s)
+[13:34:08]   pairs: chunk 15/55 (2.6s)
+[13:34:08]   pairs: chunk 20/55 (2.6s)
+[13:34:08]   pairs: chunk 25/55 (3.2s)
+[13:34:09]   pairs: chunk 30/55 (3.8s)
+[13:34:09]   pairs: chunk 35/55 (4.2s)
+[13:34:09]   pairs: chunk 40/55 (4.4s)
+[13:34:10]   pairs: chunk 45/55 (5.1s)
+[13:34:11]   pairs: chunk 50/55 (5.5s)
+[13:34:11]   pairs: chunk 55/55 (6.0s)
+[13:34:11]   160064 coprime pairs (6.3s)
+[13:34:12] data: done in 7.6s

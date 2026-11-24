@@ -1,0 +1,115 @@
+{
+  "name": "full",
+  "description": "Paper-scale config: all n in [2, 150000] (train split >= 100 000 rows for ROADMAP S1) plus 2000 integers per omega from (1.5*10^5, 10^6].",
+  "seed": 0,
+  "data": {
+    "n_min": 2,
+    "n_max": 150000,
+    "stratified": {
+      "enabled": true,
+      "n_lo": 150001,
+      "n_hi": 1000000,
+      "per_omega": 2000
+    },
+    "base_sets": {
+      "v8": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        13,
+        14,
+        15,
+        16
+      ],
+      "v10": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        10,
+        12,
+        11,
+        13,
+        15,
+        17,
+        19,
+        23,
+        29,
+        31
+      ],
+      "primes31": [
+        2,
+        3,
+        5,
+        7,
+        11,
+        13,
+        17,
+        19,
+        23,
+        29,
+        31
+      ],
+      "wide": {
+        "bases": "2..99",
+        "sample": 5000
+      }
+    },
+    "workers": 0
+  },
+  "split": {
+    "train": 0.7,
+    "val": 0.15,
+    "test": 0.15,
+    "stratify": "omega"
+  },
+  "claims": {
+    "primary_set": "v8",
+    "entropies": [
+      "H_paper",
+      "H_nodc",
+      "Hn_paper"
+    ],
+    "bootstrap": 1000,
+    "permutations": 1000,
+    "effect_threshold": 0.01,
+    "cv_threshold": 0.1,
+    "invariance_sets": [
+      "v8",
+      "v10",
+      "primes31",
+      "wide"
+    ],
+    "invariance_variants": [
+      "H_paper",
+      "H_nodc",
+      "Hn_paper",
+      "Hn_nodc"
+    ],
+    "moduli": [
+      6,
+      12,
+      30,
+      210
+    ],
+    "zeta_s": [
+      2,
+      3,
+      4
+    ],
+    "classifier": {
+      "max_iter": 300,
+      "learning_rate": 0.1,
+      "max_omega_class": 5,
+      "shuffled_nulls": 3
+    }
+  }
+}

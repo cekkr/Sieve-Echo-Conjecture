@@ -1,0 +1,14 @@
+[14:17:13] run quick-s0 seed=0 stages=['data', 'claims', 'report'] dir=empirical-scripts/11.0/results/quick-s0
+[14:17:13] data: cache hit dataset-a6d2073dc94aa9a4.npz (reused from run quick-s0-verify)
+[14:17:13] data: done in 0.1s
+[14:17:15]   C1: reproduced but explained by size/length (2.21s)
+[14:17:16]   C2: not supported (1.23s)
+[14:17:17]   C3: not reproduced (0.74s)
+[14:17:23]   C4: reproduced; no asymptotic emergence (6.22s)
+[14:17:24]   C5: reproduced but explained by size/length (0.5s)
+[14:17:24]   C6: reproduced but explained by size/length (0.4s)
+[14:17:25]   C7: supported (residue structure beyond per-base L and ω) (0.42s)
+[14:17:26]   C8: not supported (0.91s)
+[14:17:44]   C9: supported (entropy features alone: not supported) (18.14s)
+[14:17:44] claims: done in 30.8s
+[14:17:44] report: done in 0.0s

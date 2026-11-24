@@ -1,0 +1,210 @@
+{
+  "run_id": "quick-s0",
+  "created": "2026-11-24T14:17:10+01:00",
+  "config_path": "empirical-scripts/11.0/config/quick.json",
+  "config_sha256": "49bcba7eda4fc02047a67d6f1b8d35391ea7c9312ce6776fdd45728f79dcb314",
+  "config": {
+    "name": "quick",
+    "description": "Minutes-scale smoke config: n in [2, 9999] (the v8 paper range) plus 100 integers per omega from [10^4, 10^5].",
+    "seed": 0,
+    "data": {
+      "n_min": 2,
+      "n_max": 9999,
+      "stratified": {
+        "enabled": true,
+        "n_lo": 10000,
+        "n_hi": 100000,
+        "per_omega": 100
+      },
+      "base_sets": {
+        "v8": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "v10": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          10,
+          12,
+          11,
+          13,
+          15,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "primes31": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "wide": {
+          "bases": "2..99",
+          "sample": 500
+        }
+      },
+      "workers": 0
+    },
+    "split": {
+      "train": 0.7,
+      "val": 0.15,
+      "test": 0.15,
+      "stratify": "omega"
+    },
+    "claims": {
+      "primary_set": "v8",
+      "entropies": [
+        "H_paper",
+        "H_nodc",
+        "Hn_paper"
+      ],
+      "bootstrap": 1000,
+      "permutations": 1000,
+      "effect_threshold": 0.01,
+      "cv_threshold": 0.1,
+      "invariance_sets": [
+        "v8",
+        "v10",
+        "primes31",
+        "wide"
+      ],
+      "invariance_variants": [
+        "H_paper",
+        "H_nodc",
+        "Hn_paper",
+        "Hn_nodc"
+      ],
+      "moduli": [
+        6,
+        12,
+        30,
+        210
+      ],
+      "zeta_s": [
+        2,
+        3,
+        4
+      ],
+      "classifier": {
+        "max_iter": 300,
+        "learning_rate": 0.1,
+        "max_omega_class": 5,
+        "shuffled_nulls": 3
+      }
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "data": {
+      "status": "done",
+      "finished": "2026-11-24T14:17:13+01:00",
+      "seconds": 0.13,
+      "dataset_key": "a6d2073dc94aa9a4",
+      "cache": "cache/dataset-a6d2073dc94aa9a4.npz",
+      "split_file": "split.json",
+      "split_sha256": "2a3157648f2e512f123100c7610daf91676212e34d4845f688c2533a4ae40dc4",
+      "split_counts": {
+        "train": 7366,
+        "val": 1578,
+        "test": 1579
+      },
+      "integers": 10523,
+      "pairs": 160064,
+      "build_seconds": 6.46,
+      "reused_from_run": "quick-s0-verify"
+    },
+    "claims": {
+      "status": "done",
+      "finished": "2026-11-24T14:17:44+01:00",
+      "seconds": 30.8,
+      "claims_file": "claims.json",
+      "claims_sha256": "59a2cee36379654e6482063cdc0a0679dd8d3d7e6ec503d3a665d91bcef1bfc7",
+      "verdicts": {
+        "C1": "reproduced but explained by size/length",
+        "C2": "not supported",
+        "C3": "not reproduced",
+        "C4": "reproduced; no asymptotic emergence",
+        "C5": "reproduced but explained by size/length",
+        "C6": "reproduced but explained by size/length",
+        "C7": "supported (residue structure beyond per-base L and \u03c9)",
+        "C8": "not supported",
+        "C9": "supported (entropy features alone: not supported)"
+      }
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-24T14:17:44+01:00",
+      "seconds": 0.01,
+      "report": "report.md",
+      "report_json": "report.json"
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/quick.json",
+    "--run-id",
+    "quick-s0"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "641d9b1ba669eaf612ff82df3c2823075804bcd9",
+      "dirty": true,
+      "changed_paths": [
+        "M .gitignore",
+        " M AGENTS.md",
+        " M ROADMAP.md",
+        "?? empirical-scripts/11.0/"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "4ab85e5db60a2f110c56e681f71b04b252840f47",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "37b9b17ceb6ade35956aff0e54d546a07c7cac52ca65bdb034d6466ce4b557fa"
+  },
+  "ndr_version": "ndr-v11.1"
+}

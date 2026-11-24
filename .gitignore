@@ -206,3 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 .DS_Store
+
+# Sieve Echo v11 run caches (results/<run-id>/cache/ is disposable)
+empirical-scripts/11.0/results/*/cache/
