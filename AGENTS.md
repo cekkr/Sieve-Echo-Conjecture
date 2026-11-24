@@ -92,15 +92,15 @@ Evolvo boundary: the v11 script owns data, features, splits, and verdicts; [`lib
 
 ## Standing Evolvo Facts Relevant to v11
 
-Verified against `libs/evolvo` at commit `4ab85e5`:
+Verified against `libs/evolvo` after ROADMAP step 3 (the commit the root repo points to):
 
-- Public API is lazy-loaded from [`libs/evolvo/src/evolvo/__init__.py`](libs/evolvo/src/evolvo/__init__.py) (`_LAZY` table). The GFSL runtime needs NumPy; `evolvo.nnarch` is pure Python except `build.py`/`train.py` (PyTorch).
-- `GFSLEvolver(population_size, supervised_guide=None, …)` in [`libs/evolvo/src/evolvo/evolver.py`](libs/evolvo/src/evolvo/evolver.py): `initialize_population(genome_type, initial_instructions)`, `evolve(generations, evaluator, progress_callback=None, batch_evaluator=None, should_stop=None)`. Genomes declare outputs with `genome.mark_output(DataType.DECIMAL, k)`.
-- `GFSLExecutor.execute(genome, inputs)` in [`libs/evolvo/src/evolvo/executor.py`](libs/evolvo/src/evolvo/executor.py) takes one scalar input dict per call (`{"d$0": 3.0, …}`). There is no batched/vectorized execution path: evaluating 10⁴ samples × 10³ genomes is 10⁷ Python-level executions. This is a planned Evolvo improvement ([`ROADMAP.md`](ROADMAP.md) step E1).
-- `register_custom_operation(name, target_type, function, arity=…, …)` in [`libs/evolvo/src/evolvo/custom_ops.py`](libs/evolvo/src/evolvo/custom_ops.py) adds domain operations (for example `GCD`, `LOG`) without forking.
-- How random genomes learn that inputs `d$0..d$k` exist is **Unknown — verify before writing the v11 formula search** (`initialize_population` takes no input count; see `_append_random_instruction_fast` in `evolver.py`).
-- `evolvo.nnarch`: `ArchSpace(inputs, n_out, max_rows, max_params)`, `TorchTask((x_tr, y_tr), (x_val, y_val), lr)`, `ArchitectureSearch(space, task, seed, knowledge)`, `.run(generations, patience)`, `Knowledge.load/save` — see [`libs/evolvo/README.md`](libs/evolvo/README.md).
-- Tests: `PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests` from `libs/evolvo` passes all 14 tests (torch 2.15 present; they cover `nnarch` only). With the system `python3` (no torch) 1 is skipped.
+- Public API is lazy-loaded from [`libs/evolvo/src/evolvo/__init__.py`](libs/evolvo/src/evolvo/__init__.py) (`_LAZY` table). The GFSL runtime needs NumPy; `evolvo.nnarch` is pure Python except `build.py`/`train.py`; `GFSLSupervisedGuide` and `GFSLPolicyGuide` need PyTorch.
+- **Formula search setup:** `GFSLEvolver(population_size, supervised_guide=None, …)`; `initialize_population(genome_type, initial_instructions, inputs=k or {DataType.DECIMAL: k}, outputs=[(DataType.DECIMAL, k)], profile=InstructionProfile.formula())`. Inputs `d$0..d$k-1` are then readable by every genome (initial, mutated, crossed over, immigrant); without `inputs=` random genomes cannot read their inputs.
+- **Batched evaluation:** `GFSLExecutor(compute_backend="cpu").execute_batch(genome, {"d$0": array, …}, track_activity=False)` → `{"d$k": float64 array}`; element-wise identical to `execute`; NumPy-vectorized unless the genome uses `CALL`/list ops (then row-by-row; `executor.last_batch_mode`). Domain ops: `register_custom_operation(name, DataType.DECIMAL, fn, arity=…, batch_function=vec_fn)`.
+- **Evaluation-size epochs (S1):** `evolve(generations, evaluator, …, fitness_epoch=lambda: current_N)` re-scores the whole population when `N` changes; `genome.fitness_epoch`, `evolver.fitness_epoch_changes`, `evolver.evaluations`.
+- **RL guide (S2):** `GFSLPolicyGuide(q_target=…, top_fraction=0.1, device="auto", seed=…)` passed as `supervised_guide=`; `save(path)` / `GFSLPolicyGuide.load(path, **overrides)`; `history` holds per-generation `q`, temperature, mean reward, loss.
+- `evolvo.nnarch`: `ArchSpace(inputs, n_out, max_rows, max_params, task=…)`, `TorchTask((x_tr, y_tr), (x_val, y_val), lr)` for regression, `TorchTask.classification(...)` for class targets (use `task={"loss": "ce"}`), `ArchitectureSearch(space, task, seed, knowledge)`, `.run(generations, patience)`, `Knowledge.load/save` — see [`libs/evolvo/README.md`](libs/evolvo/README.md).
+- Tests: from `libs/evolvo`, `../../.venv/bin/python -m unittest discover -s tests` → 33 tests (GFSL core, policy guide, GFSL-NN); with a NumPy-less `python3` the NumPy/torch modules skip.
 
 ## Linked Source Tree and File Reference
 
@@ -225,7 +225,7 @@ The v8.2 run cited by the paper: [`sieve_echo_results_20250825_224642.json`](emp
 
 ### [`libs/evolvo`](libs/evolvo) (git submodule)
 
-Evolvo library, upstream `https://github.com/Geckos-Ink/evolvo`, branch `main`, registered in [`.gitmodules`](.gitmodules). Own handbook: [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) — it applies to every file under `libs/evolvo/`. Source in [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo), tests in [`libs/evolvo/tests/`](libs/evolvo/tests), specs in [`libs/evolvo/papers/`](libs/evolvo/papers). `libs/evolvo/gold/evolvo.py` is a single-file legacy snapshot; do not use it.
+Evolvo library, upstream `https://github.com/Geckos-Ink/evolvo`, branch `main`, registered in [`.gitmodules`](.gitmodules). Step 3 added declared inputs, `InstructionProfile`, `execute_batch`, `fitness_epoch`, `GFSLPolicyGuide`, `TorchTask.classification` and fixed a validator op-list aliasing bug; those commits exist locally and are **not pushed** until the owner asks (a fresh clone cannot check out the pointer before then). Own handbook: [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) — it applies to every file under `libs/evolvo/`. Source in [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo), tests in [`libs/evolvo/tests/`](libs/evolvo/tests), specs in [`libs/evolvo/papers/`](libs/evolvo/papers). `libs/evolvo/gold/evolvo.py` is a single-file legacy snapshot; do not use it.
 
 ### [`libs/genetic_ml/`](libs/genetic_ml), [`libs/evolvo_engines/`](libs/evolvo_engines)
 
@@ -356,7 +356,7 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ## Test Ownership Map
 
-- Evolvo library → [`libs/evolvo/tests/test_nnarch.py`](libs/evolvo/tests/test_nnarch.py) (GFSL-NN only; the GFSL core has no unit tests in the repo — Known gap).
+- Evolvo library → [`libs/evolvo/tests/test_gfsl_core.py`](libs/evolvo/tests/test_gfsl_core.py) (GFSL core), [`libs/evolvo/tests/test_policy_guide.py`](libs/evolvo/tests/test_policy_guide.py), [`libs/evolvo/tests/test_nnarch.py`](libs/evolvo/tests/test_nnarch.py) (GFSL-NN). Functions, lists and Kompute have only smoke demos.
 - v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py). The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
 
 ## Data, Security, Privacy, and Compatibility Boundaries
@@ -370,7 +370,7 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 ### Shipped
 
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
-- Evolvo submodule at [`libs/evolvo`](libs/evolvo), commit `4ab85e5`.
+- Evolvo submodule at [`libs/evolvo`](libs/evolvo) with the step-3 features (see [Standing Evolvo Facts](#standing-evolvo-facts-relevant-to-v11)).
 
 - v11 scaffold, data stage, claim verdicts and report ([`ROADMAP.md`](ROADMAP.md) steps 0–2): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Markdown/JSON report, 29 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
 
@@ -382,13 +382,12 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 - Paper numbers (§2–§4) come from one v8.2 run (plus a v7.0 log for "98.8%" and "r = -0.843") with leakage, training-set accuracy, 100-row samples and size-driven correlations. v11 reproduces every stored v8.2 statistic and has corrected verdicts for C1–C9 (ROADMAP Results log); the §3.1 three-feature claim is retested in step 4.
 - Paper direction-of-effect statements contradict each other and the data.
-- Evolvo has no batched executor and no verified input-declaration path for formula search.
+- The Evolvo submodule commits from step 3 are not pushed upstream.
 
 ### Near-Term Priorities
 
-1. Evolvo fixes E0–E7 in `libs/evolvo` ([`ROADMAP.md`](ROADMAP.md) step 3).
-2. Evolutionary formula and GFSL-NN search with S1/S2, against the C9 baselines (step 4).
-3. Scale-up to 10⁶ and the paper revision (steps 5–6).
+1. Evolutionary formula and GFSL-NN search with S1/S2, against the C9 baselines ([`ROADMAP.md`](ROADMAP.md) step 4).
+2. Scale-up to 10⁶ and the paper revision (steps 5–6).
 
 ## Task Start and Handoff Checklist
 

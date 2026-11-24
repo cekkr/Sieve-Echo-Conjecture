@@ -84,19 +84,22 @@ Implemented in [`claims.py`](empirical-scripts/11.0/claims.py) and [`report.py`]
 - **Verified:** both configs print the verdict table; quick claims 31 s, full claims 391 s (1.8 GB peak RSS). Every stored v8.2 statistic is reproduced (law α/β/R², 6% invariance, zeta r for s = 2, 3, 4, PNT r = 0.946 and both error correlations, all four modular variances).
 - **Not done:** figures (step 6); C4 bins above 10⁴ use the ω-stratified sample, not all integers.
 
-## Step 3 — Evolvo fixes needed by v11 (in `libs/evolvo`, commit on its `main`) — TODO
+## Step 3 — Evolvo fixes needed by v11 (in `libs/evolvo`, commit on its `main`) — DONE (verified: Evolvo suite 33/33, 2026-11-24)
 
-Do these in the submodule per directive D3, each with a test in `libs/evolvo/tests/` and an update to `libs/evolvo/AGENTS.md` and `README.md`.
+Implemented in the submodule per directive D3, each with tests in `libs/evolvo/tests/` and updates to `libs/evolvo/AGENTS.md` and `README.md`.
 
-- [ ] **E0 Verify inputs:** confirm how random genomes reference input variables `d$0..d$k` (no input count in `GFSLEvolver.initialize_population`). If unsupported, add an explicit input declaration (e.g. `input_count`/`declare_inputs`) honoured by the validator, mutation, and `_make_random_genome`.
-- [ ] **E1 Batched execution:** a vectorized execution path (`execute_batch(genome, {"d$0": np.ndarray, …})`) for decimal/boolean ops, so one genome is evaluated over all training rows at once; keep scalar semantics identical (test equality on random genomes).
-- [ ] **E2 Protected numerics:** confirm NaN/inf handling of `DIV`, `LOG`, `SQRT`, `EXP`, `POW` in batch mode matches scalar mode.
-- [ ] **E3 Domain ops via custom registry:** verify `register_custom_operation` works with batch mode (for `LOG`, `GCD`-free ops — no factorization ops, by contract).
-- [ ] **E4 GFSL-NN tabular inputs:** confirm `ArchSpace([("vec", k)], n_out, …)` + `TorchTask` support classification (ω as class) or add a cross-entropy loss option.
-- [ ] **E5 Core tests:** add GFSL core unit tests (executor, evolver smoke) — Evolvo currently tests only `nnarch`.
-- [ ] **E6 Evaluation-size hook:** let `GFSLEvolver.evolve` invalidate and re-evaluate fitness when the caller signals a new evaluation size (e.g. a `fitness_epoch` counter or an `on_resize` callback), so the elite is not compared on scores from different sample sizes. Needed by [S1](#s1--adaptive-evaluation-size-5-000--100-000).
-- [ ] **E7 Torch RL guide:** a PyTorch policy-gradient guide (e.g. `GFSLPolicyGuide` in `src/evolvo/`) next to `GFSLQLearningGuide` and `GFSLSupervisedGuide`, with save/load of its weights. Needed by [S2](#s2--torch-reinforcement-learning-guide). Check first whether `GFSLSupervisedGuide` can be extended instead of adding a class.
-- **Done when:** Evolvo tests pass; root repo commits the new submodule pointer.
+- [x] **E0 Verify inputs:** confirmed broken — a fresh genome can read `d$k` only after assigning it (`variable_counts` grows from targets only); the README's hand-set `validator.variable_counts` was erased by every `rebuild_validator_state()` (mutation, crossover); immigrants had no outputs. Added `GFSLGenome(inputs=...)` / `declare_inputs`, `SlotValidator(input_counts=...)`, re-applied on rebuild, kept by crossover; `GFSLEvolver.initialize_population(inputs=, outputs=, profile=)` applies them to every created genome including immigrants. Demos/README now declare their input.
+- [x] **E1 Batched execution:** `GFSLExecutor.execute_batch(genome, {"d$0": array, ...}, mode="auto"|"vector"|"scalar")` with NumPy semantics in `evolvo/batch.py`; automatic scalar fallback for `CALL`/list ops. Equality with the scalar path tested on ~800 random genomes (with and without a profile) plus special values. Speed: 100 000 rows, 6 effective instructions: 2.4 ms vector vs ≈ 4.1 s scalar.
+- [x] **E2 Protected numerics:** every decimal op checked on the 16×16 grid of special values (±0, ±1e308, ±inf, NaN, 1e-12, ...) against the scalar path, including Python's `OverflowError`/`ZeroDivisionError` cases of `POW` (→ 0.0).
+- [x] **E3 Custom ops in batch mode:** `register_custom_operation(..., batch_function=...)`; without it (or if it raises) the batch path loops over the scalar function; tested both.
+- [x] **E4 GFSL-NN classification:** the head is a plain `Linear`, so cross-entropy works; added `TorchTask.classification(...)` (long targets, validation `accuracy`) and a test (3-class toy, accuracy > 0.7). Use `ArchSpace(..., task={"loss": "ce"})`.
+- [x] **E5 Core tests:** `tests/test_gfsl_core.py` (12 tests) and `tests/test_policy_guide.py` (6 tests); NumPy-less interpreters skip them.
+- [x] **E6 Evaluation-size hook:** `GFSLEvolver.evolve(..., fitness_epoch=callable)` + `invalidate_fitness()`: an epoch change re-scores the whole population (elite included) and resets stagnation trackers; genomes carry `fitness_epoch`; `fitness_epoch_changes` and `evaluations` are logged.
+- [x] **E7 Torch RL guide:** new `GFSLPolicyGuide` (`evolvo/policy_guide.py`) instead of extending `GFSLSupervisedGuide` (that one predicts fitness to rank candidates; a policy needs action log-probabilities). REINFORCE over the edit operator and every slot value it picks (valid options only), reward `(f − q)/|q|` against the same-generation top-10% mean, running baseline, entropy bonus, AdamW, temperature/entropy annealed by `q_target`, uniform floor, `save`/`load`. Tests: relative reward and clipping, schedule, a bandit check that the rewarded operator's probability rises, save/load, evolver plug-in.
+- [x] **E8 Instruction profile (discovered):** `InstructionProfile` restricts target categories and operations; `InstructionProfile.formula()` = variable targets + decimal ops (+ custom ops). Without it, ~60% of random instructions targeted lists/functions/control flow and 125/200 random genomes needed the scalar fallback; with it, 300/300 run vectorized.
+- [x] **E9 Validator op-list aliasing (discovered, pre-existing bug):** `valid_ops = DECIMAL_OPS` followed by `.extend(...)` mutated the module-level op groups on every call, leaking list ops and `CALL` into every later decimal choice and slowing option generation over a process lifetime (test file: 558 s → 2.3 s after the fix). Fixed with copies; regression test added.
+- **Verified:** `libs/evolvo`: `../../.venv/bin/python -m unittest discover -s tests` → 33 tests OK; system `python3` (no NumPy/torch) → OK, 4 skipped; legacy demos (`example.py` default/function/nested/void/expression/neural/extraction/personalization) run; the README formula-search snippet runs (guide on `mps`).
+- **Not done here:** guide comparisons across seeds and the S1/S2 "done when" checks — they are v11 experiments (step 4).
 
 ## Step 4 — Evolutionary search with Evolvo — TODO
 
@@ -105,8 +108,9 @@ Do these in the submodule per directive D3, each with a test in `libs/evolvo/tes
 - [ ] **GFSL-NN:** `evolvo.nnarch.ArchitectureSearch` on the feature table (vector input) and on raw NDR sequences (set input / `deepsets`, `transformer` macros), with `Knowledge` saved per run for reuse.
 - [ ] **Baselines:** majority class, logistic/GBM on `(log n, log L)` only, same on full NDR features. Report held-out accuracy, macro-F1, and MSE for ω.
 - [ ] **Three-feature claim (§3.1):** retest (std H, min H) without `is_prime_power`; report against baselines.
-- [ ] **Adaptive evaluation size** — see [S1](#s1--adaptive-evaluation-size-5-000--100-000) (required).
-- [ ] **Torch reinforcement learning guide** — see [S2](#s2--torch-reinforcement-learning-guide) (required).
+- [ ] **Adaptive evaluation size** — see [S1](#s1--adaptive-evaluation-size-5-000--100-000) (required). Evolvo side ready: `execute_batch` + `evolve(fitness_epoch=...)`.
+- [ ] **Torch reinforcement learning guide** — see [S2](#s2--torch-reinforcement-learning-guide) (required). Evolvo side ready: `GFSLPolicyGuide`.
+- [ ] Use `inputs=`, `outputs=` and `InstructionProfile.formula()` (optionally with `LOG`-style custom ops carrying `batch_function`) so every genome reads the features and runs vectorized.
 - **Done when:** held-out results table with baselines; best formulas saved in human-readable form.
 
 ### S1 — Adaptive evaluation size (5 000 → 100 000)
@@ -170,7 +174,7 @@ Add items found during implementation here, with the step they affect.
 
 ## Results log
 
-Record verified results as `run-id — config — headline numbers — verdict`. All runs: seed 0, `ndr-v11.1`, root `641d9b1` + uncommitted v11 sources (v11 code sha256 `37b9b17ceb6a`), libs/evolvo `4ab85e5`. Numbers are from `full-s0-claims` (test split, 24 302 integers) unless marked quick; quick (`quick-s0`, 1 579 test integers) gives the same verdicts except where noted.
+Record verified results as `run-id — config — headline numbers — verdict`. All runs: seed 0, `ndr-v11.1`, root `641d9b1` + the then-uncommitted v11 sources (v11 code sha256 `37b9b17ceb6a`, committed as `b4c9080`), libs/evolvo `4ab85e5`. Numbers are from `full-s0-claims` (test split, 24 302 integers) unless marked quick; quick (`quick-s0`, 1 579 test integers) gives the same verdicts except where noted.
 
 - `full-s0` — `config/full.json` — data stage only: 162 007 integers, 2 340 678 pairs, 1 225 s.
 - **C1** — `full-s0-claims` — v8.2 fit reproduced exactly (α -0.4681, β 1.9174, R² 0.2345 with log(ω+1); with the paper's log ω: α -0.305, R² 0.229). Test R² `H_paper`: law 0.364, log L + log n 0.959, full 0.959; ΔR² 0.0004 CI [0.000, 0.001]; partial r(H, log ω | log L, log n) -0.101. `H_nodc`: baseline 0.991, ΔR² 0.002. — **reproduced but explained by size/length.**
