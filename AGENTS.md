@@ -1,0 +1,314 @@
+# Sieve Echo Conjecture — AI Agent Reference
+
+Fast-access operational reference for AI agents working in this repository. Read it completely before changing anything, and keep it true for the checked-out revision (see [Maintenance rules](#collaboration-and-maintenance-rules)).
+
+**What this project is.** An empirical research repository by Riccardo Cecchini that tests the *Sieve Echo Conjecture*: the claim that the prime-factorization complexity of an integer `n` (mainly ω(n), the number of distinct prime factors) is encoded in the spectral entropy of the repeating digits of `1/n` written in several bases, after normalizing digits to `[0,1]` (NDR, see [Vocabulary](#vocabulary)). The work is a sequence of numbered script versions (`empirical-scripts/3.1` … `10.0`) plus papers in `studies/`. Maturity: exploratory research code. No package, no test suite, no CI.
+
+**What it is not.** It is not a proof, and no script so far is a rigorous demonstration. It is not the Evolvo library: Evolvo is a separate repository vendored as the git submodule [`libs/evolvo`](libs/evolvo) with its own [`AGENTS.md`](libs/evolvo/AGENTS.md). The copies named `evolvo*.py` inside old version folders are historical forks of that library, not the library to use.
+
+**Current goal.** Build **version 11** in `empirical-scripts/11.0/` (planned, not yet created): one reproducible, leakage-free execution script that tests every claim of the current paper [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) and uses the submodule [`libs/evolvo`](libs/evolvo) for all evolutionary search. The step plan lives in [`ROADMAP.md`](ROADMAP.md).
+
+## Read This First
+
+Source-of-truth order. When two sources disagree, the higher one wins, and the agent fixes or records the mismatch in the same change.
+
+1. **This file's [Directives](#standing-directives-from-the-project-owner)** — standing instructions from the project owner.
+2. [`ROADMAP.md`](ROADMAP.md) — the v11 implementation plan and its live status. It governs *what to do next*; it never proves that something exists.
+3. Executable code: [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo) (the library) and, once created, `empirical-scripts/11.0/`. Evolvo's own rules are in [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) and its specs in [`libs/evolvo/papers/`](libs/evolvo/papers).
+4. [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) — the current paper. It states the claims that v11 must test. Its numbers are **claims to re-verify**, not facts (see [Known gaps](#known-gaps)).
+5. Stored results under [`empirical-scripts/results/`](empirical-scripts/results) and `empirical-scripts/<ver>/results/` — evidence of what past runs produced, with the methodological defects listed below.
+6. Older papers ([`studies/7/`](studies/7), [`studies/8/future.md`](studies/8/future.md)), the notes in [`studies/claude/`](studies/claude), and commit messages — history only. Commit messages in this repo carry no technical information.
+
+## Standing Directives from the Project Owner
+
+These are mandatory for every task from v11 onward.
+
+- **D1 — Version 11 lives in `empirical-scripts/11.0/`.** Create the folder; do not edit older version folders except to fix a link. Its goal is to complete the "demonstration" (empirical implementation) of [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md), reusing the best ideas and results of the previous scripts.
+- **D2 — Use the Evolvo library from the submodule.** All formula search and neural-architecture search MUST import `evolvo` from [`libs/evolvo/src`](libs/evolvo/src) (upstream: `https://github.com/Geckos-Ink/evolvo`). Do NOT copy `evolvo.py`, `evolvo_model.py`, `evolvo_nn.py`, or `gold/evolvo.py` into `11.0/`, and do NOT import the historical copies in older version folders.
+- **D3 — Fix Evolvo in Evolvo.** When v11 needs a feature or bug fix in Evolvo, implement it inside [`libs/evolvo`](libs/evolvo), following [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) (update its `AGENTS.md` and `README.md`, add a test under [`libs/evolvo/tests/`](libs/evolvo/tests)), commit it on the submodule's `main` branch, then commit the updated submodule pointer in this repository. Do not work around an Evolvo defect inside the v11 script when the fix belongs in the library.
+- **D4 — Keep [`ROADMAP.md`](ROADMAP.md) live.** Update step status while implementing: mark steps done only after verification, add newly discovered fixes or follow-ups, and record results with the run that produced them.
+- **D5 — Keep this file live.** Follow the [AGENTS.md bootstrap protocol](#collaboration-and-maintenance-rules): every change that adds, moves, or changes a file, command, contract, or result updates the matching section here in the same change.
+- **D6 — Evaluation size grows with quality.** Each genome is scored on 5 000 integers at first, rising step by step to at most 100 000 as the average of the best scores improves. Never compare fitness values taken at different sizes. Spec: [`ROADMAP.md` S1](ROADMAP.md#s1--adaptive-evaluation-size-5-000--100-000).
+- **D7 — Reinforcement learning through PyTorch is required.** A torch guide learns which genome edits work over time (weights saved and reused across runs) and lowers exploration as the best scores improve, which reduces the spread of results. Rewards are relative to the average best scores. PyTorch is therefore a hard dependency of v11. Spec: [`ROADMAP.md` S2](ROADMAP.md#s2--torch-reinforcement-learning-guide).
+
+## Collaboration and Maintenance Rules
+
+- This handbook follows the AGENTS.md bootstrap protocol kept by the owner outside this repo (`ai-agents-bootstrap/AGENTS.bootstrap.md`). Required behaviour: present tense for shipped facts, explicit `Planned` labels for the rest, a linked `###` subsection per meaningful file, no secrets or personal data, and no chronological changelog.
+- **Task start:** read this file and [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) if the task touches Evolvo; run `git status` in both the root and `libs/evolvo`; read the relevant [`ROADMAP.md`](ROADMAP.md) step.
+- **Task end:** update this file, [`ROADMAP.md`](ROADMAP.md) and, when Evolvo changed, Evolvo's `AGENTS.md`/`README.md`. Report what was run and what was not.
+- **Submodule commits:** commit Evolvo changes inside `libs/evolvo` on `main` first, then `git add libs/evolvo` in the root and commit the pointer. A pointer to an unpushed Evolvo commit breaks fresh clones; push both repositories only when the owner asks, and say so in the handoff when they are not pushed.
+- **Results are data, not source.** v11 runs write under `empirical-scripts/11.0/results/<run-id>/` (planned path). Commit only small summaries (JSON/Markdown/PNG) that the paper or roadmap cites; never commit caches, pickles of large datasets, or per-generation dumps like the 300+ files in [`empirical-scripts/results/3-Sept-2025/algorithms_realtime/`](empirical-scripts/results/3-Sept-2025/algorithms_realtime).
+- **Paper claims need a run.** Any number written into a paper or this file must name the script, config, and seed that produced it.
+- Preserve unrelated user changes; never clean the tree destructively. `.DS_Store` files exist untracked-or-tracked in places; leave them alone.
+
+## Vocabulary
+
+- **ω(n)** — number of distinct prime factors. **Ω(n)** — with multiplicity. **τ(n)** — number of divisors. **φ(n)** — Euler totient. **λ(n)** — Carmichael function.
+- **Repetend** — the repeating block of `1/n` in base `b`. Defined only when `gcd(n, b) = 1`; then it is purely periodic with length `L = ord_n(b)`, the multiplicative order of `b` modulo `n`.
+- **NDR** (Normalized Digit Representation) — the repetend digits divided by the base. The paper (Definition 1.1) uses `d/b`; v10 used `d/(b-1)`. See [pitfall](#ndr-normalization-and-entropy-definition-drift).
+- **H_NDR** (NDR entropy) — Shannon entropy of the normalized power spectrum of the NDR sequence (paper Definition 1.2).
+- **Base invariance** — coefficient of variation (CV = std/mean) of H_NDR across bases below 0.1.
+- **GFSL** — Genetic Fixed Structure Language, the slot-encoded genome language implemented by Evolvo. **GFSL-NN** — its neural-architecture variant (`evolvo.nnarch`).
+
+## Essential Project Principles
+
+### A claim is tested only against a null model and on held-out data
+
+- Every reported fit, correlation, or accuracy MUST be measured on data not used to fit it (train/validation/test split by `n`, fixed seed), and compared with a baseline that uses only trivial covariates (`log n`, `log L`) and with a permutation/shuffled-label null.
+- Training-set accuracy MUST NOT be reported as accuracy. v8's "98.8%" is training-set accuracy ([pitfall](#training-set-accuracy-reported-as-model-accuracy)).
+
+### Features fed to a predictor of ω(n) MUST NOT encode factorization
+
+- Inputs for predicting ω(n) are derived from digit/NDR sequences, `n`, and repetend lengths only. `tau`, `phi`, `is_prime`, `is_prime_power`, `omega`, `Omega`, `mobius`, `factorint` output, or anything computed from them, are **forbidden inputs**; they are allowed only as targets or as stratification labels.
+- Exception, stated explicitly: an analysis whose stated purpose is "how much does feature X add beyond factorization-derived Y" MAY use Y as a control variable, and MUST label it so.
+
+### Confounders are controlled, not ignored
+
+- H_NDR is bounded by `log(L/2)` and grows with repetend length `L = ord_n(b)`; `L` itself depends strongly on factorization (λ(n) divides φ(n) and is much smaller for composites). Every claim about H_NDR vs ω(n) MUST also be reported conditional on `log L` (partial correlation or residual model) and on `log n`.
+
+### One canonical definition, versioned
+
+- NDR normalization, the spectrum (power vs amplitude, DC bin kept or dropped, one-sided length) and the entropy base are a single function in v11 with a version tag written into every result file. Changing it changes the version tag.
+
+### Reproducible by one command
+
+- v11 runs from a single entry point with a config file and seed, writes a manifest (git SHAs of root and `libs/evolvo`, Python and library versions, config, seed), and can resume.
+
+## Critical Implementation Contracts
+
+- **Repetend only when coprime:** compute the repetend only when `gcd(n, b) == 1`; record the pair as excluded otherwise. Do not silently drop `n` from all bases.
+- **Exact arithmetic for orders:** compute `ord_n(b)` from the factorization of λ(n) (exact integers), not by simulating long division up to `n` steps; the digit sequence is then generated with exactly `L` steps. Long division up to `n` steps for `n ≈ 2·10^5` across 16 bases is the main runtime cost in v9/v10.
+- **Splits by `n`, fixed before search:** the train/validation/test partition of integers is created once per run from the seed and saved in the manifest; Evolvo fitness uses train (or a train minibatch) only; model selection uses validation; the test split is read once for the final report.
+- **Evolvo import path:** v11 adds `<repo>/libs/evolvo/src` to `sys.path` (or uses `PYTHONPATH`) and imports `evolvo`; it MUST fail loudly if the submodule is not initialized, rather than falling back to a vendored copy.
+- **Fitness is bounded and documented:** v10 fitness `(1/(1+MSE) + 0.01·#ops) · length_penalty` exceeds 1 and rewards operation variety; v11 fitness is validation-free train loss plus an explicit parsimony term, documented in the result manifest.
+
+## Architecture and Data/Control Flow
+
+Planned v11 flow (none of it exists yet; see [`ROADMAP.md`](ROADMAP.md)):
+
+`11.0` entry script + config → **dataset builder** (integers, factorization labels, coprime bases, `ord_n(b)`, digit sequences, NDR, spectra, per-base and cross-base features, cached to disk) → **split** by `n` → **statistical claim tests** (paper §2 and §4 claims, each with baseline and null) → **Evolvo symbolic search** (`GFSLEvolver` formulas on allowed features) and **Evolvo GFSL-NN search** (`evolvo.nnarch.ArchitectureSearch` + `TorchTask`) → **held-out evaluation** → **report** (JSON + Markdown + figures, claim-by-claim verdict table).
+
+Evolvo boundary: the v11 script owns data, features, splits, and verdicts; [`libs/evolvo`](libs/evolvo) owns genomes, validity, execution, evolution, and architecture search. Domain logic (number theory) MUST NOT be pushed into Evolvo; generic capabilities (batched execution, input declaration, custom ops) belong there.
+
+## Standing Evolvo Facts Relevant to v11
+
+Verified against `libs/evolvo` at commit `4ab85e5`:
+
+- Public API is lazy-loaded from [`libs/evolvo/src/evolvo/__init__.py`](libs/evolvo/src/evolvo/__init__.py) (`_LAZY` table). The GFSL runtime needs NumPy; `evolvo.nnarch` is pure Python except `build.py`/`train.py` (PyTorch).
+- `GFSLEvolver(population_size, supervised_guide=None, …)` in [`libs/evolvo/src/evolvo/evolver.py`](libs/evolvo/src/evolvo/evolver.py): `initialize_population(genome_type, initial_instructions)`, `evolve(generations, evaluator, progress_callback=None, batch_evaluator=None, should_stop=None)`. Genomes declare outputs with `genome.mark_output(DataType.DECIMAL, k)`.
+- `GFSLExecutor.execute(genome, inputs)` in [`libs/evolvo/src/evolvo/executor.py`](libs/evolvo/src/evolvo/executor.py) takes one scalar input dict per call (`{"d$0": 3.0, …}`). There is no batched/vectorized execution path: evaluating 10⁴ samples × 10³ genomes is 10⁷ Python-level executions. This is a planned Evolvo improvement ([`ROADMAP.md`](ROADMAP.md) step E1).
+- `register_custom_operation(name, target_type, function, arity=…, …)` in [`libs/evolvo/src/evolvo/custom_ops.py`](libs/evolvo/src/evolvo/custom_ops.py) adds domain operations (for example `GCD`, `LOG`) without forking.
+- How random genomes learn that inputs `d$0..d$k` exist is **Unknown — verify before writing the v11 formula search** (`initialize_population` takes no input count; see `_append_random_instruction_fast` in `evolver.py`).
+- `evolvo.nnarch`: `ArchSpace(inputs, n_out, max_rows, max_params)`, `TorchTask((x_tr, y_tr), (x_val, y_val), lr)`, `ArchitectureSearch(space, task, seed, knowledge)`, `.run(generations, patience)`, `Knowledge.load/save` — see [`libs/evolvo/README.md`](libs/evolvo/README.md).
+- Tests: `PYTHONPATH=src python3 -m unittest discover -s tests` from `libs/evolvo` passes 14 tests (1 skipped, torch absent) on `/opt/homebrew/bin/python3` 3.15.2 without NumPy installed (they cover `nnarch` only).
+
+## Linked Source Tree and File Reference
+
+### [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md)
+
+Current paper (revised draft, August 2025). Defines NDR (Def. 1.1), H_NDR (Def. 1.2), the Sieve Echo Law (Conj. 1.3), and reports Theorems 2.2–4.3. Change it only to replace claims with v11-verified results, citing the run.
+
+- **Claims v11 must test:** §2.2 fit `H = -0.468·log ω + 1.917`, R² = 0.234; §2.3 prime-power correlation r = -0.843; §2.4 base invariance 6%; §3.1 three-feature 98.8% accuracy; §4.1 correlation with `n^-s`; §4.2 `H·log n` vs PNT r = 0.946; §4.3 residue-class variance mod 6/30/210; §5 table vs theoretical α = -1.599, β = 4.933.
+- **Common mistakes:** the paper contradicts itself on direction — §1.3 says primes give "pure, low-entropy" patterns, but α < 0 and the v10 data show primes have the *highest* H_NDR (longest repetends). §7.1 item 2 says "higher complexity correlates with higher entropy", which contradicts α < 0. Do not propagate either sentence; v11 must state the measured direction. "Theorem" labels on empirical fits are not theorems.
+
+### [`studies/8/future.md`](studies/8/future.md)
+
+Earlier rewrite of the same paper with the same numbers. Historical; superseded by `sieve-echo-conjecture-8.md`.
+
+### [`studies/7/`](studies/7)
+
+Theta-era papers (`shieve-echo-theta-7.md/.txt`, `sieve-echo-deeper-links.md`, `sieve-echo-related-dev-1.md`). Source of the theoretical constants α ≈ -1/φ², β = 5 - 1/15 and the "three features (kurtosis, length, n)" claim. History only.
+
+### [`studies/MAL-LLM.md`](studies/MAL-LLM.md)
+
+The owner's Mathematical Annotation Language proposal. The `level: … connects_to: …` blocks in the papers use it. Not part of the computation.
+
+### [`studies/claude/`](studies/claude)
+
+`common_mistakes.md` and `attention_notes.md`: notes from earlier AI sessions. Durable lessons: keep Evolvo central (now D2), implement the owner's *relative* thresholds literally (v10 `save_threshold_ratio` = fraction of the top-performer mean, not an absolute value), and carry config values into every function that should use them.
+
+### [`empirical-scripts/10.0/sieve-echo-tests-3.py`](empirical-scripts/10.0/sieve-echo-tests-3.py)
+
+Latest v10 discovery engine (perpetual cycles over growing `n`). Best starting point for v11's loop structure, real-time saving, and state resume; not for its math.
+
+- **Key parts:** `Config` (16 bases `[2,3,4,5,6,7,10,12,11,13,15,17,19,23,29,31]`, population 10 000, adaptive generations 50–250, `save_threshold_ratio` 0.75 of top-10% mean, top-5 safety-net save); `MultiBaseNDRComputer.compute_ndr` (long division with a remainder dict, normalizes by `base-1`), `compute_multi_base_features` (amplitude spectrum `|FFT|` half-length *with DC*, entropy of amplitude not power; features length/kurtosis/entropy mean/std/CV); `UnifiedFormulaDiscoverer` (inputs include `phi` and `tau` — leakage; fitness on a random 200-row sample of all data); `SieveEchoDiscoverySystem` (cycles, state file `sieve_echo_state_v10.json`).
+- **Depends on:** [`empirical-scripts/10.0/evolvo.py`](empirical-scripts/10.0/evolvo.py) (historical fork; forbidden for v11 by D2).
+- **Common mistakes:** reusing `compute_ndr`/entropy as-is (definition differs from the paper); keeping `phi`/`tau` as inputs; treating fitness > 1 as accuracy.
+
+### [`empirical-scripts/10.0/sieve-echo-tests-1.py`](empirical-scripts/10.0/sieve-echo-tests-1.py), [`empirical-scripts/10.0/sieve-echo-tests-2.py`](empirical-scripts/10.0/sieve-echo-tests-2.py)
+
+Earlier v10 iterations of the same engine (`-1` still labelled v9 and includes `UnifiedNeuralSearcher`; `-2` adds co-evolution notes in its docstring). Superseded by `-3`.
+
+### [`empirical-scripts/10.0/gold_apart.py`](empirical-scripts/10.0/gold_apart.py)
+
+Fragment with `RealTimeSaver` (save each algorithm immediately, dedupe by signature), `MemoryManager`, `EnhancedDiscoverySystem`. Reusable pattern for v11 incremental saving.
+
+### [`empirical-scripts/10.0/evolvo.py`](empirical-scripts/10.0/evolvo.py), [`empirical-scripts/9.0/evolvo.py`](empirical-scripts/9.0/evolvo.py)
+
+Historical "Unified Evolvo" forks (`AlgorithmGenome`, `NeuralGenome`, `UnifiedEvolver`, `ResourceAwareEvolver`, `QLearningGuide`, `FormulaResultsManager`). Their API differs from the submodule (`GFSLGenome`, `GFSLEvolver`). Do not import or edit.
+
+### [`empirical-scripts/9.0/sieve-echo-tests-1.py`](empirical-scripts/9.0/sieve-echo-tests-1.py)
+
+v9 engine: multi-base NDR, formula discoverer, neural searcher, co-evolution, `RobustSerializer`, `EnhancedResultsHandler`. Superseded by v10.
+
+### [`empirical-scripts/8.0/sieve-echo-tests-1.py`](empirical-scripts/8.0/sieve-echo-tests-1.py)
+
+v8.0 "Enhanced Empirical Analysis" — the script whose run produced the paper's numbers (`8.0/results/1/`, 2025-08-25). Uses 13 bases `[2..7, 9, 10, 11, 13, 14, 15, 16]`, NDR `d/b`, power spectrum `|FFT|²` half-length with DC.
+
+- **Key parts:** `BaseInvarianceTester` (CV < 0.1), `RiemannZetaAnalyzer` (correlation of H with `n^-s`), `PrimeNumberTheoremAnalyzer` (`H·log n` product), `CRTValidator`, `MultiplicativeOrderAnalyzer`, `ModularFormsExplorer`, `AdaptiveFeatureDiscovery`, `ParallelSieveAnalyzer` (computes `is_prime_power`), the neural classifier around line 2225 (CrossEntropy, accuracy measured on the training tensors).
+- **Common mistakes:** see [training-set accuracy](#training-set-accuracy-reported-as-model-accuracy) and [trivial correlations](#correlations-driven-by-n-alone).
+
+### [`empirical-scripts/8.0/`](empirical-scripts/8.0) other files
+
+`sieve-echo-tests-2.py` … `-6.py` (v8.2–v8.6 variants: unified analyzer, pattern discovery, "grand unified engine"), `evolvo_model.py`, `evolvo_nn.py`, `evolvo_nn-0.1.py` (historical library forks). Superseded.
+
+### [`empirical-scripts/7.0/`](empirical-scripts/7.0), [`empirical-scripts/6.0/`](empirical-scripts/6.0), [`empirical-scripts/5.0/`](empirical-scripts/5.0), [`empirical-scripts/4.0/`](empirical-scripts/4.0), [`empirical-scripts/3.1/`](empirical-scripts/3.1), [`empirical-scripts/sieve-genetic-test-5.py`](empirical-scripts/sieve-genetic-test-5.py)
+
+Older generations, each a test script plus a forked engine (`evolvo_model.py` / `evolvo_engine.py`). [`empirical-scripts/7.0/results/3/conclusions.md`](empirical-scripts/7.0/results/3/conclusions.md) records the theta-era fit `H = -0.9988·log ω + 2.42`, R² = 0.292, and the origin of the "std, is_prime_power, entropy_min" feature triple. History only.
+
+### [`empirical-scripts/results/`](empirical-scripts/results)
+
+Stored outputs: `20-Aug-2025/` and `v5_22-Aug-2025/` (text logs/results of v4–v5), `3-Sept-2025/` (v10: [`sieve_echo_state_v10.json`](empirical-scripts/results/3-Sept-2025/sieve_echo_state_v10.json) with per-`n` features up to `n ≈ 2·10^5`, 19 cycle summaries, ~300 per-generation algorithm dumps; best saved fitness 1.1235, cycle 12). Read-only evidence.
+
+### [`empirical-scripts/8.0/results/1/`](empirical-scripts/8.0/results/1)
+
+The v8 run cited by the paper: [`sieve_echo_results_20250825_224642.json`](empirical-scripts/8.0/results/1/sieve_echo_results_20250825_224642.json) (config, `sieve_echo_law` α = -0.4681, β = 1.9174, R² = 0.2345, zeta/PNT/modular results, base invariance 0.06, evolvo best fitness 0.24 with formula `DIV`), plus a `.pkl` and a `.png`.
+
+### [`libs/evolvo`](libs/evolvo) (git submodule)
+
+Evolvo library, upstream `https://github.com/Geckos-Ink/evolvo`, branch `main`, registered in [`.gitmodules`](.gitmodules). Own handbook: [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) — it applies to every file under `libs/evolvo/`. Source in [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo), tests in [`libs/evolvo/tests/`](libs/evolvo/tests), specs in [`libs/evolvo/papers/`](libs/evolvo/papers). `libs/evolvo/gold/evolvo.py` is a single-file legacy snapshot; do not use it.
+
+### [`libs/genetic_ml/`](libs/genetic_ml), [`libs/evolvo_engines/`](libs/evolvo_engines)
+
+Pre-submodule copies (`evolvo_model.py`, `model_evolver.py`, `evolvo_engine-1.0.py`). Superseded by [`libs/evolvo`](libs/evolvo); do not import.
+
+### [`.gitignore`](.gitignore)
+
+Standard Python template. It does not ignore result directories; v11 must add `empirical-scripts/11.0/results/*/cache/` (planned) before the first large run.
+
+### `empirical-scripts/11.0/` (planned, untracked)
+
+Version 11. Layout and steps are defined in [`ROADMAP.md`](ROADMAP.md). Add a linked subsection per file here as each file is created.
+
+## Features and Recurring Development Pitfalls
+
+### Multi-base NDR dataset — Experimental (v8/v10), Planned (v11)
+
+- **Behavior:** for each `n` and coprime base `b`, compute the repetend, NDR, spectrum, entropy; aggregate across bases.
+- **Owners:** v10 `MultiBaseNDRComputer`; v8 `ParallelSieveAnalyzer`. v11 owner planned in [`ROADMAP.md`](ROADMAP.md) step 1.
+- **Gaps:** definitions differ between versions; no tests; O(n) long division per pair.
+
+### Evolutionary formula search for ω(n) — Experimental
+
+- **Behavior:** evolve GFSL programs mapping NDR features to ω(n).
+- **Owners:** v10 `UnifiedFormulaDiscoverer` on the historical fork; v11 will use `evolvo.GFSLEvolver`.
+- **Gaps:** leakage through `phi`/`tau`; no held-out evaluation; slow scalar execution.
+
+### Neural prediction of ω(n) — Experimental
+
+- **Behavior:** v8 trained a fixed MLP classifier; v9/v10 a neural searcher on the fork. v11 will use `evolvo.nnarch` (GFSL-NN).
+- **Gaps:** v8 reported training accuracy with `is_prime_power` as input.
+
+### NDR normalization and entropy definition drift
+
+- **Symptom:** two versions give different H_NDR for the same `n`.
+- **Cause:** v8 uses `d/b` and power `|FFT|²`; v10 uses `d/(b-1)` and amplitude `|FFT|`; both keep the DC bin (k = 0), which carries the digit mean and dominates the spectrum, depressing entropy. The paper defines power spectrum over all `L` bins and `d/b`.
+- **Safe pattern:** one versioned function; report the paper definition plus a DC-removed variant; normalizing by `b` vs `b-1` only rescales the sequence, so it does not change normalized-spectrum entropy — verify this with a unit test rather than assuming.
+- **Status:** active in old scripts; must not recur in v11.
+
+### Training-set accuracy reported as model accuracy
+
+- **Symptom:** "98.8% accuracy" in the paper (§3.1–3.2).
+- **Cause:** v8 classifier evaluates on the same tensors it trains on, with `is_prime_power` (which alone identifies ω = 1) among three inputs; the paper also calls it a regression with MSE.
+- **Safe pattern:** held-out test split, majority-class and `log n`/`log L` baselines, no factorization-derived inputs.
+- **Status:** the paper claim is unverified.
+
+### Correlations driven by `n` alone
+
+- **Symptom:** r = 0.946 for `H·log n` (§4.2) and decreasing correlation with `n^-s` (§4.1).
+- **Cause:** both covariates are monotone functions of `n`, and H grows with `n` through `L`. They measure size, not primes or zeta.
+- **Safe pattern:** report partial correlations controlling for `log n` and `log L`; compare against the same statistic on a shuffled-ω null.
+- **Status:** active in the paper.
+
+### Repetend length as hidden variable
+
+- **Symptom:** H vs log ω fit with low R², and "prime power dominance".
+- **Cause:** H ≲ log L, and `L = ord_n(b)` is large for primes (divides `p-1`) and small for highly composite `n` (divides λ(n)). v10 state shows prime `n ≈ 2·10^5` with mean L ≈ 1.5·10^5 and H ≈ 10.6, ω = 4 with L ≈ 1.3·10^3 and H ≈ 5.6.
+- **Safe pattern:** every H-claim also reported for the residual `H − f(log L)`; test whether NDR adds information about ω beyond `L` (the real content of the conjecture).
+
+### Fitness above 1 and variety bonus
+
+- **Symptom:** v10 saved "fitness 1.1235".
+- **Cause:** `+0.01` per distinct operation, multiplied by a length penalty; fitness on a random 200-row resample each call, so values are noisy and not comparable across generations.
+- **Safe pattern:** fixed train minibatches per generation, bounded loss-based fitness, separate parsimony term.
+
+## Interface Ownership Map
+
+- Planned v11 CLI entry point (`empirical-scripts/11.0/sieve_echo_v11.py`, name provisional) → owns config, seed, run directory, stages.
+- `evolvo.GFSLEvolver`, `evolvo.GFSLExecutor`, `evolvo.register_custom_operation` → [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo).
+- `evolvo.nnarch.ArchitectureSearch`, `TorchTask`, `Knowledge` → [`libs/evolvo/src/evolvo/nnarch/`](libs/evolvo/src/evolvo/nnarch).
+
+## Build, Run, Debug, and Release
+
+Prerequisites (verified 2026-11-24 on the owner's macOS machine): `/opt/homebrew/bin/python3` is 3.15.2 and `/usr/bin/python3` is 3.9.6; **neither has NumPy, SciPy, SymPy, scikit-learn, or PyTorch installed**. Old scripts need `numpy scipy sympy torch matplotlib` (+ `psutil`, `dill` for v9/v10). Whether PyTorch publishes wheels for Python 3.15 is **Unknown — verify before ROADMAP step 0**; fall back to a 3.12/3.13 interpreter in a venv if not.
+
+Initialize the submodule after cloning:
+
+```bash
+git submodule update --init --recursive
+```
+
+Run Evolvo's tests:
+
+```bash
+cd libs/evolvo && PYTHONPATH=src python3 -m unittest discover -s tests
+```
+
+v11 run commands: Planned — define them in [`ROADMAP.md`](ROADMAP.md) step 0 and copy the verified ones here.
+
+Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in the background with a resumable state file; use a small `--quick` config for verification.
+
+## Test Ownership Map
+
+- Evolvo library → [`libs/evolvo/tests/test_nnarch.py`](libs/evolvo/tests/test_nnarch.py) (GFSL-NN only; the GFSL core has no unit tests in the repo — Known gap).
+- This repository → no tests. v11 adds unit tests for the number-theory and NDR layer (planned, ROADMAP step 1).
+
+## Data, Security, Privacy, and Compatibility Boundaries
+
+- Canonical data is computed from integers; everything in `results/` is derived and can be regenerated. Caches are disposable.
+- No secrets, credentials, or network services are involved. Do not write the owner's email or personal data into new files.
+- Result files written by v11 MUST record the NDR/entropy definition version, root and submodule git SHAs, and seed, so old results stay interpretable after definitions change.
+
+## Current Status and Known Gaps
+
+### Shipped
+
+- Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
+- Evolvo submodule at [`libs/evolvo`](libs/evolvo), commit `4ab85e5`.
+
+### Experimental / Scaffold
+
+- None for v11 yet.
+
+### Known Gaps
+
+- Paper numbers (§2–§4) come from a single v8 run with leakage, training-set accuracy, and size-driven correlations; none is verified.
+- Paper direction-of-effect statements contradict each other and the data.
+- No Python environment with the scientific stack exists on the machine.
+- Evolvo has no batched executor and no verified input-declaration path for formula search.
+
+### Near-Term Priorities
+
+1. Environment + v11 skeleton ([`ROADMAP.md`](ROADMAP.md) step 0).
+2. Canonical, tested NDR dataset (step 1).
+3. Claim-by-claim statistical verdicts with baselines (step 2).
+4. Evolvo fixes E1–E3, then evolutionary search (steps 3–4).
+
+## Task Start and Handoff Checklist
+
+1. Read this file, the relevant [`ROADMAP.md`](ROADMAP.md) step, and [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) when touching Evolvo.
+2. `git status` in the root and in `libs/evolvo`; preserve unrelated changes.
+3. Check the [principles](#essential-project-principles): no factorization-derived inputs, held-out evaluation, `log L` control, versioned definitions.
+4. Put library fixes in `libs/evolvo` (D3), with a test; commit there on `main`, then commit the pointer here.
+5. Run the focused tests and a `--quick` v11 run; report what ran and what did not.
+6. Update [`ROADMAP.md`](ROADMAP.md) status and this file's source map, commands, and gaps in the same change.
