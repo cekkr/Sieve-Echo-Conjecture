@@ -101,21 +101,22 @@ Implemented in the submodule per directive D3, each with tests in `libs/evolvo/t
 - **Verified:** `libs/evolvo`: `../../.venv/bin/python -m unittest discover -s tests` → 33 tests OK; system `python3` (no NumPy/torch) → OK, 4 skipped; legacy demos (`example.py` default/function/nested/void/expression/neural/extraction/personalization) run; the README formula-search snippet runs (guide on `mps`).
 - **Not done here:** guide comparisons across seeds and the S1/S2 "done when" checks — they are v11 experiments (step 4).
 
-## Step 4 — Evolutionary search with Evolvo — TODO
+## Step 4 — Evolutionary search with Evolvo — DONE (verified: runs `quick-s0-step4`, `full-s0-step4`, 2026-11-24)
 
-- [ ] **Formulas:** `GFSLEvolver` predicting ω (and separately `is_prime`) from allowed features only; fitness = train-minibatch loss (fixed per generation) + explicit parsimony; validation for selection; test once at the end. Keep v10's relative save threshold and safety net.
-- [ ] **Guidance:** compare plain evolution vs `GFSLQLearningGuide` vs `GFSLSupervisedGuide` on the same budget and seed set.
-- [ ] **GFSL-NN:** `evolvo.nnarch.ArchitectureSearch` on the feature table (vector input) and on raw NDR sequences (set input / `deepsets`, `transformer` macros), with `Knowledge` saved per run for reuse.
-- [ ] **Baselines:** majority class, logistic/GBM on `(log n, log L)` only, same on full NDR features. Report held-out accuracy, macro-F1, and MSE for ω.
-- [ ] **Three-feature claim (§3.1):** retest (std H, min H) without `is_prime_power`; report against baselines.
-- [ ] **Adaptive evaluation size** — see [S1](#s1--adaptive-evaluation-size-5-000--100-000) (required). Evolvo side ready: `execute_batch` + `evolve(fitness_epoch=...)`.
-- [ ] **Torch reinforcement learning guide** — see [S2](#s2--torch-reinforcement-learning-guide) (required). Evolvo side ready: `GFSLPolicyGuide`.
-- [ ] Use `inputs=`, `outputs=` and `InstructionProfile.formula()` (optionally with `LOG`-style custom ops carrying `batch_function`) so every genome reads the features and runs vectorized.
-- **Done when:** held-out results table with baselines; best formulas saved in human-readable form.
+Implemented in [`search_formulas.py`](empirical-scripts/11.0/search_formulas.py), [`baselines.py`](empirical-scripts/11.0/baselines.py), [`search_nn.py`](empirical-scripts/11.0/search_nn.py), [`features.py`](empirical-scripts/11.0/features.py); stages `formulas` and `nn`; tests in [`tests/test_search.py`](empirical-scripts/11.0/tests/test_search.py) (36/36 v11 tests pass).
+
+- [x] **Formulas:** `GFSLEvolver` predicting ω and, separately, is_prime from 12 allowed inputs (log n, v8 log L and entropy aggregates, NDR mean, length arithmetic), z-scored on train; fitness `1/(1+NMSE) − 0.002·effective instructions` on a train prefix; v10 relative save rule (≥ 0.75 × top-10% mean, top 5 per generation) + top-5 safety net; selection by validation NMSE; test read once. Best formulas in `results/<run>/best_formulas.md`.
+- [x] **Guidance:** no guide, `GFSLQLearningGuide`, `GFSLSupervisedGuide`, `GFSLPolicyGuide`, 5 seeds each, same population/generations. (Evolvo needed an evolver interface for the Q-learning guide — added in the submodule, see Discovered work.)
+- [x] **GFSL-NN:** `ArchitectureSearch` + `TorchTask.classification` on the `vec` feature table and on a `set` of per-base tokens (+ log n and length arithmetic); knowledge saved per run (`knowledge/nn_<input>.json`). Raw digit sequences are not used: their length varies up to ~10⁶ and Evolvo set inputs are fixed-size (padded sets are an Evolvo roadmap item).
+- [x] **Baselines:** majority, logistic(log n, mean log L), gradient boosting on `log n + mean log L`, `n + L arithmetic`, `formula inputs`, `all allowed`; held-out accuracy, macro-F1, MSE (classes min(ω, 5)), log-loss.
+- [x] **Three-feature claim (§3.1):** retested (std H, min H; + log n; + `is_prime_power` as a labelled leakage demo).
+- [x] **Adaptive evaluation size** — S1 implemented and run (below).
+- [x] **Torch reinforcement learning guide** — S2 implemented and run (below).
+- **Verified:** held-out table and best formulas produced for quick and full (Results log). Full run: 3 198 s wall (claims 402 s, formulas 624 s for 62 runs on 7 workers, baselines ~2 min, GFSL-NN 2 168 s), peak RSS 9.2 GB in the main process.
 
 ### S1 — Adaptive evaluation size (5 000 → 100 000)
 
-Status: TODO
+Status: DONE — implemented and verified; benefit not significant (runs `quick-s0-step4`, `full-s0-step4`). N rises from 5 000 as q improves (full, ω, no guide, seed 0: 5 000 → 30 000 at generation 2 → 60 000 at 6 → 100 000), every N change re-scores the whole population (`fitness_epoch`), N is stored with each saved fitness. Held-out (full, no guide, 5 seeds): ω test NMSE 0.3087 ± 0.0088 adaptive vs 0.3149 ± 0.0000 fixed N = 5 000 (lower, Mann–Whitney p = 0.18); is_prime 0.00141 vs 0.00139 (equal within noise, p = 0.50). The done-when condition holds for ω and is a tie for is_prime.
 
 How many integers each genome is scored on grows step by step, driven by the average of the best scores, so precision rises as the population gets better. The rule is a requirement set by the owner.
 
@@ -132,7 +133,7 @@ How many integers each genome is scored on grows step by step, driven by the ave
 
 ### S2 — Torch reinforcement learning guide
 
-Status: TODO
+Status: DONE — implemented and run; the advantage is not established (runs `quick-s0-step4`, `full-s0-step4`). Full, 5 seeds: ω — policy guide reached q_target in 5/5 runs but with more evaluations than no guide (3 692 ± 2 420 vs 2 524 ± 2 358); smaller spread of test NMSE (0.0068 vs 0.0088); warm start not better (test NMSE 0.3341 vs 0.3102, 4/5 reached). is_prime — policy reached the target in fewer evaluations (620 vs 696), warm start fewer still (504), test NMSE identical (0.0014). No test-NMSE difference is significant (p ≥ 0.24). Per the rule below, the result is recorded and the guide stays configurable (`formulas.guides`).
 
 Reinforcement learning with PyTorch is **required** (owner decision): it learns over time which genome edits work and reduces the spread of results, measured relative to the average best scores. Torch therefore becomes a hard dependency of v11 (step 0 must install it).
 
@@ -169,6 +170,11 @@ Add items found during implementation here, with the step they affect.
 - **r = -0.843 is corr(ω, is_prime_power), not an entropy correlation** (C3). It comes from the v7.0 log [`7.0/results/3/sieve_echo_log_20250825_135643.txt`](empirical-scripts/7.0/results/3/sieve_echo_log_20250825_135643.txt) line 210 (`omega_vs_is_prime_power`), which compares two factorization labels. On v11 labels this correlation is -0.75 for n < 10³ and -0.66 for n < 10⁴. Paper Theorem 2.3 attributes it to NDR entropy.
 - **98.8% comes from the same v7.0 run** (log line 187), not from v8 (C-§3.1, step 4).
 - **C9 baseline needs length arithmetic** (step 4). Without lcm(L_b) and its relation to n - 1, gradient boosting on per-base log L reaches only 94.9% (quick) and NDR features appear to add 2.5 points; with it, 97.8% and +0.8. Step 4 search must be compared against the length-arithmetic baseline, and GFSL formulas should get `LCM`/`MOD` style ops or these derived inputs.
+- **Evolvo: Q-learning guide had no evolver interface** (step 4, done in `libs/evolvo`): added `propose_mutation`/`observe_population` (relative rewards) and a fast `use_viability=False` construction (probability-tree viability made it ~80× slower).
+- **Evolvo: in-place updates lost their history** (step 4, done in `libs/evolvo`): `_build_dependency_graph` registered an instruction as its target's producer before resolving its sources, so `d$2 = LOG(d$2)` dropped the earlier writers of `d$2` from the effective algorithm and from execution. Fixed + regression test.
+- **ω q_target lowered from 0.8 to 0.7** (step 4): no run reached 0.8 on the quick config (best q ≈ 0.6), which leaves "evaluations to target" undefined; chosen from train fitness only.
+- **GFSL-NN `set` encoding ignores the tokens** (step 4/5): the best full-run architecture marks the per-base token branch as an intron and predicts from log n + length arithmetic. Per-base NDR tokens add nothing the search could use.
+- **Full-run memory** (step 5): peak RSS 9.2 GB in the main process (dataset + feature matrices + GFSL-NN tensors). Step 5's larger data must stream or subsample feature construction.
 - **C7 controls must be per-base** (step 2, done). Controlling for the mean log L left a large residue effect (mod 12 excess 0.13) that was mostly which bases have short orders.
 - **The DC bin dominates the paper entropy.** Quick run, `primes31` mean over integers: ω = 1 → H_paper 2.65, H_nodc 6.40, log L 7.31; ω = 4 → 1.85, 3.91, 4.39. Mean H falls with ω, and so does log L; whether anything is left after controlling for log L is C9. (Descriptive, all integers, no split; not a claim.)
 
@@ -185,4 +191,8 @@ Record verified results as `run-id — config — headline numbers — verdict`.
 - **C6** — r(H·log n, H) = 0.946 reproduced; with H permuted across n it is 0.831 CI [0.826, 0.836]; PNT/Li errors partial r ≈ -0.03. — **reproduced but explained by construction/size.**
 - **C7** — v8.2 variances reproduced exactly. After per-base log L, coprimality, log n and ω controls, residue-class η² excess over the permutation null: mod 6 0.000, mod 12 0.033, mod 30 0.014, mod 210 0.032 (`H_paper`), similar for `H_nodc`; p ≤ 0.002. — **small residue structure beyond L and ω**: the excess appears with mod 12 (adds n mod 4) and mod 210 (adds n mod 7), not with mod 6. Not an ω effect.
 - **C8** — theory α = -1.599 and β = 4.933 lie outside every 95% CI; a random value near α matches a v8.2 constant combination within 0.01 with probability 0.87. — **not supported** (constant matching carries no evidence).
+- Step-4 runs (`quick-s0-step4`, `full-s0-step4`): root `4c8c1b0` + then-uncommitted step-4 sources (v11 code sha256 `19bb5b95393e`), libs/evolvo `74564d8` + then-uncommitted Q-learning interface and dependency fix; all committed in the step-4 commits.
+- **Step 4 formulas** — `full-s0-step4` — is_prime: every guide finds a ≤ 3-instruction formula on "lcm of repetend lengths divides n−1" with test accuracy 0.9999 (NMSE 0.0014), a Fermat-type primality test from lengths. ω: best formula `(([log n − log lcm] · |lcm divides n−1|^(1/4)) + e)` (z-scored inputs), test NMSE 0.276, accuracy 0.655 — far below gradient boosting on the same 12 inputs (0.896) and the length-arithmetic baseline (0.982). Guide means (ω test NMSE): none 0.309, policy 0.310, supervised 0.347, Q-learning 0.367.
+- **Step 4 held-out table** — `full-s0-step4` (24 302 test integers) — ω classes: majority 0.372, logistic(log n, log L) 0.597, GBM(log n, log L) 0.609, GBM(n + L arithmetic) 0.982, GBM(all allowed) 0.990, GFSL formula 0.655, GFSL-NN vec 0.948, GFSL-NN set 0.948. is_prime: majority 0.902, GBM(log n, log L) 0.953, L arithmetic / formula / all 1.000. — **Repetend-length arithmetic carries almost all predictable information about ω and all of it about primality; NDR entropy adds ≤ 1 point.**
+- **§3.1 three-feature** — `full-s0-step4` — GBM test accuracy: (std H, min H) 0.509; + log n 0.566; + is_prime_power (leakage demo) 0.586, train 0.598; majority 0.372. — **98.8% not reproduced** even with the leaking feature; it was training-set accuracy of a different (v7) model.
 - **C9** — held-out ω classification: baseline (n, per-base L, length arithmetic) 98.2%; + entropy columns 98.6% (Δ +0.4 pts CI [0.2, 0.5]); + all NDR columns 98.9% (Δ +0.6 pts CI [0.5, 0.8], log-loss gain 0.018 CI [0.014, 0.021]); majority 37.2%, shuffled-label null 37.2%. Quick: entropy-only Δ +0.3 CI [-0.3, 0.9] (not significant at 1.6 k test rows). — **supported but small:** almost all information about ω in NDR is repetend-length information; the remainder is ~0.5 accuracy points.

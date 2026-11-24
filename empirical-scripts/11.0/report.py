@@ -84,10 +84,88 @@ def build_markdown(manifest: dict, claims_out: dict) -> str:
     return "\n".join(lines)
 
 
+def _ms(stat: dict, digits: int = 4) -> str:
+    if not stat or stat.get("mean") is None:
+        return "–"
+    return f"{stat['mean']:.{digits}f} ± {stat['std']:.{digits}f}" if stat.get("std") is not None else f"{stat['mean']:.{digits}f}"
+
+
+def _p(v) -> str:
+    return "n/a" if v is None else f"{v:.2f}"
+
+
+def step4_markdown(run_dir: Path) -> str:
+    lines: list = []
+    f = run_dir / "formulas.json"
+    if f.is_file():
+        data = runtime.read_json(f)
+        s = data["summary"]
+        cfg = data["settings"]
+        lines += [
+            "## Step 4 — Evolvo formula search",
+            "",
+            f"Inputs ({len(data['inputs'])}, z-scored on train): " + ", ".join(f"`{x}`" for x in data["inputs"]) + ".",
+            f"Population {cfg['population']}, {cfg['generations']} generations, seeds {cfg['seeds']}, parsimony {cfg['parsimony']} per instruction; "
+            f"fitness = 1/(1+NMSE) − parsimony·size on the first N train rows (S1: N from {cfg['eval_size_min']} in steps of {cfg['eval_size_step']} to ≤ {cfg['eval_size_max']}, capped at {data['train_rows']} train rows). "
+            f"q_target {cfg['q_target']}. Test metrics are for the genome selected on validation.",
+            "",
+            "| target | guide | variant | runs | test NMSE | test accuracy | reached q_target | evaluations to target | final N | seconds |",
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        ]
+        for r in s["table"]:
+            lines.append(
+                f"| {r['target']} | {r['guide']} | {r['variant']} | {r['runs']} | {_ms(r['test_nmse'])} | {_ms(r['test_accuracy'])} | "
+                f"{r['reached_target']}/{r['runs']} | {_ms(r['evaluations_to_target'], 0)} | {_ms(r['final_N'], 0)} | {_ms(r['seconds'], 1)} |"
+            )
+        lines += ["", "**S1 / S2 checks** (ROADMAP done-when conditions):", ""]
+        for t, v in s["verdicts"].items():
+            if "S1" in v:
+                s1 = v["S1"]
+                lines.append(f"- {t} S1: adaptive N test NMSE {_ms(s1['adaptive_test_nmse'])} vs fixed {_ms(s1['fixed_test_nmse'])}; N rose in {s1['runs_where_N_rose']} runs → **{'met' if s1['done'] else 'not met'}** (Mann–Whitney p = {_p(s1.get('p_value_test_nmse'))}).")
+            if "S2" in v:
+                s2 = v["S2"]
+                lines.append(f"- {t} S2: policy vs no guide — fewer evaluations to target: {s2['policy_vs_none_fewer_evaluations_to_target']}, smaller spread: {s2['policy_vs_none_smaller_spread']}; warm start better than cold: {s2['warm_better_than_cold']} (lower test NMSE: {s2.get('warm_lower_test_nmse')}, fewer evaluations to target: {s2.get('warm_fewer_evaluations_to_target')}) → **{'met' if s2['done'] else 'not met'}** (test-NMSE p: policy vs none {_p(s2.get('p_value_policy_vs_none_test_nmse'))}, warm vs cold {_p(s2.get('p_value_warm_vs_cold_test_nmse'))}).")
+        lines += ["", "**Best formulas (selected on validation; inputs are z-scores):**", ""]
+        for t, b in s["best_by_validation"].items():
+            lines.append(f"- {t} ({b['guide']}/{b['variant']}/seed {b['seed']}, {b['effective_instructions']} instructions): `{b['expression']}` — test NMSE {b['test']['nmse']:.4f}, accuracy {b['test']['accuracy']:.4f}")
+        lines.append("")
+    b = run_dir / "baselines.json"
+    n = run_dir / "nn.json"
+    if b.is_file():
+        base = runtime.read_json(b)
+        nn = runtime.read_json(n) if n.is_file() else {"encodings": {}}
+        form = runtime.read_json(f)["summary"]["best_by_validation"] if f.is_file() else {}
+        lines += ["## Held-out results (test split)", "", f"Train rows {base['train_rows']}, test rows {base['test_rows']}. ω is scored as classes min(ω, 5).", ""]
+        for target, rows in base["targets"].items():
+            second = "macro-F1" if target == "omega" else "F1"
+            key = "macro_f1" if target == "omega" else "f1"
+            lines += [f"**{target}**", "", f"| model | accuracy | {second} | MSE (class) | log-loss |", "| --- | --- | --- | --- | --- |"]
+            for name, m in rows.items():
+                lines.append(f"| {name} | {m['accuracy']:.4f} | {m.get(key, float('nan')):.4f} | {m['mse_class']:.4f} | {m.get('log_loss', float('nan')):.4f} |")
+            if target in form:
+                ft = form[target]["test"]
+                lines.append(f"| GFSL formula (best on validation) | {ft['accuracy']:.4f} | {ft.get(key, float('nan')):.4f} | {ft['mse']:.4f} (raw target) | – |")
+            if target == "omega":
+                for enc, r in nn.get("encodings", {}).items():
+                    m = r["test"]
+                    lines.append(f"| GFSL-NN `{enc}` ({r['evaluated']} architectures) | {m['accuracy']:.4f} | {m['macro_f1']:.4f} | {m['mse_class']:.4f} | {m.get('log_loss', float('nan')):.4f} |")
+            lines.append("")
+        tf = base["three_feature_retest"]
+        lines += ["**§3.1 three-feature retest** (paper: 98.8%, v7.0 training-set accuracy with `is_prime_power`)", "",
+                  "| features | train accuracy | test accuracy |", "| --- | --- | --- |"]
+        for name, v in tf["variants"].items():
+            lines.append(f"| {name} | {v['train_accuracy']:.4f} | {v['test']['accuracy']:.4f} |")
+        lines += [f"| majority class | – | {tf['majority_test_accuracy']:.4f} |", "", tf["note"], ""]
+    return "\n".join(lines)
+
+
 def write_report(run_dir: Path) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     claims_out = runtime.read_json(run_dir / "claims.json")
     md = build_markdown(manifest, claims_out)
+    extra = step4_markdown(run_dir)
+    if extra:
+        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json` in this run directory.")
     (run_dir / "report.md").write_text(md)
     runtime.write_json(
         run_dir / "report.json",

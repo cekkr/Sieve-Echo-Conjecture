@@ -7,13 +7,18 @@ One command runs the whole pipeline from a config file and a seed and writes eve
     .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json
 
 Stages (ROADMAP.md): data (step 1) -> claims (step 2) -> formulas, nn (steps 3-4) -> report (steps 2/6).
-`data`, `claims` and `report` are implemented; `formulas` and `nn` fail loudly until steps 3-4 land.
+All five stages are implemented: `formulas` runs the Evolvo GFSL formula experiments (guides x
+seeds, S1 adaptive evaluation size, S2 RL guide, warm starts); `nn` runs the held-out baselines,
+the §3.1 three-feature retest and the GFSL-NN architecture search.
 
 Run directory:
     manifest.json      code SHAs (root + libs/evolvo), environment, config, seed, NDR version, stages
     split.json         the train/val/test integers (sha256 recorded in the manifest)
     data_summary.json  sampling scheme, counts, excluded pairs, descriptive stats
     claims.json        claim-by-claim statistics and verdicts (C1-C9)
+    formulas.json      formula-search runs, guide/S1/S2 comparison; best_formulas.md
+    baselines.json     held-out baselines and the three-feature retest
+    nn.json            GFSL-NN search results; knowledge/ holds reusable guide and search knowledge
     report.md/.json    verdict table and per-claim summary
     log.txt            stage log
     cache/             disposable dataset cache (git-ignored)
@@ -34,9 +39,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import runtime  # noqa: E402
 
 STAGES = ("data", "claims", "formulas", "nn", "report")
-IMPLEMENTED = {"data", "claims", "report"}
+IMPLEMENTED = {"data", "claims", "formulas", "nn", "report"}
 ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "report": "step 6"}
-DEFAULT_STAGES = "data,claims,report"
+DEFAULT_STAGES = "data,claims,formulas,nn,report"
 
 
 class Run:
@@ -183,6 +188,46 @@ def stage_claims(run: Run) -> dict:
     }
 
 
+def _formula_inputs(run: Run) -> list:
+    import search_formulas
+
+    return list((run.config.get("formulas") or {}).get("inputs") or search_formulas.DEFAULT_INPUTS)
+
+
+def stage_formulas(run: Run) -> dict:
+    import search_formulas
+
+    table = load_table(run)
+    out = search_formulas.run_stage(table, run.config.get("formulas", {}), run.config["data"]["base_sets"], run.seed, run.dir, log=run.log)
+    runtime.write_json(run.dir / "formulas.json", out)
+    s = out["summary"]
+    return {
+        "formulas_file": "formulas.json",
+        "runs": len(out["runs"]),
+        "verdicts": s["verdicts"],
+        "best": {t: {"expression": b["expression"], "test": b["test"]} for t, b in s["best_by_validation"].items()},
+    }
+
+
+def stage_nn(run: Run) -> dict:
+    import baselines
+    import search_nn
+
+    table = load_table(run)
+    ncfg = run.config.get("nn", {})
+    run.log("  baselines")
+    base = baselines.run_baselines(table, ncfg.get("baselines", {}), run.config["data"]["base_sets"], _formula_inputs(run), run.seed, log=run.log)
+    runtime.write_json(run.dir / "baselines.json", base)
+    run.log("  GFSL-NN search")
+    nn = search_nn.run_stage(table, ncfg.get("search", {}), run.config["data"]["base_sets"], _formula_inputs(run), run.seed, run.dir, log=run.log)
+    runtime.write_json(run.dir / "nn.json", nn)
+    return {
+        "baselines_file": "baselines.json",
+        "nn_file": "nn.json",
+        "nn_test_accuracy": {k: v["test"]["accuracy"] for k, v in nn["encodings"].items()},
+    }
+
+
 def stage_report(run: Run) -> dict:
     import report
 
@@ -191,7 +236,7 @@ def stage_report(run: Run) -> dict:
     return report.write_report(run.dir)
 
 
-STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "report": stage_report}
+STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "report": stage_report}
 
 
 # ---------------------------------------------------------------------------------------------

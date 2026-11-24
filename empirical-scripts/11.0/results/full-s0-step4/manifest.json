@@ -1,0 +1,393 @@
+{
+  "run_id": "full-s0-step4",
+  "created": "2026-11-24T15:16:07+01:00",
+  "config_path": "empirical-scripts/11.0/config/full.json",
+  "config_sha256": "67e9705a9474f082fadadc8ae40b298116a0fafbe37b2f18cd02de73674f985f",
+  "config": {
+    "name": "full",
+    "description": "Paper-scale config: all n in [2, 150000] (train split >= 100 000 rows for ROADMAP S1) plus 2000 integers per omega from (1.5*10^5, 10^6].",
+    "seed": 0,
+    "data": {
+      "n_min": 2,
+      "n_max": 150000,
+      "stratified": {
+        "enabled": true,
+        "n_lo": 150001,
+        "n_hi": 1000000,
+        "per_omega": 2000
+      },
+      "base_sets": {
+        "v8": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "v10": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          10,
+          12,
+          11,
+          13,
+          15,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "primes31": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "wide": {
+          "bases": "2..99",
+          "sample": 5000
+        }
+      },
+      "workers": 0
+    },
+    "split": {
+      "train": 0.7,
+      "val": 0.15,
+      "test": 0.15,
+      "stratify": "omega"
+    },
+    "claims": {
+      "primary_set": "v8",
+      "entropies": [
+        "H_paper",
+        "H_nodc",
+        "Hn_paper"
+      ],
+      "bootstrap": 1000,
+      "permutations": 1000,
+      "effect_threshold": 0.01,
+      "cv_threshold": 0.1,
+      "invariance_sets": [
+        "v8",
+        "v10",
+        "primes31",
+        "wide"
+      ],
+      "invariance_variants": [
+        "H_paper",
+        "H_nodc",
+        "Hn_paper",
+        "Hn_nodc"
+      ],
+      "moduli": [
+        6,
+        12,
+        30,
+        210
+      ],
+      "zeta_s": [
+        2,
+        3,
+        4
+      ],
+      "classifier": {
+        "max_iter": 300,
+        "learning_rate": 0.1,
+        "max_omega_class": 5,
+        "shuffled_nulls": 3
+      }
+    },
+    "formulas": {
+      "targets": [
+        "omega",
+        "is_prime"
+      ],
+      "guides": [
+        "none",
+        "qlearning",
+        "supervised",
+        "policy"
+      ],
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "parsimony": 0.002,
+      "q_target": {
+        "omega": 0.7,
+        "is_prime": 0.95
+      },
+      "top_fraction": 0.1,
+      "save_threshold_ratio": 0.75,
+      "save_top_per_gen": 5,
+      "safety_net": 5,
+      "ablation_guide": "none",
+      "fixed_size": 5000,
+      "warm_start": true,
+      "knowledge_seed": 999,
+      "eval_size_min": 5000,
+      "eval_size_max": 100000,
+      "max_omega_class": 5,
+      "workers": 0,
+      "population": 200,
+      "generations": 60,
+      "eval_size_step": 5000
+    },
+    "nn": {
+      "baselines": {
+        "max_train_rows": null
+      },
+      "search": {
+        "population": 8,
+        "generations": 4,
+        "patience": 3,
+        "max_train_rows": 30000,
+        "max_val_rows": 10000,
+        "hard_max_epochs": 200,
+        "max_rows": 4,
+        "max_params": 60000
+      }
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "data": {
+      "status": "done",
+      "finished": "2026-11-24T15:16:11+01:00",
+      "seconds": 1.61,
+      "dataset_key": "aa7975820df639b9",
+      "cache": "cache/dataset-aa7975820df639b9.npz",
+      "split_file": "split.json",
+      "split_sha256": "08379e07c5eb0bebb1088e81f0d5a9bf59c499f8ebd64fd337f09b777dec520e",
+      "split_counts": {
+        "train": 113404,
+        "val": 24301,
+        "test": 24302
+      },
+      "integers": 162007,
+      "pairs": 2340678,
+      "build_seconds": 1206.98,
+      "reused_from_run": "full-s0"
+    },
+    "claims": {
+      "status": "done",
+      "finished": "2026-11-24T15:22:53+01:00",
+      "seconds": 401.47,
+      "claims_file": "claims.json",
+      "claims_sha256": "fdf5351ecd3046667985f4c0e6077c975b2f8b93e9699b894b9d56d9165cccf2",
+      "verdicts": {
+        "C1": "reproduced but explained by size/length",
+        "C2": "not supported",
+        "C3": "not reproduced",
+        "C4": "reproduced; no asymptotic emergence",
+        "C5": "reproduced but explained by size/length",
+        "C6": "reproduced but explained by size/length",
+        "C7": "supported (residue structure beyond per-base L and \u03c9)",
+        "C8": "not supported",
+        "C9": "supported"
+      }
+    },
+    "formulas": {
+      "status": "done",
+      "finished": "2026-11-24T15:33:16+01:00",
+      "seconds": 623.62,
+      "formulas_file": "formulas.json",
+      "runs": 62,
+      "verdicts": {
+        "omega": {
+          "S1": {
+            "adaptive_test_nmse": {
+              "n": 5,
+              "mean": 0.3086525304757628,
+              "std": 0.008780900612123686,
+              "min": 0.2964306059523914,
+              "max": 0.3148925780792102
+            },
+            "fixed_test_nmse": {
+              "n": 5,
+              "mean": 0.3148925780792102,
+              "std": 0.0,
+              "min": 0.3148925780792102,
+              "max": 0.3148925780792102
+            },
+            "adaptive_final_N": {
+              "n": 5,
+              "mean": 100000.0,
+              "std": 0.0,
+              "min": 100000.0,
+              "max": 100000.0
+            },
+            "runs_where_N_rose": 20,
+            "p_value_test_nmse": 0.17971249487899976,
+            "done": true
+          },
+          "S2": {
+            "policy_vs_none_fewer_evaluations_to_target": false,
+            "policy_vs_none_smaller_spread": true,
+            "warm_lower_test_nmse": false,
+            "warm_fewer_evaluations_to_target": false,
+            "warm_better_than_cold": false,
+            "done": false,
+            "p_value_policy_vs_none_test_nmse": 1.0,
+            "p_value_warm_vs_cold_test_nmse": 0.3727480704181131
+          }
+        },
+        "is_prime": {
+          "S1": {
+            "adaptive_test_nmse": {
+              "n": 5,
+              "mean": 0.0014146640836826064,
+              "std": 3.3648368474529555e-05,
+              "min": 0.001399614664032914,
+              "max": 0.0014748561150577527
+            },
+            "fixed_test_nmse": {
+              "n": 5,
+              "mean": 0.001386170276419162,
+              "std": 5.431879253058387e-05,
+              "min": 0.0012941860117245895,
+              "max": 0.0014394640214378909
+            },
+            "adaptive_final_N": {
+              "n": 5,
+              "mean": 100000.0,
+              "std": 0.0,
+              "min": 100000.0,
+              "max": 100000.0
+            },
+            "runs_where_N_rose": 20,
+            "p_value_test_nmse": 0.5038124288130608,
+            "done": false
+          },
+          "S2": {
+            "policy_vs_none_fewer_evaluations_to_target": true,
+            "policy_vs_none_smaller_spread": false,
+            "warm_lower_test_nmse": false,
+            "warm_fewer_evaluations_to_target": true,
+            "warm_better_than_cold": true,
+            "done": true,
+            "p_value_policy_vs_none_test_nmse": 0.23586131033426772,
+            "p_value_warm_vs_cold_test_nmse": 0.2933255737660211
+          }
+        }
+      },
+      "best": {
+        "omega": {
+          "expression": "(([log n - log lcm] * sqrt(sqrt(abs([lcm divides n-1])))) + 2.71828)",
+          "test": {
+            "mse": 0.294835490774628,
+            "nmse": 0.27627710590973353,
+            "nonfinite_rows": 0,
+            "accuracy": 0.6550489671631965,
+            "macro_f1": 0.6417740105448274
+          }
+        },
+        "is_prime": {
+          "expression": "([lcm divides n-1] ^ (2 % ([row.v8.mean.mean] / 10)))",
+          "test": {
+            "mse": 0.0001300827840772586,
+            "nmse": 0.0014748561150577527,
+            "nonfinite_rows": 0,
+            "accuracy": 0.999876553370093,
+            "f1": 0.9993712010060783
+          }
+        }
+      }
+    },
+    "nn": {
+      "status": "done",
+      "finished": "2026-11-24T16:09:24+01:00",
+      "seconds": 2167.79,
+      "baselines_file": "baselines.json",
+      "nn_file": "nn.json",
+      "nn_test_accuracy": {
+        "vec": 0.9480701176857872,
+        "set": 0.9479055221792445
+      }
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-24T16:09:24+01:00",
+      "seconds": 0.04,
+      "report": "report.md",
+      "report_json": "report.json"
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/full.json",
+    "--run-id",
+    "full-s0-step4"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "4c8c1b0011007c977d6e551497f428317f9c1b3b",
+      "dirty": true,
+      "changed_paths": [
+        "M empirical-scripts/11.0/claims.py",
+        " M empirical-scripts/11.0/config/full.json",
+        " M empirical-scripts/11.0/config/quick.json",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        " M libs/evolvo",
+        "?? empirical-scripts/11.0/baselines.py",
+        "?? empirical-scripts/11.0/features.py",
+        "?? empirical-scripts/11.0/search_formulas.py",
+        "?? empirical-scripts/11.0/search_nn.py",
+        "?? empirical-scripts/11.0/tests/test_search.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "74564d817fdcefb72766287bb7e874f338510598",
+      "dirty": true,
+      "changed_paths": [
+        "M src/evolvo/genome.py",
+        " M src/evolvo/qlearning.py",
+        " M tests/test_gfsl_core.py"
+      ]
+    },
+    "v11_code_sha256": "19bb5b95393e31d9f2936912227caa3cadc411a104b625c05760c143dc18ba5a"
+  },
+  "ndr_version": "ndr-v11.1"
+}

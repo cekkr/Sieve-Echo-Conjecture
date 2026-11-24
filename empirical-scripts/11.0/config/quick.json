@@ -111,5 +111,59 @@
       "max_omega_class": 5,
       "shuffled_nulls": 3
     }
+  },
+  "formulas": {
+    "targets": [
+      "omega",
+      "is_prime"
+    ],
+    "guides": [
+      "none",
+      "qlearning",
+      "supervised",
+      "policy"
+    ],
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "parsimony": 0.002,
+    "q_target": {
+      "omega": 0.7,
+      "is_prime": 0.95
+    },
+    "top_fraction": 0.1,
+    "save_threshold_ratio": 0.75,
+    "save_top_per_gen": 5,
+    "safety_net": 5,
+    "ablation_guide": "none",
+    "fixed_size": 5000,
+    "warm_start": true,
+    "knowledge_seed": 999,
+    "eval_size_min": 5000,
+    "eval_size_max": 100000,
+    "max_omega_class": 5,
+    "workers": 0,
+    "population": 100,
+    "generations": 30,
+    "eval_size_step": 500
+  },
+  "nn": {
+    "baselines": {
+      "max_train_rows": null
+    },
+    "search": {
+      "population": 6,
+      "generations": 3,
+      "patience": 2,
+      "max_train_rows": 0,
+      "max_val_rows": 0,
+      "hard_max_epochs": 150,
+      "max_rows": 4,
+      "max_params": 60000
+    }
   }
 }

@@ -84,7 +84,7 @@ These are mandatory for every task from v11 onward.
 
 ## Architecture and Data/Control Flow
 
-v11 flow (everything up to the **statistical claim tests** and the **report** exists; Evolvo search and held-out evaluation of evolved models are planned — see [`ROADMAP.md`](ROADMAP.md)):
+v11 flow (every stage exists; scale-up to 10⁶ and figures are planned — see [`ROADMAP.md`](ROADMAP.md)):
 
 `11.0` entry script + config → **dataset builder** (integers, factorization labels, coprime bases, `ord_n(b)`, digit sequences, NDR, spectra, per-base and cross-base features, cached to disk) → **split** by `n` → **statistical claim tests** (paper §2 and §4 claims, each with baseline and null) → **Evolvo symbolic search** (`GFSLEvolver` formulas on allowed features) and **Evolvo GFSL-NN search** (`evolvo.nnarch.ArchitectureSearch` + `TorchTask`) → **held-out evaluation** → **report** (JSON + Markdown + figures, claim-by-claim verdict table).
 
@@ -131,8 +131,8 @@ The owner's Mathematical Annotation Language proposal. The `level: … connects_
 
 v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, report`).
 
-- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED = {"data", "claims", "report"}`.
-- **Contract:** default `--stages` is `data,claims,report`; `formulas` and `nn` exit with their ROADMAP step. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
+- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_formulas` (`formulas.json`, `best_formulas.md`, `knowledge/policy_<target>.pt`), `stage_nn` (`baselines.json`, `nn.json`, `knowledge/nn_<input>.json`), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED` = all five stages.
+- **Contract:** default `--stages` is `data,claims,formulas,nn,report`. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
 
 ### [`empirical-scripts/11.0/runtime.py`](empirical-scripts/11.0/runtime.py)
 
@@ -158,11 +158,29 @@ ROADMAP step 2: one function per claim (`c1_law` … `c9_beyond_L`), driven by `
 
 ### [`empirical-scripts/11.0/report.py`](empirical-scripts/11.0/report.py)
 
-`write_report(run_dir)` reads `manifest.json` + `claims.json`, writes `report.md` (run provenance, one verdict table, one section per claim) and `report.json` (verdicts with provenance), and prints the table. No figures yet (step 6).
+`write_report(run_dir)` reads `manifest.json` + `claims.json` (+ `formulas.json`, `baselines.json`, `nn.json` when present), writes `report.md` (run provenance, verdict table, one section per claim, step-4 guide/variant table with S1/S2 checks and Mann–Whitney p-values, best formulas, held-out results table, three-feature retest) and `report.json`, and prints the verdict table. No figures yet (step 6).
+
+### [`empirical-scripts/11.0/features.py`](empirical-scripts/11.0/features.py)
+
+Predictor inputs shared by claims C9, baselines, formulas and GFSL-NN: `per_base` (rows × bases matrix of a pair feature), `length_arithmetic` (log lcm of the L_b, log n − log lcm, lcm | n−1, log gcd(lcm, n−1), share of L_b dividing n−1 — functions of n and L only), `column`/`build_matrix` (named allowed inputs; raise on `label.*`, `target_side.*`, `pair.*`), `Standardizer` (train z-score, NaN → train median), `token_tensor` (per-base tokens for the GFSL-NN set input).
+
+### [`empirical-scripts/11.0/search_formulas.py`](empirical-scripts/11.0/search_formulas.py)
+
+ROADMAP step 4 / S1 / S2. `prepare` (12 standardized inputs, train permutation, val/test arrays per target), `Sizer` (S1: monotone N driven by the top-k mean toward `q_target` and by the 2-SE spread trigger, capped by train size), `run_one` (one target × guide × seed × variant in a worker: `GFSLEvolver` with `inputs=`, `outputs=`, `InstructionProfile.formula(allow_custom=False)`, fitness `1/(1+NMSE) − parsimony·size` via `execute_batch` on the first N permuted train rows, `fitness_epoch=lambda: N`, v10 relative saving + safety net, validation selection, one test read), `formula_expression` (readable formula over named inputs), `summarize` (guide/variant table, S1/S2 checks with Mann–Whitney p), `run_stage` (phase A: guides × seeds adaptive, fixed-N ablation, one knowledge run per target; phase B: warm policy runs loading it).
+
+- **Common mistakes:** reading S1/S2 "met" without the p-values — at 5 seeds the differences are within seed noise; a `q_target` no run reaches makes "evaluations to target" undefined.
+
+### [`empirical-scripts/11.0/baselines.py`](empirical-scripts/11.0/baselines.py)
+
+Held-out baselines for ω classes (min(ω, 5)) and is_prime: majority, logistic(log n, mean log L), gradient boosting on four feature sets (`log n + mean log L`, `n + L arithmetic`, `formula inputs`, `all allowed`); `three_feature` = §3.1 retest (std/min H, + log n, and a labelled `is_prime_power` leakage demo scored on train and test).
+
+### [`empirical-scripts/11.0/search_nn.py`](empirical-scripts/11.0/search_nn.py)
+
+GFSL-NN search for ω classes with `TorchTask.classification`: `vec` input (the `all allowed` features) and `set` input (one token per base + a vector of log n and length arithmetic). Stratified train subsample, validation for stopping/selection, one test read; search knowledge saved to `knowledge/nn_<input>.json` and loadable via `nn.search.knowledge_in`. Raw digit sequences are not used (variable length up to ~10⁶; Evolvo sets are fixed-size).
 
 ### [`empirical-scripts/11.0/config/`](empirical-scripts/11.0/config)
 
-`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s) and `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; not yet run). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
+`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s) and `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; not yet run). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. `formulas.{targets, guides, seeds, population, generations, parsimony, eval_size_min/max/step, q_target (per target), top_fraction, save_threshold_ratio, save_top_per_gen, safety_net, ablation_guide, fixed_size, warm_start, knowledge_seed, inputs, workers}`; `nn.baselines.{max_train_rows, gbm}`, `nn.search.{population, generations, patience, max_train_rows, max_val_rows, hard_max_epochs, max_rows, max_params, knowledge_in}`. Quick: population 100 × 30 generations, N step 500 (train has 7 366 rows); full: 200 × 60, N step 5 000 up to 100 000. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
 
 ### [`empirical-scripts/11.0/tests/`](empirical-scripts/11.0/tests)
 
@@ -233,7 +251,7 @@ Pre-submodule copies (`evolvo_model.py`, `model_evolver.py`, `evolvo_engine-1.0.
 
 ### [`.gitignore`](.gitignore)
 
-Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dataset caches, tens of MB per quick run). Other run outputs are not ignored; commit only the small summaries a paper or the roadmap cites.
+Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dataset caches, tens of MB per quick run), `results/*/knowledge/` (reusable guide/search knowledge, MB-sized binaries) and `results/full-*/split.json` (1.8 MB; its SHA-256 is in the manifest). Other run outputs are not ignored; commit only the small summaries a paper or the roadmap cites.
 
 ## Features and Recurring Development Pitfalls
 
@@ -296,7 +314,7 @@ Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dat
 ## Interface Ownership Map
 
 - [`empirical-scripts/11.0/sieve_echo_v11.py`](empirical-scripts/11.0/sieve_echo_v11.py) → owns config, seed, run directory, manifest, stages.
-- [`ndr.py`](empirical-scripts/11.0/ndr.py) → every number-theory and NDR/entropy definition (`NDR_VERSION`). [`dataset.py`](empirical-scripts/11.0/dataset.py) → sampling, tables, split, cache, allowed-input list.
+- [`ndr.py`](empirical-scripts/11.0/ndr.py) → every number-theory and NDR/entropy definition (`NDR_VERSION`). [`dataset.py`](empirical-scripts/11.0/dataset.py) → sampling, tables, split, cache, allowed-input list. [`features.py`](empirical-scripts/11.0/features.py) → predictor inputs. [`search_formulas.py`](empirical-scripts/11.0/search_formulas.py), [`search_nn.py`](empirical-scripts/11.0/search_nn.py), [`baselines.py`](empirical-scripts/11.0/baselines.py) → step-4 experiments.
 - `evolvo.GFSLEvolver`, `evolvo.GFSLExecutor`, `evolvo.register_custom_operation` → [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo).
 - `evolvo.nnarch.ArchitectureSearch`, `TorchTask`, `Knowledge` → [`libs/evolvo/src/evolvo/nnarch/`](libs/evolvo/src/evolvo/nnarch).
 
@@ -326,13 +344,13 @@ Run Evolvo's tests:
 cd libs/evolvo && PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests
 ```
 
-Run the v11 tests from the repo root (29 tests, ~1 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
+Run the v11 tests from the repo root (36 tests, ~30 s–1 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
 
 ```bash
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests -v
 ```
 
-Run the v11 quick pipeline (data ~8 s, claims ~2 min, report; writes `empirical-scripts/11.0/results/<run-id>/` and prints the verdict table):
+Run the v11 quick pipeline (data ~8 s, claims ~30 s, formulas ~2 min, nn ~2.5 min, report; ~5 min in all; writes `empirical-scripts/11.0/results/<run-id>/` and prints the verdict table):
 
 ```bash
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json --run-id quick-s0
@@ -350,14 +368,14 @@ Resume an existing run (finished stages are skipped; config and seed must match)
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json --run-id quick-s0 --resume
 ```
 
-`formulas` and `nn` exit with the ROADMAP step that will add them. The full config's data build takes ~20 min on 7 workers; run it in the background.
+The full config's data build takes ~20 min on 7 workers and its other stages longer; run it in the background. A new run id with an unchanged data/split config reuses an existing dataset cache.
 
 Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in the background with a resumable state file; use a small `--quick` config for verification.
 
 ## Test Ownership Map
 
 - Evolvo library → [`libs/evolvo/tests/test_gfsl_core.py`](libs/evolvo/tests/test_gfsl_core.py) (GFSL core), [`libs/evolvo/tests/test_policy_guide.py`](libs/evolvo/tests/test_policy_guide.py), [`libs/evolvo/tests/test_nnarch.py`](libs/evolvo/tests/test_nnarch.py) (GFSL-NN). Functions, lists and Kompute have only smoke demos.
-- v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py). The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
+- v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py); `features.py`, `search_formulas.py`, `baselines.py`, `search_nn.py` → [`empirical-scripts/11.0/tests/test_search.py`](empirical-scripts/11.0/tests/test_search.py). The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
 
 ## Data, Security, Privacy, and Compatibility Boundaries
 
@@ -372,11 +390,11 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
 - Evolvo submodule at [`libs/evolvo`](libs/evolvo) with the step-3 features (see [Standing Evolvo Facts](#standing-evolvo-facts-relevant-to-v11)).
 
-- v11 scaffold, data stage, claim verdicts and report ([`ROADMAP.md`](ROADMAP.md) steps 0–2): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Markdown/JSON report, 29 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
+- v11 steps 0–4 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, Markdown/JSON report, 36 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
 
 ### Experimental / Scaffold
 
-- v11 stages `formulas` and `nn` are not implemented (steps 3–4); the report has no figures (step 6).
+- The report has no figures (step 6); scale-up beyond the full config (10⁶ for every n) is step 5.
 
 ### Known Gaps
 
@@ -386,8 +404,8 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Near-Term Priorities
 
-1. Evolutionary formula and GFSL-NN search with S1/S2, against the C9 baselines ([`ROADMAP.md`](ROADMAP.md) step 4).
-2. Scale-up to 10⁶ and the paper revision (steps 5–6).
+1. Scale-up toward 10⁶ with stratified sampling and the wide base set; growth exponents with log L control ([`ROADMAP.md`](ROADMAP.md) step 5).
+2. Report figures and the paper revision (step 6).
 
 ## Task Start and Handoff Checklist
 

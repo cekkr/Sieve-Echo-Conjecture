@@ -1,0 +1,124 @@
+{
+  "settings": {
+    "inputs": [
+      "vec",
+      "set"
+    ],
+    "max_omega_class": 5,
+    "max_train_rows": 30000,
+    "max_val_rows": 10000,
+    "population": 8,
+    "generations": 4,
+    "patience": 3,
+    "max_rows": 4,
+    "max_params": 60000,
+    "lr": 0.003,
+    "batch_size": 512,
+    "hard_max_epochs": 200,
+    "sets": [
+      "v8",
+      "v10",
+      "primes31"
+    ],
+    "knowledge_in": {},
+    "torch_threads": 4
+  },
+  "rows": {
+    "train": 30000,
+    "val": 10000,
+    "test": 24302
+  },
+  "encodings": {
+    "vec": {
+      "inputs": [
+        [
+          "vec",
+          223
+        ]
+      ],
+      "best": {
+        "loss_val": 0.12207289785146713,
+        "params": 58629,
+        "describe": [
+          "v0 = input vec[223]",
+          "v1 = mlp(v0, units=256, depth=1, act=relu) -> vec[256]",
+          "v2 = act(v1, fn=tanh) -> vec[256]",
+          "out = linear(v2 -> 5)"
+        ],
+        "training": {
+          "epochs": 39,
+          "best_epoch": 25,
+          "stop_reason": "plateau",
+          "patience": 13,
+          "max_epochs": 200,
+          "learned": {
+            "gap_mean": 2.000000002627472,
+            "best_epoch_mean": 25.617781354613225
+          },
+          "projected_asymptote": null,
+          "seconds": 2.9089276250015246
+        }
+      },
+      "evaluated": 26,
+      "stop_reason": "generation_limit",
+      "test": {
+        "accuracy": 0.9480701176857872,
+        "mse_class": 0.05217677557402683,
+        "macro_f1": 0.9500594593694105,
+        "log_loss": 0.13635456562042236
+      },
+      "knowledge_in": null,
+      "knowledge_out": "knowledge/nn_vec.json",
+      "seconds": 1077.1
+    },
+    "set": {
+      "inputs": [
+        [
+          "set",
+          15
+        ],
+        [
+          "vec",
+          6
+        ]
+      ],
+      "best": {
+        "loss_val": 0.1295614093542099,
+        "params": 30499,
+        "describe": [
+          "v0 = input set[15]@in0",
+          "v1 = input vec[6]",
+          "v2 = resmlp(v0, depth=2, ratio=2, act=silu) -> set[15]@in0   # intron",
+          "v3 = mlp(v0, units=64, depth=4, act=tanh) -> set[64]@in0",
+          "v4 = attend(v3, heads=8) -> set[64]@in0",
+          "v5 = context(v4, v1) -> set[70]@in0",
+          "out = mean-pool, linear(v5 -> 5)"
+        ],
+        "training": {
+          "epochs": 80,
+          "best_epoch": 70,
+          "stop_reason": "plateau",
+          "patience": 13,
+          "max_epochs": 200,
+          "learned": {
+            "gap_mean": 1.8308897018703105,
+            "best_epoch_mean": 77.32125069175429
+          },
+          "projected_asymptote": null,
+          "seconds": 101.97139633299957
+        }
+      },
+      "evaluated": 26,
+      "stop_reason": "generation_limit",
+      "test": {
+        "accuracy": 0.9479055221792445,
+        "mse_class": 0.05209447782075549,
+        "macro_f1": 0.9500687451809373,
+        "log_loss": 0.13444967567920685
+      },
+      "knowledge_in": null,
+      "knowledge_out": "knowledge/nn_set.json",
+      "seconds": 926.4
+    }
+  }
+}

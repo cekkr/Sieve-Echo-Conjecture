@@ -1,0 +1,128 @@
+{
+  "train_rows": 7366,
+  "test_rows": 1579,
+  "feature_counts": {
+    "log n + mean log L": 2,
+    "n + L arithmetic": 28,
+    "formula inputs": 12,
+    "all allowed": 223
+  },
+  "targets": {
+    "omega": {
+      "majority": {
+        "accuracy": 0.3989867004433186,
+        "mse_class": 1.0006333122229258,
+        "macro_f1": 0.11407876867360797,
+        "log_loss": 1.2851427661645805
+      },
+      "logistic: log n + mean log L": {
+        "accuracy": 0.6250791640278658,
+        "mse_class": 0.3977200759974667,
+        "macro_f1": 0.5646338877446834,
+        "log_loss": 0.787653535814787
+      },
+      "GBM: log n + mean log L": {
+        "accuracy": 0.6174794173527549,
+        "mse_class": 0.41798606713109565,
+        "macro_f1": 0.5598740194714327,
+        "log_loss": 0.8285115227709462,
+        "seconds": 1.7
+      },
+      "GBM: n + L arithmetic": {
+        "accuracy": 0.9778340721975934,
+        "mse_class": 0.022165927802406588,
+        "macro_f1": 0.9801203194023239,
+        "log_loss": 0.06815558789677967,
+        "seconds": 2.3
+      },
+      "GBM: formula inputs": {
+        "accuracy": 0.8790373654211526,
+        "mse_class": 0.12476250791640278,
+        "macro_f1": 0.8045476852631281,
+        "log_loss": 0.2824880900756472,
+        "seconds": 2.5
+      },
+      "GBM: all allowed": {
+        "accuracy": 0.986700443318556,
+        "mse_class": 0.013299556681443952,
+        "macro_f1": 0.9856432394211355,
+        "log_loss": 0.046071331154017924,
+        "seconds": 5.5
+      }
+    },
+    "is_prime": {
+      "majority": {
+        "accuracy": 0.876504116529449,
+        "mse_class": 0.12349588347055099,
+        "f1": 0.0,
+        "log_loss": 0.3738611843350778
+      },
+      "logistic: log n + mean log L": {
+        "accuracy": 0.9309689677010766,
+        "mse_class": 0.06903103229892336,
+        "f1": 0.699724517906336,
+        "log_loss": 0.16801758326427085
+      },
+      "GBM: log n + mean log L": {
+        "accuracy": 0.928435718809373,
+        "mse_class": 0.07156428119062698,
+        "f1": 0.6705539358600583,
+        "log_loss": 0.1934896278623291,
+        "seconds": 0.4
+      },
+      "GBM: n + L arithmetic": {
+        "accuracy": 1.0,
+        "mse_class": 0.0,
+        "f1": 1.0,
+        "log_loss": 0.0003477627240782151,
+        "seconds": 0.4
+      },
+      "GBM: formula inputs": {
+        "accuracy": 1.0,
+        "mse_class": 0.0,
+        "f1": 1.0,
+        "log_loss": 0.0003475608905133273,
+        "seconds": 0.2
+      },
+      "GBM: all allowed": {
+        "accuracy": 1.0,
+        "mse_class": 0.0,
+        "f1": 1.0,
+        "log_loss": 0.00034759653403422085,
+        "seconds": 1.1
+      }
+    }
+  },
+  "three_feature_retest": {
+    "entropy": "v8 set, H_paper (ndr-v11.1)",
+    "paper_claim": 0.988,
+    "variants": {
+      "std H, min H": {
+        "train_accuracy": 0.5883790388270431,
+        "test": {
+          "accuracy": 0.49651678277390754,
+          "mse_class": 0.6839772007599747,
+          "macro_f1": 0.4029229328560554
+        }
+      },
+      "std H, min H, log n": {
+        "train_accuracy": 0.6709204452891664,
+        "test": {
+          "accuracy": 0.5446485117162762,
+          "mse_class": 0.5503483217226093,
+          "macro_f1": 0.47386100469680414
+        }
+      },
+      "LEAKAGE DEMO: std H, min H, is_prime_power": {
+        "train_accuracy": 0.7025522671734998,
+        "test": {
+          "accuracy": 0.6079797340088664,
+          "mse_class": 0.49461684610512985,
+          "macro_f1": 0.5511078863027774
+        }
+      }
+    },
+    "majority_test_accuracy": 0.3989867004433186,
+    "note": "is_prime_power alone identifies omega = 1; it is a factorization label and is forbidden as an input outside this demonstration."
+  }
+}

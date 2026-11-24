@@ -788,31 +788,10 @@ def _per_base_logL(ctx: Ctx, bases: list[int]) -> tuple[np.ndarray, list[str]]:
 
 
 def _length_arithmetic(ctx: Ctx, bases: list[int]) -> tuple[np.ndarray, list[str]]:
-    """Functions of (n, repetend lengths) only: lcm of the lengths and its relation to n - 1.
+    """Functions of (n, L_b) only — see `features.length_arithmetic`."""
+    import features
 
-    A tree model cannot compute an lcm or a divisibility test from raw log-lengths, so without these
-    the baseline would under-use L and any NDR gain could just be L information in another form.
-    """
-    sel = np.isin(ctx.T["pair.b"], bases)
-    idx = np.searchsorted(ctx.n, ctx.T["pair.n"][sel])
-    Ls = ctx.T["pair.L"][sel].astype(np.int64)
-    acc = [1] * ctx.n.size
-    divides = np.zeros(ctx.n.size)
-    for i, L in zip(idx.tolist(), Ls.tolist()):
-        acc[i] = math.lcm(acc[i], L)
-        divides[i] += (int(ctx.n[i]) - 1) % L == 0
-    lcm = np.array(acc, dtype=np.float64)
-    nm1 = ctx.n - 1
-    g = np.array([math.gcd(int(a), int(b)) for a, b in zip(acc, nm1.tolist())], dtype=np.float64)
-    cnt = np.bincount(idx, minlength=ctx.n.size).astype(float)
-    feats = np.column_stack([
-        np.log(lcm),
-        np.log(ctx.n) - np.log(lcm),
-        (nm1 % lcm.astype(np.int64) == 0).astype(float),
-        np.log(np.maximum(g, 1)),
-        np.where(cnt > 0, divides / np.maximum(cnt, 1), np.nan),
-    ])
-    return feats, ["log lcm(L_b)", "log n - log lcm", "lcm divides n-1", "log gcd(lcm, n-1)", "share of L_b dividing n-1"]
+    return features.length_arithmetic(ctx.T, bases)
 
 
 def c9_beyond_L(ctx: Ctx) -> dict:

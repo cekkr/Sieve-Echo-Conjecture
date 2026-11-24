@@ -209,3 +209,5 @@ __marimo__/
 
 # Sieve Echo v11 run caches (results/<run-id>/cache/ is disposable)
 empirical-scripts/11.0/results/*/cache/
+empirical-scripts/11.0/results/*/knowledge/
+empirical-scripts/11.0/results/full-*/split.json
