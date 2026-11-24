@@ -199,10 +199,21 @@ def scale_markdown(d: dict) -> list:
     return lines
 
 
-def write_report(run_dir: Path) -> dict:
+def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     claims_out = runtime.read_json(run_dir / "claims.json")
     md = build_markdown(manifest, claims_out)
+    try:
+        import figures
+
+        figs = figures.make_figures(run_dir, table)
+    except ImportError:  # matplotlib missing: report without figures
+        figs = []
+    if figs:
+        block = ["## Figures", ""]
+        for path, caption in figs:
+            block += [f"![{caption}]({path})", "", f"*{caption}*", ""]
+        md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
         md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json` in this run directory.")
@@ -221,4 +232,23 @@ def write_report(run_dir: Path) -> dict:
         },
     )
     print(verdict_table(claims_out["claims"]))
-    return {"report": "report.md", "report_json": "report.json"}
+    return {"report": "report.md", "report_json": "report.json", "figures": [p for p, _ in figs]}
+
+
+def _load_table(run_dir: Path):
+    import dataset
+
+    info = runtime.read_json(run_dir / "manifest.json").get("stages", {}).get("data", {})
+    if info.get("cache") and (run_dir / info["cache"]).is_file():
+        return dataset.load_cache(run_dir / info["cache"], info["dataset_key"])
+    return None
+
+
+if __name__ == "__main__":
+    # Regenerate figures + report of a finished run from its stored files (no stage reruns):
+    #   .venv/bin/python empirical-scripts/11.0/report.py empirical-scripts/11.0/results/<run-id>
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    target = Path(sys.argv[1]).resolve()
+    write_report(target, _load_table(target))

@@ -1,0 +1,123 @@
+{
+  "settings": {
+    "inputs": [
+      "vec",
+      "set"
+    ],
+    "max_omega_class": 5,
+    "max_train_rows": 0,
+    "max_val_rows": 0,
+    "population": 6,
+    "generations": 3,
+    "patience": 2,
+    "max_rows": 4,
+    "max_params": 60000,
+    "lr": 0.003,
+    "batch_size": 512,
+    "hard_max_epochs": 150,
+    "sets": [
+      "v8",
+      "v10",
+      "primes31"
+    ],
+    "knowledge_in": {},
+    "torch_threads": 4
+  },
+  "rows": {
+    "train": 7366,
+    "val": 1578,
+    "test": 1579
+  },
+  "encodings": {
+    "vec": {
+      "inputs": [
+        [
+          "vec",
+          223
+        ]
+      ],
+      "best": {
+        "loss_val": 0.08420910686254501,
+        "params": 58629,
+        "describe": [
+          "v0 = input vec[223]",
+          "v1 = act(v0, fn=tanh) -> vec[223]   # intron",
+          "v2 = add(v1, v0) -> vec[223]   # intron",
+          "v3 = mlp(v0, units=256, depth=1, act=tanh) -> vec[256]",
+          "out = linear(v3 -> 5)"
+        ],
+        "training": {
+          "epochs": 36,
+          "best_epoch": 27,
+          "stop_reason": "plateau",
+          "patience": 8,
+          "max_epochs": 150,
+          "learned": {
+            "gap_mean": 1.2077287946428572,
+            "best_epoch_mean": 38.5859375
+          },
+          "projected_asymptote": null,
+          "seconds": 0.6719734590005828
+        }
+      },
+      "evaluated": 16,
+      "stop_reason": "converged",
+      "test": {
+        "accuracy": 0.9759341355288157,
+        "mse_class": 0.025965801139962,
+        "macro_f1": 0.9667560948786891,
+        "log_loss": 0.07288487255573273
+      },
+      "knowledge_in": null,
+      "knowledge_out": "knowledge/nn_vec.json",
+      "seconds": 11.1
+    },
+    "set": {
+      "inputs": [
+        [
+          "set",
+          15
+        ],
+        [
+          "vec",
+          6
+        ]
+      ],
+      "best": {
+        "loss_val": 0.1616515815258026,
+        "params": 6830,
+        "describe": [
+          "v0 = input set[15]@in0",
+          "v1 = input vec[6]",
+          "v2 = transformer(v0, depth=2, heads=1, ff=4) -> set[15]@in0",
+          "v3 = attend(v2, heads=1) -> set[15]@in0",
+          "out = mean-pool, linear(v3 -> 5)"
+        ],
+        "training": {
+          "epochs": 89,
+          "best_epoch": 68,
+          "stop_reason": "plateau",
+          "patience": 20,
+          "max_epochs": 150,
+          "learned": {
+            "gap_mean": 2.54411764703576,
+            "best_epoch_mean": 57.56315685453868
+          },
+          "projected_asymptote": null,
+          "seconds": 23.805929166992428
+        }
+      },
+      "evaluated": 16,
+      "stop_reason": "generation_limit",
+      "test": {
+        "accuracy": 0.928435718809373,
+        "mse_class": 0.07156428119062698,
+        "macro_f1": 0.9186984677887808,
+        "log_loss": 0.21096573770046234
+      },
+      "knowledge_in": null,
+      "knowledge_out": "knowledge/nn_set.json",
+      "seconds": 118.0
+    }
+  }
+}

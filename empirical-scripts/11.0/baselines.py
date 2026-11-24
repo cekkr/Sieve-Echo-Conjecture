@@ -4,6 +4,7 @@ All models fit on the train split (gradient boosting uses its own internal early
 train), and every number is measured once on the test split. Feature sets:
 
 * ``log n + mean log L`` — the trivial covariates (AGENTS.md principle);
+* ``n + per-base L (no lcm arithmetic)`` — log n, log L per base and coprime counts only;
 * ``n + L arithmetic`` — log n, log L per base (v8 ∪ v10 ∪ primes31), coprime counts and the length
   arithmetic of `features.length_arithmetic` (the C9 baseline);
 * ``formula inputs`` — the inputs the GFSL formulas get;
@@ -65,6 +66,7 @@ def feature_sets(table, base_sets, formula_inputs: Sequence[str], sets: Sequence
     ndr = [c for c in allowed if not c.startswith("row.n_bases.")]
     out = {
         "log n + mean log L": (np.column_stack([logn, table["row.v8.logL.mean"]]), ["log n", "row.v8.logL.mean"]),
+        "n + per-base L (no lcm arithmetic)": (np.column_stack([logn, Lmat, nb]), ["log n", *[f"logL.b{b}" for b in bases], *[f"n_bases.{s}" for s in sets]]),
         "n + L arithmetic": (base, ["log n", *[f"logL.b{b}" for b in bases], *[f"n_bases.{s}" for s in sets], *arith_names]),
         "formula inputs": (features.build_matrix(table, formula_inputs, bases), list(formula_inputs)),
         "all allowed": (np.column_stack([base] + [table[c] for c in ndr]), ["<n + L arithmetic>", *ndr]),

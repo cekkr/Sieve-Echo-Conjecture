@@ -542,7 +542,7 @@ def c4_base_invariance(ctx: Ctx) -> dict:
     if first is not None:
         sel = first[nb8[first] >= 2]
         rep["v11 first 100 of v8.2 data order"] = float(_invariance(ctx, "v8", "H_v8", sel).mean())
-    allr = np.nonzero((ctx.source == 0) & (nb8 >= 2))[0]
+    allr = np.nonzero((ctx.source == 0) & (ctx.n <= 9999) & (nb8 >= 2))[0]
     rep["v11 all n in [2, 9999]"] = float(_invariance(ctx, "v8", "H_v8", allr).mean())
     reproduced = first is not None and close(rep["v11 first 100 of v8.2 data order"], PAPER["invariance_rate"])
 

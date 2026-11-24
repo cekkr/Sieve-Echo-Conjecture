@@ -8,6 +8,24 @@
 
 Paper statistics are re-computed the way the v8.2 code computed them (in-sample, `H_v8`, n ∈ [2, 9999]); corrected tests fit on the train split and report on the test split.
 
+## Figures
+
+![Test-split integers: mean H_paper against mean log L, coloured by ω. Points with more prime factors sit lower because their repetends are shorter, not off the H–log L curve (claims C1, C9).](figures/entropy_vs_length.png)
+
+*Test-split integers: mean H_paper against mean log L, coloured by ω. Points with more prime factors sit lower because their repetends are shorter, not off the H–log L curve (claims C1, C9).*
+
+![Held-out gain (95% bootstrap CI) of gradient boosting when entropy or all NDR columns are added to the baseline of n, per-base repetend lengths and their lcm arithmetic, per ω-balanced n-range (step 5).](figures/c9_gain_by_decade.png)
+
+*Held-out gain (95% bootstrap CI) of gradient boosting when entropy or all NDR columns are added to the baseline of n, per-base repetend lengths and their lcm arithmetic, per ω-balanced n-range (step 5).*
+
+![Share of integers whose statistic varies by less than 10% (CV) across the v8 bases, per ω-balanced n-range (claim C4, step 5).](figures/invariance_by_decade.png)
+
+*Share of integers whose statistic varies by less than 10% (CV) across the v8 bases, per ω-balanced n-range (claim C4, step 5).*
+
+![Growth exponents of the NDR entropy with n, with and without ω and log L controls (step 5).](figures/growth_exponents.png)
+
+*Growth exponents of the NDR entropy with n, with and without ω and log L controls (step 5).*
+
 ## Verdicts
 
 | Claim | Paper says | Paper statistic re-computed | Corrected test (held out, with controls) | Verdict |

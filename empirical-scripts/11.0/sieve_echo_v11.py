@@ -244,7 +244,11 @@ def stage_report(run: Run) -> dict:
 
     if not (run.dir / "claims.json").is_file():
         raise SystemExit("report needs claims.json; include `claims` in --stages")
-    return report.write_report(run.dir)
+    try:
+        table = load_table(run)
+    except SystemExit:
+        table = None  # figures that need the dataset are skipped
+    return report.write_report(run.dir, table)
 
 
 STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "report": stage_report}

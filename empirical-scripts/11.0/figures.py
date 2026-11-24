@@ -1,0 +1,234 @@
+"""Static report figures for Sieve Echo v11 (ROADMAP step 6).
+
+``make_figures(run_dir, table=None)`` writes PNGs into ``<run_dir>/figures/`` from whatever the run
+contains (the dataset cache for the scatter, ``scale.json``, ``formulas.json``, ``baselines.json``,
+``nn.json``) and returns ``[(file, caption), ...]`` for the report. Every number drawn is also in
+the report's tables (the figures' table view).
+
+Styling follows a validated light palette: categorical slots blue/orange/aqua (adjacent CVD ΔE ≥ 9),
+a single-hue blue ramp for the ordinal ω, recessive grid, thin marks, direct labels on lines (aqua is
+below 3:1 contrast, so it is always labelled), distinct markers as secondary encoding.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+
+import runtime
+
+SURFACE = "#fcfcfb"
+TEXT = "#0b0b0b"
+TEXT_2 = "#52514e"
+GRID = "#e4e3df"
+SERIES = ["#2a78d6", "#eb6834", "#1baf7a"]
+MARKERS = ["o", "s", "^"]
+BLUE_RAMP = {1: "#9ec5f4", 2: "#6da7ec", 3: "#3987e5", 4: "#256abf", 5: "#184f95", 6: "#0d366b", 7: "#0d366b"}
+
+
+def _plt():
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    plt.rcParams.update({
+        "figure.facecolor": SURFACE, "axes.facecolor": SURFACE, "savefig.facecolor": SURFACE,
+        "axes.edgecolor": GRID, "axes.labelcolor": TEXT_2, "xtick.color": TEXT_2, "ytick.color": TEXT_2,
+        "text.color": TEXT, "axes.grid": True, "grid.color": GRID, "grid.linewidth": 0.8,
+        "axes.spines.top": False, "axes.spines.right": False, "font.size": 10, "axes.titlesize": 11,
+        "axes.titleweight": "bold", "axes.titlelocation": "left", "legend.frameon": False,
+    })
+    return plt
+
+
+def _save(fig, path: Path) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=150, bbox_inches="tight")
+    import matplotlib.pyplot as plt
+
+    plt.close(fig)
+    return path.name
+
+
+_SUP = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+
+
+def _decade_label(lo: int, hi: int) -> str:
+    a, b = int(np.floor(np.log10(max(lo, 1)))), int(round(np.log10(max(hi, 1))))
+    return f"10{str(a).translate(_SUP)}–10{str(b).translate(_SUP)}"
+
+
+def fig_entropy_vs_length(table, out: Path) -> Optional[Tuple[str, str]]:
+    plt = _plt()
+    H, L, w = table["row.v8.H_paper.mean"], table["row.v8.logL.mean"], table["label.omega"]
+    sel = np.nonzero((table["split"] == 2) & np.isfinite(H) & np.isfinite(L))[0]
+    if sel.size < 10:
+        return None
+    rng = np.random.default_rng(0)
+    if sel.size > 6000:
+        sel = np.sort(rng.choice(sel, 6000, replace=False))
+    fig, ax = plt.subplots(figsize=(7.2, 4.6))
+    for k in sorted(np.unique(w[sel])):
+        m = sel[w[sel] == k]
+        ax.scatter(L[m], H[m], s=9, color=BLUE_RAMP.get(int(k), BLUE_RAMP[7]), alpha=0.75, linewidths=0, label=f"ω = {int(k)}")
+    xs = np.linspace(np.nanmin(L[sel]), np.nanmax(L[sel]), 50)
+    ax.plot(xs, xs, color=TEXT_2, lw=1, ls="--")
+    ax.annotate("H = log L (upper bound)", (xs[-12], xs[-12]), xytext=(-150, 8), textcoords="offset points", color=TEXT_2, fontsize=9)
+    ax.set_xlabel("mean log repetend length, log L (v8 bases)")
+    ax.set_ylabel("mean NDR entropy H_paper (v8 bases)")
+    ax.set_title("Entropy follows repetend length; ω sorts along the same line")
+    ax.legend(title="distinct prime factors", ncol=2, fontsize=8, title_fontsize=8, loc="upper left")
+    return _save(fig, out / "entropy_vs_length.png"), "Test-split integers: mean H_paper against mean log L, coloured by ω. Points with more prime factors sit lower because their repetends are shorter, not off the H–log L curve (claims C1, C9)."
+
+
+def fig_c9_by_decade(scale: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    plt = _plt()
+    bins = [b for b in scale["bins"] if "C9" in b]
+    if not bins:
+        return None
+    labels = [f"{_decade_label(*b['bin'])}\nbaseline {b['C9']['accuracy_baseline'] * 100:.1f}%" for b in bins]
+    x = np.arange(len(bins))
+    fig, ax = plt.subplots(figsize=(7.2, 4.2))
+    ax.axhline(0, color=TEXT_2, lw=1)
+    for j, (key, name) in enumerate((("delta_entropy", "+ entropy columns"), ("delta_all", "+ all NDR columns"))):
+        v = np.array([b["C9"][key] for b in bins]) * 100
+        ci = np.array([b["C9"][key + "_ci"] for b in bins]) * 100
+        xx = x + (j - 0.5) * 0.14
+        ax.errorbar(xx, v, yerr=[v - ci[:, 0], ci[:, 1] - v], fmt=MARKERS[j], ms=7, color=SERIES[j], ecolor=SERIES[j], elinewidth=2, capsize=0, lw=2, label=name)
+        ax.annotate(name, (xx[-1], v[-1]), xytext=(12, 9 if j == 0 else -9), textcoords="offset points", color=TEXT, fontsize=9, va="center")
+    ax.set_xticks(x, labels)
+    ax.set_xlim(-0.4, len(bins) - 0.4 + 0.6)
+    ax.set_ylabel("accuracy gain over length baseline (points)")
+    ax.set_title("What NDR adds to ω classification beyond n and repetend lengths")
+    ax.legend(loc="upper left", fontsize=8)
+    return _save(fig, out / "c9_gain_by_decade.png"), "Held-out gain (95% bootstrap CI) of gradient boosting when entropy or all NDR columns are added to the baseline of n, per-base repetend lengths and their lcm arithmetic, per ω-balanced n-range (step 5)."
+
+
+def fig_invariance_by_decade(scale: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    plt = _plt()
+    bins = [b for b in scale["bins"] if "C4" in b and "v8" in b["C4"]]
+    if not bins:
+        return None
+    labels = [_decade_label(*b["bin"]) for b in bins]
+    x = np.arange(len(bins))
+    fig, ax = plt.subplots(figsize=(7.2, 4.0))
+    names = {"H_paper": "H_paper (paper entropy)", "Hn_nodc": "Hn_nodc (DC removed, / log L)", "logL": "log L itself"}
+    for j, key in enumerate(("H_paper", "Hn_nodc", "logL")):
+        v = np.array([b["C4"]["v8"]["invariance_rate"][key] for b in bins]) * 100
+        ax.plot(x, v, marker=MARKERS[j], ms=7, lw=2, color=SERIES[j], label=names[key])
+        ax.annotate(names[key], (x[-1], v[-1]), xytext=(10, 0), textcoords="offset points", color=TEXT, fontsize=9, va="center")
+    ax.axhline(6, color=TEXT_2, lw=1, ls="--")
+    ax.annotate("paper: 6%", (0, 6), xytext=(0, 4), textcoords="offset points", color=TEXT_2, fontsize=8)
+    ax.set_xticks(x, labels)
+    ax.set_xlim(-0.3, len(bins) - 0.3 + 1.4)
+    ax.set_ylim(0, 105)
+    ax.legend(loc="center left", bbox_to_anchor=(0.0, 0.74), fontsize=8)
+    ax.set_ylabel("share of n with CV < 0.1 across v8 bases (%)")
+    ax.set_title("Base invariance: rare for the paper entropy, near-total once it saturates")
+    return _save(fig, out / "invariance_by_decade.png"), "Share of integers whose statistic varies by less than 10% (CV) across the v8 bases, per ω-balanced n-range (claim C4, step 5)."
+
+
+def fig_growth(scale: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    plt = _plt()
+    g = scale.get("growth") or {}
+    if "balanced_all_bins" not in g:
+        return None
+    ga = g["balanced_all_bins"]
+    rows = [("paper / v7: H ~ n^a", g.get("paper_exponent", 0.142))]
+    if "v8_style_H_v8_paper_range" in g:
+        rows.append(("v11, v8-style fit on [2, 9999]", g["v8_style_H_v8_paper_range"]["exponent"]))
+    rows += [
+        ("v11, ω-balanced decades", ga["H ~ n^a"]),
+        ("  + ω fixed effects", ga["H ~ n^a, omega fixed effects"]),
+        ("  + ω fixed effects + log L control", ga["H ~ n^a · (log L)^b, omega fixed effects"]["a"]),
+    ]
+    fig, ax = plt.subplots(figsize=(7.2, 3.4))
+    y = np.arange(len(rows))[::-1]
+    vals = [r[1] for r in rows]
+    ax.barh(y, vals, height=0.55, color=SERIES[0])
+    for yi, v in zip(y, vals):
+        ax.annotate(f"{v:.3f}", (v, yi), xytext=(4, 0), textcoords="offset points", va="center", color=TEXT, fontsize=9)
+    ax.set_yticks(y, [r[0] for r in rows])
+    ax.set_xlim(0, max(vals) * 1.25)
+    ax.grid(axis="y", visible=False)
+    ax.set_xlabel("growth exponent a in H ~ n^a")
+    t = scale.get("T_x")
+    sub = f" (the paper's 'predicted 0.743' is the exponent of a different sum; recomputed: {t['exponent']:.2f})" if t else ""
+    ax.set_title("Entropy growth with n disappears once repetend length is controlled")
+    fig.text(0.0, -0.04, sub.strip(), color=TEXT_2, fontsize=8)
+    return _save(fig, out / "growth_exponents.png"), "Growth exponents of the NDR entropy with n, with and without ω and log L controls (step 5)."
+
+
+def fig_heldout(baselines: Dict[str, Any], nn: Dict[str, Any], formulas: Optional[Dict[str, Any]], out: Path) -> Optional[Tuple[str, str]]:
+    plt = _plt()
+    rows = baselines.get("targets", {}).get("omega")
+    if not rows:
+        return None
+    items = [(k, v["accuracy"]) for k, v in rows.items()]
+    if formulas and "omega" in formulas.get("summary", {}).get("best_by_validation", {}):
+        items.append(("GFSL formula (best on validation)", formulas["summary"]["best_by_validation"]["omega"]["test"]["accuracy"]))
+    for enc, r in (nn or {}).get("encodings", {}).items():
+        items.append((f"GFSL-NN {enc}", r["test"]["accuracy"]))
+    items.sort(key=lambda t: t[1])
+    fig, ax = plt.subplots(figsize=(7.2, 0.42 * len(items) + 1.0))
+    y = np.arange(len(items))
+    ax.barh(y, [v * 100 for _, v in items], height=0.6, color=SERIES[0])
+    for yi, (_, v) in zip(y, items):
+        ax.annotate(f"{v * 100:.1f}%", (v * 100, yi), xytext=(4, 0), textcoords="offset points", va="center", color=TEXT, fontsize=9)
+    ax.set_yticks(y, [k for k, _ in items])
+    ax.set_xlim(0, 110)
+    ax.grid(axis="y", visible=False)
+    ax.set_xlabel("test accuracy, ω classes min(ω, 5) (%)")
+    ax.set_title("Held-out ω prediction: repetend-length arithmetic does almost all the work")
+    return _save(fig, out / "heldout_omega.png"), "Test accuracy of every ω model of step 4 (same split, same classes)."
+
+
+def fig_guides(formulas: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    plt = _plt()
+    runs = [r for r in formulas.get("runs", []) if r["target"] == "omega"]
+    if not runs:
+        return None
+    groups: Dict[str, List[float]] = {}
+    order = [("none", "adaptive"), ("none", "fixed"), ("qlearning", "adaptive"), ("supervised", "adaptive"), ("policy", "adaptive"), ("policy", "warm")]
+    for g, v in order:
+        vals = [r["selected"]["test"]["nmse"] for r in runs if r["guide"] == g and r["variant"] == v]
+        if vals:
+            groups[f"{g} · {'fixed N' if v == 'fixed' else ('warm start' if v == 'warm' else 'adaptive N')}"] = vals
+    fig, ax = plt.subplots(figsize=(7.2, 3.8))
+    names = list(groups)
+    rng = np.random.default_rng(1)
+    for i, k in enumerate(names):
+        v = np.array(groups[k])
+        ax.scatter(i + rng.uniform(-0.08, 0.08, v.size), v, s=36, color=SERIES[0], linewidths=0, zorder=3)
+        ax.plot([i - 0.22, i + 0.22], [v.mean()] * 2, color=TEXT, lw=2, zorder=4)
+    ax.set_xticks(range(len(names)), names, rotation=20, ha="right")
+    ax.set_ylabel("test NMSE of the selected formula")
+    ax.set_title("ω formula search: guides and evaluation-size schedules (5 seeds each)")
+    return _save(fig, out / "formula_guides_omega.png"), "Test NMSE of the validation-selected ω formula per seed (dots) and mean (bar) for each guide / S1 schedule / S2 warm start (step 4)."
+
+
+def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -> List[Tuple[str, str]]:
+    out = run_dir / "figures"
+    made: List[Tuple[str, str]] = []
+
+    def add(item):
+        if item:
+            made.append((f"figures/{item[0]}", item[1]))
+
+    if table is not None and "row.v8.H_paper.mean" in table:
+        add(fig_entropy_vs_length(table, out))
+    if (run_dir / "baselines.json").is_file():
+        nn = runtime.read_json(run_dir / "nn.json") if (run_dir / "nn.json").is_file() else {}
+        form = runtime.read_json(run_dir / "formulas.json") if (run_dir / "formulas.json").is_file() else None
+        add(fig_heldout(runtime.read_json(run_dir / "baselines.json"), nn, form, out))
+    if (run_dir / "formulas.json").is_file():
+        add(fig_guides(runtime.read_json(run_dir / "formulas.json"), out))
+    if (run_dir / "scale.json").is_file():
+        sc = runtime.read_json(run_dir / "scale.json")
+        add(fig_c9_by_decade(sc, out))
+        add(fig_invariance_by_decade(sc, out))
+        add(fig_growth(sc, out))
+    return made

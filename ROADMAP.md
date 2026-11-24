@@ -155,12 +155,12 @@ Implemented in [`scale.py`](empirical-scripts/11.0/scale.py) (stage `scale`), mu
 - [x] Growth exponents recomputed with and without `log L` control; the paper's "predicted 0.743" traced and recomputed.
 - **Result:** C1, C2, C3, C4 stable; **C9 drifts** — entropy features add +1.3 accuracy points at 10⁵–10⁶ (CI [+0.4, +2.0]) but not at 10⁴–10⁵ (+0.4, CI [−0.2, +1.1]), while the length baseline weakens with n (97.4% → 95.6% → 91.9%). See Results log.
 
-## Step 6 — Report and paper update — TODO
+## Step 6 — Report and paper update — IN PROGRESS (awaiting owner review)
 
-- [ ] `results/<run-id>/report.md` + `report.json` + figures; commit the small summary files only.
-- [ ] Draft `studies/9/` (or revise `studies/8/`) with verified numbers, each citing the run id; fix the direction contradictions; replace "Theorem" with "Observation" for empirical fits.
-- [ ] Update [`AGENTS.md`](AGENTS.md) (source map, commands, status) and this roadmap.
-- **Done when:** owner reviews the report.
+- [x] `results/<run-id>/report.md` + `report.json` + figures: [`figures.py`](empirical-scripts/11.0/figures.py) (six PNGs: entropy vs length, held-out ω models, formula guides, C9 gain by decade, invariance by decade, growth exponents; validated light palette, direct labels), embedded by `report.write_report`; `python empirical-scripts/11.0/report.py <run_dir>` regenerates figures + report of a finished run from its stored files. Reports of `quick-s0-step4`, `full-s0-step4`, `scale-s0` regenerated this way; `quick-s0-step6` produced them in its own report stage. Small summary files committed; caches, knowledge and full-size splits git-ignored.
+- [x] Draft [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md): every number cites its run; direction contradictions of the v8 paper corrected; "Theorem" → "Observation" for empirical fits; one actual theorem (λ(n) ≤ φ(n)/2^{ω−1} for odd n) with proof as the mechanism of the negative slope; reproduction table of the v8 statistics; reformulated open conjecture. Author byline left to the owner.
+- [x] [`AGENTS.md`](AGENTS.md) and this roadmap updated.
+- **Done when:** owner reviews the report and the draft (not yet).
 
 ---
 
@@ -172,13 +172,14 @@ Add items found during implementation here, with the step they affect.
 - **v8 base invariance (6%) and zeta correlations use only the first 100 rows** of a shuffled list (`self.data[:100]`), not 10 000 integers (C4, C5).
 - **r = -0.843 is corr(ω, is_prime_power), not an entropy correlation** (C3). It comes from the v7.0 log [`7.0/results/3/sieve_echo_log_20250825_135643.txt`](empirical-scripts/7.0/results/3/sieve_echo_log_20250825_135643.txt) line 210 (`omega_vs_is_prime_power`), which compares two factorization labels. On v11 labels this correlation is -0.75 for n < 10³ and -0.66 for n < 10⁴. Paper Theorem 2.3 attributes it to NDR entropy.
 - **98.8% comes from the same v7.0 run** (log line 187), not from v8 (C-§3.1, step 4).
-- **C9 baseline needs length arithmetic** (step 4). Without lcm(L_b) and its relation to n - 1, gradient boosting on per-base log L reaches only 94.9% (quick) and NDR features appear to add 2.5 points; with it, 97.8% and +0.8. Step 4 search must be compared against the length-arithmetic baseline, and GFSL formulas should get `LCM`/`MOD` style ops or these derived inputs.
+- **C9 baseline needs length arithmetic** (step 4). Without lcm(L_b) and its relation to n - 1, gradient boosting on per-base log L reaches 94.9%; with it 97.8% (`quick-s0-step6`, baselines `n + per-base L (no lcm arithmetic)` vs `n + L arithmetic`). The 2.9-point gap is what NDR features appeared to add in an interim step-2 version without the arithmetic. Step 4 search must be compared against the length-arithmetic baseline, and GFSL formulas should get `LCM`/`MOD` style ops or these derived inputs.
 - **Evolvo: Q-learning guide had no evolver interface** (step 4, done in `libs/evolvo`): added `propose_mutation`/`observe_population` (relative rewards) and a fast `use_viability=False` construction (probability-tree viability made it ~80× slower).
 - **Evolvo: in-place updates lost their history** (step 4, done in `libs/evolvo`): `_build_dependency_graph` registered an instruction as its target's producer before resolving its sources, so `d$2 = LOG(d$2)` dropped the earlier writers of `d$2` from the effective algorithm and from execution. Fixed + regression test.
 - **ω q_target lowered from 0.8 to 0.7** (step 4): no run reached 0.8 on the quick config (best q ≈ 0.6), which leaves "evaluations to target" undefined; chosen from train fitness only.
 - **GFSL-NN `set` encoding ignores the tokens** (step 4/5): the best full-run architecture marks the per-base token branch as an intron and predicts from log n + length arithmetic. Per-base NDR tokens add nothing the search could use.
 - **Full-run memory** (step 5): peak RSS 9.2 GB in the main process (dataset + feature matrices + GFSL-NN tensors). Step 5's larger data must stream or subsample feature construction.
 - **C7 controls must be per-base** (step 2, done). Controlling for the mean log L left a large residue effect (mod 12 excess 0.13) that was mostly which bases have short orders.
+- **C4 "all n in [2, 9999]" label bug** (step 6, fixed): the rate used every full-range integer, i.e. n ≤ 150 000 on the full config (0.099 in `full-s0-claims`/`full-s0-step4`); the [2, 9999] value is 0.091. Code now restricts to n ≤ 9 999; stored full-run files keep the old label.
 - **The DC bin dominates the paper entropy.** Quick run, `primes31` mean over integers: ω = 1 → H_paper 2.65, H_nodc 6.40, log L 7.31; ω = 4 → 1.85, 3.91, 4.39. Mean H falls with ω, and so does log L; whether anything is left after controlling for log L is C9. (Descriptive, all integers, no split; not a claim.)
 
 ## Results log
@@ -189,7 +190,7 @@ Record verified results as `run-id — config — headline numbers — verdict`.
 - **C1** — `full-s0-claims` — v8.2 fit reproduced exactly (α -0.4681, β 1.9174, R² 0.2345 with log(ω+1); with the paper's log ω: α -0.305, R² 0.229). Test R² `H_paper`: law 0.364, log L + log n 0.959, full 0.959; ΔR² 0.0004 CI [0.000, 0.001]; partial r(H, log ω | log L, log n) -0.101. `H_nodc`: baseline 0.991, ΔR² 0.002. — **reproduced but explained by size/length.**
 - **C2** — primes − composites mean `H_paper` +0.706 CI [0.686, 0.724]; Spearman(H, ω) -0.614; still negative given log L, log n. — primes have the **highest** entropy; §1.3 and §7.1 item 2 are **not supported**, α < 0 holds.
 - **C3** — the paper's -0.843 is corr(ω, is_prime_power) (v11 on [2, 9999]: -0.655). r(H_paper, prime power) = +0.389; partial given log L, log n -0.058 CI [-0.068, -0.047]. — **not reproduced** (misattributed statistic; residual effect below threshold).
-- **C4** — 6% reproduced exactly on v8.2's first 100 integers; all n in [2, 9999]: 9.9%. `v8`/`H_paper` invariance by scale 9% → 14% (10² → 10⁶), Spearman(CV, log n) -0.036. `Hn_nodc` reaches 99.6% above 10⁵, but CV(log L) < 0.1 also rises 7% → 62%: saturation of normalized entropy, not a property of the factorization. — **reproduced; no asymptotic emergence** of invariance for the paper entropy.
+- **C4** — 6% reproduced exactly on v8.2's first 100 integers; all n in [2, 9999]: 9.1% (`quick-s0`, `scale-s0`; the 9.9% printed by the full runs covered all n ≤ 150 000 — label bug fixed in step 6). `v8`/`H_paper` invariance by scale 9% → 14% (10² → 10⁶), Spearman(CV, log n) -0.036. `Hn_nodc` reaches 99.6% above 10⁵, but CV(log L) < 0.1 also rises 7% → 62%: saturation of normalized entropy, not a property of the factorization. — **reproduced; no asymptotic emergence** of invariance for the paper entropy.
 - **C5** — zeta r reproduced exactly on the 100-row sample (-0.441, -0.337, -0.289); on all n in [2, 9999] -0.114, -0.083, -0.070; partial r given cubic log n ≈ -0.02. — **reproduced but explained by size.**
 - **C6** — r(H·log n, H) = 0.946 reproduced; with H permuted across n it is 0.831 CI [0.826, 0.836]; PNT/Li errors partial r ≈ -0.03. — **reproduced but explained by construction/size.**
 - **C7** — v8.2 variances reproduced exactly. After per-base log L, coprimality, log n and ω controls, residue-class η² excess over the permutation null: mod 6 0.000, mod 12 0.033, mod 30 0.014, mod 210 0.032 (`H_paper`), similar for `H_nodc`; p ≤ 0.002. — **small residue structure beyond L and ω**: the excess appears with mod 12 (adds n mod 4) and mod 210 (adds n mod 7), not with mod 6. Not an ω effect.

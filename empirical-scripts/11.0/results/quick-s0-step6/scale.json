@@ -1,0 +1,342 @@
+{
+  "settings": {
+    "bins": [
+      [
+        1000,
+        9999
+      ],
+      [
+        10000,
+        100000
+      ]
+    ],
+    "per_omega_cap": 100,
+    "min_per_omega": 20,
+    "primary_set": "v8",
+    "entropy": "H_paper",
+    "bootstrap": 300,
+    "effect_threshold": 0.01,
+    "cv_threshold": 0.1,
+    "max_omega_class": 5,
+    "gbm": {
+      "max_iter": 200,
+      "learning_rate": 0.1
+    },
+    "sets": [
+      "v8",
+      "v10",
+      "primes31"
+    ],
+    "T_x": [
+      100,
+      200,
+      400,
+      800
+    ]
+  },
+  "bins": [
+    {
+      "bin": [
+        1000,
+        9999
+      ],
+      "rows": 433,
+      "train": 294,
+      "test": 52,
+      "n_range": [
+        1013,
+        9960
+      ],
+      "omega_counts": {
+        "1": 100,
+        "2": 100,
+        "3": 100,
+        "4": 100,
+        "5": 33
+      },
+      "C1": {
+        "r2_baseline": 0.9271118948574553,
+        "r2_full": 0.9259906092119617,
+        "delta_r2": -0.0011212856454935194,
+        "delta_r2_ci": [
+          -0.010324306420582078,
+          0.0071717134025379515
+        ],
+        "partial_r": -0.03048806023882944,
+        "partial_r_ci": [
+          -0.31053539684516274,
+          0.23731520309930998
+        ],
+        "label": "explained by size/length"
+      },
+      "C2": {
+        "spearman_H_omega": -0.8299336971027412,
+        "ci": [
+          -0.8874555375330543,
+          -0.7311449198664877
+        ],
+        "primes_minus_composites": 0.6216518237590476,
+        "label": "negative"
+      },
+      "C3": {
+        "point_biserial": 0.596559726368187,
+        "partial_r": -0.10366527083849483,
+        "partial_r_ci": [
+          -0.3915659357551521,
+          0.21531433937134875
+        ],
+        "label": "negligible"
+      },
+      "C4": {
+        "v8": {
+          "rows": 423,
+          "invariance_rate": {
+            "H_paper": 0.1867612293144208,
+            "Hn_nodc": 0.950354609929078,
+            "logL": 0.4491725768321513
+          }
+        },
+        "label": "rare (< 50%)"
+      },
+      "C9": {
+        "accuracy_baseline": 0.9038461538461539,
+        "accuracy_entropy": 0.9038461538461539,
+        "accuracy_all": 0.9230769230769231,
+        "delta_entropy": 0.0,
+        "delta_entropy_ci": [
+          -0.05769230769230771,
+          0.05769230769230771
+        ],
+        "delta_all": 0.019230769230769273,
+        "delta_all_ci": [
+          -0.038461538461538436,
+          0.09615384615384615
+        ],
+        "label": "entropy adds nothing; NDR adds nothing"
+      }
+    },
+    {
+      "bin": [
+        10000,
+        100000
+      ],
+      "rows": 525,
+      "train": 359,
+      "test": 80,
+      "n_range": [
+        10037,
+        99990
+      ],
+      "omega_counts": {
+        "1": 100,
+        "2": 100,
+        "3": 100,
+        "4": 100,
+        "5": 100,
+        "6": 25
+      },
+      "C1": {
+        "r2_baseline": 0.9553779796819697,
+        "r2_full": 0.9579921670635384,
+        "delta_r2": 0.002614187381568711,
+        "delta_r2_ci": [
+          -0.0007485423664536556,
+          0.007144852675130476
+        ],
+        "partial_r": -0.2677497445545816,
+        "partial_r_ci": [
+          -0.4392934537275541,
+          -0.027522311954690504
+        ],
+        "label": "explained by size/length"
+      },
+      "C2": {
+        "spearman_H_omega": -0.8451669351744265,
+        "ci": [
+          -0.8893990533196032,
+          -0.7725592453213658
+        ],
+        "primes_minus_composites": 0.7885221723664406,
+        "label": "negative"
+      },
+      "C3": {
+        "point_biserial": 0.46816908980950533,
+        "partial_r": -0.020329715069306063,
+        "partial_r_ci": [
+          -0.20199431416828795,
+          0.13118803706361942
+        ],
+        "label": "negligible"
+      },
+      "C4": {
+        "v8": {
+          "rows": 496,
+          "invariance_rate": {
+            "H_paper": 0.20362903225806453,
+            "Hn_nodc": 0.9818548387096774,
+            "logL": 0.5705645161290323
+          }
+        },
+        "wide": {
+          "rows": 30,
+          "invariance_rate": {
+            "H_paper": 0.16666666666666666,
+            "Hn_nodc": 0.9666666666666667,
+            "logL": 0.2
+          }
+        },
+        "label": "rare (< 50%)"
+      },
+      "C9": {
+        "accuracy_baseline": 0.9,
+        "accuracy_entropy": 0.8625,
+        "accuracy_all": 0.8625,
+        "delta_entropy": -0.03749999999999998,
+        "delta_entropy_ci": [
+          -0.0940625,
+          0.0
+        ],
+        "delta_all": -0.03749999999999998,
+        "delta_all_ci": [
+          -0.09999999999999998,
+          0.025000000000000022
+        ],
+        "label": "entropy adds nothing; NDR adds nothing"
+      }
+    }
+  ],
+  "stability": {
+    "C1": {
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          100000
+        ]
+      ],
+      "labels": [
+        "explained by size/length",
+        "explained by size/length"
+      ],
+      "stable": true
+    },
+    "C2": {
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          100000
+        ]
+      ],
+      "labels": [
+        "negative",
+        "negative"
+      ],
+      "stable": true
+    },
+    "C3": {
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          100000
+        ]
+      ],
+      "labels": [
+        "negligible",
+        "negligible"
+      ],
+      "stable": true
+    },
+    "C4": {
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          100000
+        ]
+      ],
+      "labels": [
+        "rare (< 50%)",
+        "rare (< 50%)"
+      ],
+      "stable": true
+    },
+    "C9": {
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          100000
+        ]
+      ],
+      "labels": [
+        "entropy adds nothing; NDR adds nothing",
+        "entropy adds nothing; NDR adds nothing"
+      ],
+      "stable": true
+    }
+  },
+  "growth": {
+    "paper_exponent": 0.142,
+    "paper_predicted": 0.743,
+    "v8_style_H_v8_paper_range": {
+      "exponent": 0.1292961808846731,
+      "prefactor": 0.4601234618284796,
+      "rows": 9991
+    },
+    "balanced_all_bins": {
+      "rows": 955,
+      "H ~ n^a": 0.07196194868478208,
+      "H ~ n^a, omega fixed effects": 0.10217088038103024,
+      "H ~ n^a \u00b7 (log L)^b, omega fixed effects": {
+        "a": 0.03096207362117807,
+        "b": 0.5001223164891259
+      }
+    },
+    "per_omega_exponent": {
+      "1": 0.09609392634525356,
+      "2": 0.10397102747339255,
+      "3": 0.10472889753035457,
+      "4": 0.0979079830698205,
+      "5": 0.1132284918422685
+    }
+  },
+  "T_x": {
+    "x": [
+      100,
+      200,
+      400,
+      800
+    ],
+    "T": [
+      4834.560602447873,
+      22408.886083018646,
+      92120.86178789022,
+      385846.8399689025
+    ],
+    "exponent": 2.09949560904087,
+    "local_exponents": [
+      2.212614257216655,
+      2.0394569714517323,
+      2.066428477650608
+    ],
+    "terms_exponent_reference": "number of (p, n) pairs grows like x\u00b7\u03c0(x) \u2248 x\u00b2/log x"
+  },
+  "seconds": 5.4
+}

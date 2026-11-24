@@ -104,9 +104,13 @@ Verified against `libs/evolvo` after ROADMAP step 3 (the commit the root repo po
 
 ## Linked Source Tree and File Reference
 
+### [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md)
+
+Revision 9 draft (step 6, awaiting owner review): the v11 findings with every number tied to a run (`full-s0-step4`, `scale-s0`, `quick-s0-step4`, `quick-s0-step6`), the v8 reproduction table, Observations 4.1–6.2, Theorem 1.3 (λ(n) ≤ φ(n)/2^{ω−1} for odd n), the reformulated open conjecture, reproduction commands, embedded figures from the run directories. Byline intentionally empty (no personal data in new files). Change numbers here only together with the run that produced them.
+
 ### [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md)
 
-Current paper (revised draft, August 2025). Defines NDR (Def. 1.1), H_NDR (Def. 1.2), the Sieve Echo Law (Conj. 1.3), and reports Theorems 2.2–4.3. Change it only to replace claims with v11-verified results, citing the run.
+Previous paper (revised draft, August 2025); superseded for empirical claims by `studies/9` (draft). Defines NDR (Def. 1.1), H_NDR (Def. 1.2), the Sieve Echo Law (Conj. 1.3), and reports Theorems 2.2–4.3. Change it only to replace claims with v11-verified results, citing the run.
 
 - **Claims v11 must test:** §2.2 fit `H = -0.468·log ω + 1.917`, R² = 0.234 (the code fitted `log(ω+1)`); §2.3 prime-power correlation r = -0.843 (actually corr(ω, is_prime_power) from a v7.0 log — no entropy involved); §2.4 base invariance 6% (first 100 integers only); §3.1 three-feature 98.8% accuracy (v7.0 run, training set); §4.1 correlation with `n^-s`; §4.2 `H·log n` vs PNT r = 0.946; §4.3 residue-class variance mod 6/30/210; §5 table vs theoretical α = -1.599, β = 4.933.
 - **Common mistakes:** the paper contradicts itself on direction — §1.3 says primes give "pure, low-entropy" patterns, but α < 0 and the v10 data show primes have the *highest* H_NDR (longest repetends). §7.1 item 2 says "higher complexity correlates with higher entropy", which contradicts α < 0. Do not propagate either sentence; v11 must state the measured direction. "Theorem" labels on empirical fits are not theorems.
@@ -158,7 +162,11 @@ ROADMAP step 2: one function per claim (`c1_law` … `c9_beyond_L`), driven by `
 
 ### [`empirical-scripts/11.0/report.py`](empirical-scripts/11.0/report.py)
 
-`write_report(run_dir)` reads `manifest.json` + `claims.json` (+ `formulas.json`, `baselines.json`, `nn.json` when present), writes `report.md` (run provenance, verdict table, one section per claim, step-4 guide/variant table with S1/S2 checks and Mann–Whitney p-values, best formulas, held-out results table, three-feature retest) and `report.json`, and prints the verdict table. No figures yet (step 6).
+`write_report(run_dir, table=None)` reads `manifest.json` + `claims.json` (+ `formulas.json`, `baselines.json`, `nn.json`, `scale.json` when present), builds the figures (`figures.make_figures`), writes `report.md` (figures first, then (run provenance, verdict table, one section per claim, step-4 guide/variant table with S1/S2 checks and Mann–Whitney p-values, best formulas, held-out results table, three-feature retest, step-5 scale table) and `report.json`, and prints the verdict table. `python empirical-scripts/11.0/report.py <run_dir>` regenerates figures + report of a finished run (loads the dataset cache when present), without rerunning stages or touching the manifest.
+
+### [`empirical-scripts/11.0/figures.py`](empirical-scripts/11.0/figures.py)
+
+Static PNG figures into `<run>/figures/`: `entropy_vs_length` (needs the dataset), `heldout_omega` (baselines/nn/formulas), `formula_guides_omega` (formulas), `c9_gain_by_decade`, `invariance_by_decade`, `growth_exponents` (scale). Palette: categorical blue/orange/aqua (validated with the dataviz validator: adjacent CVD ΔE ≥ 9.2; aqua < 3:1 contrast, so lines are always direct-labelled), single-hue blue ramp for ω, legend plus direct labels for multi-series charts.
 
 ### [`empirical-scripts/11.0/features.py`](empirical-scripts/11.0/features.py)
 
@@ -285,9 +293,9 @@ Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dat
 
 ### Repetend-length arithmetic hidden in "NDR" predictors
 
-- **Symptom:** NDR features seem to add a lot to an ω classifier that already has every per-base L (quick run: 94.9% → 97.4%).
+- **Symptom:** NDR features seem to add a lot to an ω classifier that already has every per-base L.
 - **Cause:** a tree model cannot compute lcm(L_b) or test whether it divides n - 1 (λ(n) and Fermat-type structure); NDR features re-encode part of that.
-- **Safe pattern:** give the baseline the length arithmetic (`claims._length_arithmetic`); with it the baseline is 97.8% and the NDR gain +0.8 points, and entropy columns alone add nothing significant.
+- **Safe pattern:** give the baseline the length arithmetic (`features.length_arithmetic`): quick data 94.9% without it vs 97.8% with it (`quick-s0-step6` baselines); with it the NDR gain is +0.6–0.8 points.
 
 ### Training-set accuracy reported as model accuracy
 
@@ -348,7 +356,7 @@ Run Evolvo's tests:
 cd libs/evolvo && PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests
 ```
 
-Run the v11 tests from the repo root (39 tests, ~40 s–1 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
+Run the v11 tests from the repo root (39 tests incl. figures, ~40 s–1 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
 
 ```bash
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests -v
@@ -404,7 +412,7 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Experimental / Scaffold
 
-- The report has no figures (step 6). Every n up to 10⁶ was not built (≈ 15 h); step 5 uses ω-stratified decades instead.
+- Every n up to 10⁶ was not built (≈ 15 h); step 5 uses ω-stratified decades instead. The `studies/9` draft awaits owner review.
 
 ### Known Gaps
 
@@ -414,7 +422,8 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Near-Term Priorities
 
-1. Report figures and the paper revision with verified numbers ([`ROADMAP.md`](ROADMAP.md) step 6).
+1. Owner review of the step-6 report and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) step 6).
+2. Open questions of `studies/9` §8 (stronger length baseline over all bases 2…99; residue structure via quadratic characters).
 
 ## Task Start and Handoff Checklist
 

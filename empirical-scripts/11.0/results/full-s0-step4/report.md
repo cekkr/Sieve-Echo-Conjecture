@@ -8,6 +8,20 @@
 
 Paper statistics are re-computed the way the v8.2 code computed them (in-sample, `H_v8`, n ∈ [2, 9999]); corrected tests fit on the train split and report on the test split.
 
+## Figures
+
+![Test-split integers: mean H_paper against mean log L, coloured by ω. Points with more prime factors sit lower because their repetends are shorter, not off the H–log L curve (claims C1, C9).](figures/entropy_vs_length.png)
+
+*Test-split integers: mean H_paper against mean log L, coloured by ω. Points with more prime factors sit lower because their repetends are shorter, not off the H–log L curve (claims C1, C9).*
+
+![Test accuracy of every ω model of step 4 (same split, same classes).](figures/heldout_omega.png)
+
+*Test accuracy of every ω model of step 4 (same split, same classes).*
+
+![Test NMSE of the validation-selected ω formula per seed (dots) and mean (bar) for each guide / S1 schedule / S2 warm start (step 4).](figures/formula_guides_omega.png)
+
+*Test NMSE of the validation-selected ω formula per seed (dots) and mean (bar) for each guide / S1 schedule / S2 warm start (step 4).*
+
 ## Verdicts
 
 | Claim | Paper says | Paper statistic re-computed | Corrected test (held out, with controls) | Verdict |
@@ -160,4 +174,4 @@ Train rows 113404, test rows 24302. ω is scored as classes min(ω, 5).
 
 is_prime_power alone identifies omega = 1; it is a factorization label and is forbidden as an input outside this demonstration.
 
-Full numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json` in this run directory.
+Full numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json` in this run directory.

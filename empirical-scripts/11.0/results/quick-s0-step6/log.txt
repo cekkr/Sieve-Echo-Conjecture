@@ -1,0 +1,53 @@
+[16:42:21] run quick-s0-step6 seed=0 stages=['data', 'claims', 'formulas', 'nn', 'scale', 'report'] dir=empirical-scripts/11.0/results/quick-s0-step6
+[16:42:21] data: cache hit dataset-a6d2073dc94aa9a4.npz (reused from run quick-s0)
+[16:42:21] data: done in 0.1s
+[16:42:23]   C1: reproduced but explained by size/length (2.31s)
+[16:42:24]   C2: not supported (1.21s)
+[16:42:25]   C3: not reproduced (0.72s)
+[16:42:31]   C4: reproduced; no asymptotic emergence (6.14s)
+[16:42:32]   C5: reproduced but explained by size/length (0.5s)
+[16:42:32]   C6: reproduced but explained by size/length (0.4s)
+[16:42:33]   C7: supported (residue structure beyond per-base L and ω) (0.41s)
+[16:42:34]   C8: not supported (0.91s)
+[16:42:46]   C9: supported (entropy features alone: not supported) (12.87s)
+[16:42:46] claims: done in 25.5s
+[16:42:46]   formulas: 52 runs, then 10 warm-start runs; 7 workers; train rows 7366
+[16:43:03]     6/52 runs done
+[16:43:21]     12/52 runs done
+[16:43:30]     18/52 runs done
+[16:43:36]     24/52 runs done
+[16:43:43]     30/52 runs done
+[16:43:51]     36/52 runs done
+[16:44:05]     42/52 runs done
+[16:44:13]     48/52 runs done
+[16:44:18]     52/52 runs done
+[16:44:36]     1/10 runs done
+[16:44:37]     2/10 runs done
+[16:44:37]     3/10 runs done
+[16:44:37]     4/10 runs done
+[16:44:38]     5/10 runs done
+[16:44:38]     6/10 runs done
+[16:44:38]     7/10 runs done
+[16:44:43]     8/10 runs done
+[16:44:46]     9/10 runs done
+[16:44:46]     10/10 runs done
+[16:44:46] formulas: done in 119.9s
+[16:44:46]   baselines
+[16:44:48]     baseline omega GBM log n + mean log L: acc 0.6175 (2s)
+[16:44:51]     baseline omega GBM n + per-base L (no lcm arithmetic): acc 0.9487 (3s)
+[16:44:54]     baseline omega GBM n + L arithmetic: acc 0.9778 (3s)
+[16:44:57]     baseline omega GBM formula inputs: acc 0.8790 (3s)
+[16:45:03]     baseline omega GBM all allowed: acc 0.9867 (6s)
+[16:45:04]     baseline is_prime GBM log n + mean log L: acc 0.9284 (1s)
+[16:45:05]     baseline is_prime GBM n + per-base L (no lcm arithmetic): acc 0.9848 (1s)
+[16:45:05]     baseline is_prime GBM n + L arithmetic: acc 1.0000 (0s)
+[16:45:06]     baseline is_prime GBM formula inputs: acc 1.0000 (0s)
+[16:45:07]     baseline is_prime GBM all allowed: acc 1.0000 (1s)
+[16:45:12]   GFSL-NN search
+[16:45:23]   nn[vec]: 16 architectures, val loss 0.0842, test acc 0.9759 (11s)
+[16:47:21]   nn[set]: 16 architectures, val loss 0.1617, test acc 0.9284 (118s)
+[16:47:21] nn: done in 155.2s
+[16:47:24]   scale bin [1000, 9999]: 433 rows, C9 Δentropy +0.0000
+[16:47:27]   scale bin [10000, 100000]: 525 rows, C9 Δentropy -0.0375
+[16:47:27] scale: done in 5.5s
+[16:47:28] report: done in 0.8s

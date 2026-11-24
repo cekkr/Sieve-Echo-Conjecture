@@ -71,6 +71,19 @@ class ScaleStageTests(unittest.TestCase):
         self.assertEqual(set(out["stability"]), {"C1", "C2", "C3", "C4", "C9"})
         self.assertIn("balanced_all_bins", out["growth"])
         self.assertGreater(out["T_x"]["exponent"], 1.5)  # T(x) has ~x^2/log x terms
+        import tempfile
+
+        import figures
+        import runtime
+
+        with tempfile.TemporaryDirectory() as d:
+            runtime.write_json(Path(d) / "scale.json", out)
+            made = figures.make_figures(Path(d), self.table)
+            names = {Path(f).name for f, _ in made}
+            self.assertTrue({"entropy_vs_length.png", "c9_gain_by_decade.png", "invariance_by_decade.png", "growth_exponents.png"} <= names)
+            for f, caption in made:
+                self.assertTrue((Path(d) / f).stat().st_size > 1000)
+                self.assertTrue(caption)
 
 
 if __name__ == "__main__":
