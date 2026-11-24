@@ -1,0 +1,24 @@
+[22:28:32] run failures-s0 seed=0 stages=['failures', 'report'] dir=empirical-scripts/11.0/results/failures-s0
+[22:28:33]   15b: 5761444 primes ≤ 100000000 outside [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]; orders in 19 bases
+[22:29:37]   15b: order matrix in 64s
+[22:30:06]   15b: 19 bases: least failing n = None (bound {'n': 3700000259, 'pattern': [], 'bases_coprime': [2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 23, 29, 31]}); pairs of primes ≤ 100000000 with equal orders in all 19 bases: 0 groups, least product None
+[22:30:08]   15c: first 1 bases: predicted 30, brute force 30 (0s)
+[22:30:11]   15c: first 2 bases: predicted 210, brute force 210 (0s)
+[22:30:13]   15c: first 3 bases: predicted 210, brute force 210 (0s)
+[22:30:17]   15c: first 4 bases: predicted 2310, brute force 2310 (0s)
+[22:30:21]   15c: first 5 bases: predicted 2310, brute force 2310 (0s)
+[22:30:27]   15c: first 6 bases: predicted 30030, brute force 30030 (1s)
+[22:30:33]   15c: first 7 bases: predicted 30030, brute force 30030 (1s)
+[22:30:38]   15c: first 8 bases: predicted 30030, brute force 30030 (1s)
+[22:30:45]   15c: first 9 bases: predicted 214935, brute force 214935 (3s)
+[22:30:53]   15c: first 10 bases: predicted 214935, brute force 214935 (2s)
+[22:31:25]   15c: first 11 bases: predicted 2794155, brute force 2794155 (26s)
+[22:31:58]   15c: first 12 bases: predicted 2794155, brute force 2794155 (28s)
+[22:32:33]   15c: first 13 bases: predicted 2794155, brute force 2794155 (29s)
+[22:33:10]   15c: first 14 bases: predicted 2794155, brute force 2794155 (31s)
+[22:33:18]   15c: first 15 bases: predicted 47500635 (beyond the brute-force limit 3000000); decoder fails at the least failure found: True
+[22:33:27]   15c: first 16 bases: predicted 60555495 (beyond the brute-force limit 3000000); decoder fails at the least failure found: True
+[22:33:39]   15c: first 17 bases: predicted 1392776385 (beyond the brute-force limit 3000000); decoder fails at the least failure found: True
+[22:33:57]   15c: first 18 bases: predicted None (beyond the brute-force limit 3000000); decoder fails at the least failure found: True
+[22:33:57] failures: done in 324.8s
+[22:33:58] report: done in 0.6s

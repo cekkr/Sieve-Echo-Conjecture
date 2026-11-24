@@ -338,6 +338,34 @@ def fig_decode(d: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
                                                   "per decade of n (ω-balanced samples, step 13). Base 4 adds nothing to base 2 because 4 = 2².")
 
 
+def fig_failures(d: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    rows = [c for c in d.get("prefix_checks", []) if c["certificate"].get("certified_exact_below")]
+    if not rows:
+        return None
+    full = d["full"]
+    ks = [c["k"] for c in rows] + [len(full["bases"])]
+    certs = [c["certificate"] for c in rows] + [full]
+    v = np.array([c["certified_exact_below"] for c in certs], dtype=float)
+    exact = np.array([bool(c["exact"]) for c in certs])
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(7.4, 4.4))
+    ax.plot(ks, v, lw=2, color=SERIES[0], zorder=2)
+    ax.scatter(np.array(ks)[exact], v[exact], s=40, color=SERIES[0], zorder=3, label="least failing n (exact)")
+    if (~exact).any():
+        ax.scatter(np.array(ks)[~exact], v[~exact], s=60, marker="^", facecolor=SURFACE, edgecolor=SERIES[0], lw=2, zorder=3, label="certified lower bound")
+    ax.axhline(1e8, color=TEXT, lw=1, ls=(0, (4, 3)), alpha=0.55, zorder=1)
+    ax.text(ks[0], 1.3e8, "step 13: all 19 bases checked exhaustively to 10⁸", fontsize=8, color=TEXT, ha="left", va="bottom")
+    ax.set_yscale("log")
+    ax.set_xticks(ks, [str(k) for k in ks], fontsize=8)
+    ax.set_xlabel("number of bases (first k of 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, …, 31)")
+    ax.set_ylabel("decoder exact for every n below")
+    ax.set_title("Where the exact decoder first fails (with pre-periods)")
+    ax.set_ylim(top=max(v.max(), 1e8) * 12)
+    ax.legend(loc="lower right", fontsize=8)
+    return _save(fig, out / "decoder_first_failure.png"), ("Least integer on which the step-13 decoder with pre-periods misses ω, for the first k of the 19 bases, from Proposition 1.8 "
+                                                          "(order vectors of all primes up to the prime limit); triangles are certified lower bounds (step 15).")
+
+
 def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -> List[Tuple[str, str]]:
     out = run_dir / "figures"
     made: List[Tuple[str, str]] = []
@@ -369,4 +397,6 @@ def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -
         add(fig_tworank(runtime.read_json(run_dir / "tworank.json"), out))
     if (run_dir / "decode.json").is_file():
         add(fig_decode(runtime.read_json(run_dir / "decode.json"), out))
+    if (run_dir / "failures.json").is_file():
+        add(fig_failures(runtime.read_json(run_dir / "failures.json"), out))
     return made

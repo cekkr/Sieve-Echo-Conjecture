@@ -1,6 +1,6 @@
 {
   "name": "orders",
-  "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report Step 10: --stages tworank,report (same integers; 2-rank estimator and l-adic order profiles) Step 11: the `tworank` block lists explicit models and fixed-base-set comparisons. Step 13: --stages decode,report (exact decoding of omega from the repetend lengths of 19 bases; exhaustive to 10^8, sampled decades to 10^12; the first four decades are the orders-s0 integers).",
+  "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report Step 10: --stages tworank,report (same integers; 2-rank estimator and l-adic order profiles) Step 11: the `tworank` block lists explicit models and fixed-base-set comparisons. Step 13: --stages decode,report (exact decoding of omega from the repetend lengths of 19 bases; exhaustive to 10^8, sampled decades to 10^12; the first four decades are the orders-s0 integers). Step 15: --stages failures,report (least failing n of the decoder per base set from prime order vectors up to 10^8).",
   "seed": 0,
   "orders": {
     "decades": [
@@ -207,6 +207,52 @@
       "max_L": 200000,
       "decode_integers": 600
     },
+    "workers": 0
+  },
+  "failures": {
+    "bases": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "prime_limit": 100000000,
+    "prefix_checks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "brute_limit": 3000000,
     "workers": 0
   }
 }

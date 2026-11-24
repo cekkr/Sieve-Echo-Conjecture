@@ -1,0 +1,1411 @@
+{
+  "settings": {
+    "bases": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "prime_limit": 100000000,
+    "prefix_checks": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "brute_limit": 3000000,
+    "workers": 0
+  },
+  "full": {
+    "bases": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "base_primes": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "prime_limit": 100000000,
+    "least_prime_outside": 37,
+    "patterns": 2048,
+    "patterns_searched": 1336,
+    "first_failure": null,
+    "lower_bound": {
+      "n": 3700000259,
+      "pattern": [],
+      "bases_coprime": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        23,
+        29,
+        31
+      ]
+    },
+    "exact": false,
+    "certified_exact_below": 3700000259,
+    "collisions_all_bases": {
+      "groups": 0,
+      "primes_in_groups": 0,
+      "min_product": null,
+      "pair": null
+    }
+  },
+  "prefix_checks": [
+    {
+      "k": 1,
+      "bases": [
+        2
+      ],
+      "certificate": {
+        "bases": [
+          2
+        ],
+        "base_primes": [
+          2
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 3,
+        "patterns": 2,
+        "patterns_searched": 2,
+        "first_failure": {
+          "n": 30,
+          "pattern": [
+            2
+          ],
+          "pair": [
+            3,
+            5
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 30
+      },
+      "predicted_first_failure": 30,
+      "brute_first_failure": 30,
+      "agrees": true
+    },
+    {
+      "k": 2,
+      "bases": [
+        2,
+        3
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3
+        ],
+        "base_primes": [
+          2,
+          3
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 5,
+        "patterns": 4,
+        "patterns_searched": 4,
+        "first_failure": {
+          "n": 210,
+          "pattern": [
+            2,
+            3
+          ],
+          "pair": [
+            5,
+            7
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 210
+      },
+      "predicted_first_failure": 210,
+      "brute_first_failure": 210,
+      "agrees": true
+    },
+    {
+      "k": 3,
+      "bases": [
+        2,
+        3,
+        4
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4
+        ],
+        "base_primes": [
+          2,
+          3
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 5,
+        "patterns": 4,
+        "patterns_searched": 4,
+        "first_failure": {
+          "n": 210,
+          "pattern": [
+            2,
+            3
+          ],
+          "pair": [
+            5,
+            7
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 210
+      },
+      "predicted_first_failure": 210,
+      "brute_first_failure": 210,
+      "agrees": true
+    },
+    {
+      "k": 4,
+      "bases": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5
+        ],
+        "base_primes": [
+          2,
+          3,
+          5
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 7,
+        "patterns": 8,
+        "patterns_searched": 8,
+        "first_failure": {
+          "n": 2310,
+          "pattern": [
+            2,
+            3,
+            5
+          ],
+          "pair": [
+            7,
+            11
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 2310
+      },
+      "predicted_first_failure": 2310,
+      "brute_first_failure": 2310,
+      "agrees": true
+    },
+    {
+      "k": 5,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "base_primes": [
+          2,
+          3,
+          5
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 7,
+        "patterns": 8,
+        "patterns_searched": 8,
+        "first_failure": {
+          "n": 2310,
+          "pattern": [
+            2,
+            3,
+            5
+          ],
+          "pair": [
+            7,
+            11
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 2310
+      },
+      "predicted_first_failure": 2310,
+      "brute_first_failure": 2310,
+      "agrees": true
+    },
+    {
+      "k": 6,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 11,
+        "patterns": 16,
+        "patterns_searched": 16,
+        "first_failure": {
+          "n": 30030,
+          "pattern": [
+            2,
+            3,
+            5,
+            7
+          ],
+          "pair": [
+            11,
+            13
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 30030
+      },
+      "predicted_first_failure": 30030,
+      "brute_first_failure": 30030,
+      "agrees": true
+    },
+    {
+      "k": 7,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 11,
+        "patterns": 16,
+        "patterns_searched": 16,
+        "first_failure": {
+          "n": 30030,
+          "pattern": [
+            2,
+            3,
+            5,
+            7
+          ],
+          "pair": [
+            11,
+            13
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 30030
+      },
+      "predicted_first_failure": 30030,
+      "brute_first_failure": 30030,
+      "agrees": true
+    },
+    {
+      "k": 8,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 11,
+        "patterns": 16,
+        "patterns_searched": 16,
+        "first_failure": {
+          "n": 30030,
+          "pattern": [
+            2,
+            3,
+            5,
+            7
+          ],
+          "pair": [
+            11,
+            13
+          ],
+          "bases_coprime": []
+        },
+        "lower_bound": null,
+        "exact": true,
+        "certified_exact_below": 30030
+      },
+      "predicted_first_failure": 30030,
+      "brute_first_failure": 30030,
+      "agrees": true
+    },
+    {
+      "k": 9,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 13,
+        "patterns": 32,
+        "patterns_searched": 30,
+        "first_failure": {
+          "n": 214935,
+          "pattern": [
+            3,
+            5,
+            7
+          ],
+          "pair": [
+            23,
+            89
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            11
+          ]
+        },
+        "lower_bound": {
+          "n": 1300000091,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 214935
+      },
+      "predicted_first_failure": 214935,
+      "brute_first_failure": 214935,
+      "agrees": true
+    },
+    {
+      "k": 10,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 13,
+        "patterns": 32,
+        "patterns_searched": 30,
+        "first_failure": {
+          "n": 214935,
+          "pattern": [
+            3,
+            5,
+            7
+          ],
+          "pair": [
+            23,
+            89
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            11
+          ]
+        },
+        "lower_bound": {
+          "n": 1300000091,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 214935
+      },
+      "predicted_first_failure": 214935,
+      "brute_first_failure": 214935,
+      "agrees": true
+    },
+    {
+      "k": 11,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 17,
+        "patterns": 64,
+        "patterns_searched": 61,
+        "first_failure": {
+          "n": 2794155,
+          "pattern": [
+            3,
+            5,
+            7,
+            13
+          ],
+          "pair": [
+            23,
+            89
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            11
+          ]
+        },
+        "lower_bound": {
+          "n": 1700000119,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 2794155
+      },
+      "predicted_first_failure": 2794155,
+      "brute_first_failure": 2794155,
+      "agrees": true
+    },
+    {
+      "k": 12,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 17,
+        "patterns": 64,
+        "patterns_searched": 61,
+        "first_failure": {
+          "n": 2794155,
+          "pattern": [
+            3,
+            5,
+            7,
+            13
+          ],
+          "pair": [
+            23,
+            89
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            11
+          ]
+        },
+        "lower_bound": {
+          "n": 1700000119,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 2794155
+      },
+      "predicted_first_failure": 2794155,
+      "brute_first_failure": 2794155,
+      "agrees": true
+    },
+    {
+      "k": 13,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 17,
+        "patterns": 64,
+        "patterns_searched": 61,
+        "first_failure": {
+          "n": 2794155,
+          "pattern": [
+            3,
+            5,
+            7,
+            13
+          ],
+          "pair": [
+            23,
+            89
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            11
+          ]
+        },
+        "lower_bound": {
+          "n": 1700000119,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 2794155
+      },
+      "predicted_first_failure": 2794155,
+      "brute_first_failure": 2794155,
+      "agrees": true
+    },
+    {
+      "k": 14,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 17,
+        "patterns": 64,
+        "patterns_searched": 61,
+        "first_failure": {
+          "n": 2794155,
+          "pattern": [
+            3,
+            5,
+            7,
+            13
+          ],
+          "pair": [
+            23,
+            89
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            11,
+            16
+          ]
+        },
+        "lower_bound": {
+          "n": 1700000119,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 2794155
+      },
+      "predicted_first_failure": 2794155,
+      "brute_first_failure": 2794155,
+      "agrees": true
+    },
+    {
+      "k": 15,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 19,
+        "patterns": 128,
+        "patterns_searched": 125,
+        "first_failure": {
+          "n": 47500635,
+          "pattern": [
+            3,
+            5,
+            7,
+            13,
+            17
+          ],
+          "pair": [
+            23,
+            89
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            11,
+            16
+          ]
+        },
+        "lower_bound": {
+          "n": 1900000133,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 47500635
+      },
+      "predicted_first_failure": 47500635,
+      "fails_at_found": true
+    },
+    {
+      "k": 16,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17,
+          19
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 23,
+        "patterns": 256,
+        "patterns_searched": 220,
+        "first_failure": {
+          "n": 60555495,
+          "pattern": [
+            3,
+            5,
+            7,
+            11,
+            13
+          ],
+          "pair": [
+            37,
+            109
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            16,
+            17,
+            19
+          ]
+        },
+        "lower_bound": {
+          "n": 2300000161,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            19
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 60555495
+      },
+      "predicted_first_failure": 60555495,
+      "fails_at_found": true
+    },
+    {
+      "k": 17,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        23
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19,
+          23
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17,
+          19,
+          23
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 29,
+        "patterns": 512,
+        "patterns_searched": 465,
+        "first_failure": {
+          "n": 1392776385,
+          "pattern": [
+            3,
+            5,
+            7,
+            11,
+            13,
+            23
+          ],
+          "pair": [
+            37,
+            109
+          ],
+          "bases_coprime": [
+            2,
+            4,
+            16,
+            17,
+            19
+          ]
+        },
+        "lower_bound": {
+          "n": 2900000203,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            19,
+            23
+          ]
+        },
+        "exact": true,
+        "certified_exact_below": 1392776385
+      },
+      "predicted_first_failure": 1392776385,
+      "fails_at_found": true
+    },
+    {
+      "k": 18,
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        23,
+        29
+      ],
+      "certificate": {
+        "bases": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19,
+          23,
+          29
+        ],
+        "base_primes": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17,
+          19,
+          23,
+          29
+        ],
+        "prime_limit": 100000000,
+        "least_prime_outside": 31,
+        "patterns": 1024,
+        "patterns_searched": 836,
+        "first_failure": {
+          "n": 11532975090,
+          "pattern": [
+            2,
+            3,
+            5,
+            7,
+            13
+          ],
+          "pair": [
+            1187,
+            3559
+          ],
+          "bases_coprime": [
+            11,
+            17,
+            19,
+            23,
+            29
+          ]
+        },
+        "lower_bound": {
+          "n": 3100000217,
+          "pattern": [],
+          "bases_coprime": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            19,
+            23,
+            29
+          ]
+        },
+        "exact": false,
+        "certified_exact_below": 3100000217
+      },
+      "predicted_first_failure": null,
+      "fails_at_found": true
+    }
+  ],
+  "seconds": 324.8
+}

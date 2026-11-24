@@ -184,6 +184,9 @@ def step4_markdown(run_dir: Path) -> str:
     sf = run_dir / "subgroup.json"
     if sf.is_file():
         lines += subgroup_markdown(runtime.read_json(sf))
+    ff = run_dir / "failures.json"
+    if ff.is_file():
+        lines += failures_markdown(runtime.read_json(ff))
     return "\n".join(lines)
 
 
@@ -490,6 +493,40 @@ def subgroup_markdown(d: dict) -> list:
     return lines
 
 
+def _fail_cell(c: dict) -> str:
+    ff, lb = c.get("first_failure"), c.get("lower_bound")
+    if c.get("exact") and ff:
+        pat = "·".join(map(str, ff["pattern"])) or "1"
+        return f"{ff['n']:,} (∏S = {pat}; p, p' = {ff['pair'][0]}, {ff['pair'][1]})"
+    if not lb:
+        return "—"
+    txt = f"> {lb['n'] - 1:,} (no collision among primes ≤ {c['prime_limit']:,} for pattern {'·'.join(map(str, lb['pattern'])) or '1'})"
+    if ff:
+        txt += f"; least failure found {ff['n']:,} (∏S = {'·'.join(map(str, ff['pattern']))}; p, p' = {ff['pair'][0]}, {ff['pair'][1]})"
+    return txt
+
+
+def failures_markdown(d: dict) -> list:
+    full = d["full"]
+    col = full.get("collisions_all_bases", {})
+    lines = ["## Step 15 — The decoder's failure set", "",
+             "Proposition 1.8: with pre-periods, the decoder isolates every prime that divides a base and fails only on n with two prime factors p ≠ p' "
+             "outside them whose orders agree in every base coprime to n (iff for squarefree n). The least failing n is the minimum over the small-prime patterns S of ∏S times "
+             "the least product of two such primes, found from the orders of the bases modulo every prime up to "
+             f"{full['prime_limit']:,} ({full['patterns_searched']} of {full['patterns']} patterns searched after pruning).", "",
+             f"**All {len(full['bases'])} bases:** least failing n {_fail_cell(full)}; the decoder is therefore exact for every n < {full['certified_exact_below']:,}. "
+             f"Pairs of primes ≤ {full['prime_limit']:,} (outside the base primes) with equal orders in all {len(full['bases'])} bases: {col.get('groups', 0)}"
+             + (f" (least product {col['min_product']:,}, {col['pair']})" if col.get("min_product") else "") + ".", "",
+             "| k | base added | least failing n with the first k bases | check |", "| --- | --- | --- | --- |"]
+    for c in d["prefix_checks"]:
+        bf = c.get("brute_first_failure")
+        lines.append(f"| {c['k']} | {c['bases'][-1]} | {_fail_cell(c['certificate'])} | "
+                     + (("decoder fails there ✓" if c.get("fails_at_found") else ("—" if "fails_at_found" not in c else "✗")) if "agrees" not in c
+                        else (f"{bf:,} ✓" if c["agrees"] else f"{bf} ✗")) + " |")
+    lines.append("")
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     cpath = run_dir / "claims.json"
@@ -508,7 +545,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:
