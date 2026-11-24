@@ -27,16 +27,74 @@ def repetend_length(n: int, b: int) -> int:
     return L
 
 
-def primes_of(m: int) -> list[int]:
-    """The primes dividing m (trial division; m is a repetend length, so m < n)."""
-    out, p = [], 2
-    while p * p <= m:
+_MR_BASES = (2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41)  # deterministic Miller–Rabin below 3.3e24
+
+
+def _probable_prime(m: int) -> bool:
+    if m < 2:
+        return False
+    for p in _MR_BASES:
         if m % p == 0:
-            out.append(p)
+            return m == p
+    d, s = m - 1, 0
+    while d % 2 == 0:
+        d, s = d // 2, s + 1
+    for a in _MR_BASES:
+        x = pow(a, d, m)
+        if x in (1, m - 1):
+            continue
+        for _ in range(s - 1):
+            x = x * x % m
+            if x == m - 1:
+                break
+        else:
+            return False
+    return True
+
+
+def _rho(m: int) -> int:
+    """A nontrivial factor of the odd composite m (Pollard–Brent)."""
+    for c in range(1, 200):
+        y, r, q, g, x = 2, 1, 1, 1, 2
+        while g == 1:
+            x = y
+            for _ in range(r):
+                y = (y * y + c) % m
+            k = 0
+            while k < r and g == 1:
+                ys = y
+                for _ in range(min(128, r - k)):
+                    y = (y * y + c) % m
+                    q = q * abs(x - y) % m
+                g, k = math.gcd(q, m), k + 128
+            r *= 2
+        if g == m:
+            g = 1
+            while g == 1:
+                ys = (ys * ys + c) % m
+                g = math.gcd(abs(x - ys), m)
+        if g != m:
+            return g
+    raise ArithmeticError(f"no factor of {m} found")
+
+
+def primes_of(m: int) -> list[int]:
+    """The primes dividing the repetend length m: small trial division, then Miller–Rabin and Pollard's rho."""
+    out = set()
+    for p in range(2, 1000):
+        if m % p == 0:
+            out.add(p)
             while m % p == 0:
                 m //= p
-        p += 1
-    return out + ([m] if m > 1 else [])
+    stack = [m] if m > 1 else []
+    while stack:
+        x = stack.pop()
+        if _probable_prime(x):
+            out.add(x)
+        else:
+            f = _rho(x)
+            stack += [f, x // f]
+    return sorted(out)
 
 
 def coprime_parts(parts: list[int]) -> list[int]:

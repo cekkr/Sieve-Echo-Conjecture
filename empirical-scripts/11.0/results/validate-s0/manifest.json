@@ -1,0 +1,351 @@
+{
+  "run_id": "validate-s0",
+  "created": "2026-11-24T23:00:07+01:00",
+  "config_path": "empirical-scripts/11.0/config/orders.json",
+  "config_sha256": "b7ef4a6015260ed5cabf7aaa23898f1be3138b718f2b61c31edbfae8f13294d3",
+  "config": {
+    "name": "orders",
+    "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report Step 10: --stages tworank,report (same integers; 2-rank estimator and l-adic order profiles) Step 11: the `tworank` block lists explicit models and fixed-base-set comparisons. Step 13: --stages decode,report (exact decoding of omega from the repetend lengths of 19 bases; exhaustive to 10^8, sampled decades to 10^12; the first four decades are the orders-s0 integers). Step 15: --stages failures,report (least failing n of the decoder per base set from prime order vectors up to 10^8).",
+    "seed": 0,
+    "orders": {
+      "decades": [
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          999999
+        ],
+        [
+          1000000,
+          9999999
+        ],
+        [
+          10000000,
+          99999999
+        ]
+      ],
+      "per_class": 3000,
+      "max_class": 5,
+      "batch": 200000,
+      "max_batches": 60,
+      "bases": "2..199",
+      "base_sets": {
+        "L19": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "L2..31": "2..31",
+        "L2..99": "2..99",
+        "L2..199": "2..199"
+      },
+      "split": {
+        "train": 0.7,
+        "val": 0.15,
+        "test": 0.15
+      },
+      "model_seeds": 3,
+      "bootstrap": 500,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "workers": 0
+    },
+    "tworank": {
+      "bases": "2..499",
+      "length_set": "2..199",
+      "profile_sets": [
+        "2..199",
+        "2..499"
+      ],
+      "v2_bins": 14,
+      "v3_bins": 8,
+      "model_seeds": 3,
+      "bootstrap": 500,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "workers": 0,
+      "models": [
+        {
+          "lengths": "2..199"
+        },
+        {
+          "lengths": "2..199",
+          "profiles": "2..199"
+        },
+        {
+          "profiles": "2..499"
+        },
+        {
+          "lengths": "2..499"
+        },
+        {
+          "lengths": "2..499",
+          "profiles": "2..499"
+        }
+      ],
+      "comparisons": [
+        [
+          "lengths 2..199 + \u2113-adic 2..199",
+          "lengths 2..199"
+        ],
+        [
+          "lengths 2..499 + \u2113-adic 2..499",
+          "lengths 2..499"
+        ],
+        [
+          "lengths 2..499",
+          "lengths 2..199"
+        ]
+      ]
+    },
+    "decode": {
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        23,
+        29,
+        31
+      ],
+      "prime_bases": [
+        2,
+        3,
+        5,
+        7,
+        11,
+        13,
+        17,
+        19,
+        23,
+        29,
+        31
+      ],
+      "decades": [
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          999999
+        ],
+        [
+          1000000,
+          9999999
+        ],
+        [
+          10000000,
+          99999999
+        ],
+        [
+          100000000,
+          999999999
+        ],
+        [
+          1000000000,
+          9999999999
+        ],
+        [
+          10000000000,
+          99999999999
+        ],
+        [
+          100000000000,
+          999999999999
+        ]
+      ],
+      "per_class": 3000,
+      "max_class": 5,
+      "batch": 200000,
+      "max_batches": 60,
+      "uniform_per_decade": 20000,
+      "exhaustive_max": 100000000,
+      "exhaustive_chunk": 200000,
+      "max_failures": 200,
+      "digit_check": {
+        "decades": [
+          [
+            10000,
+            99999
+          ],
+          [
+            100000,
+            999999
+          ]
+        ],
+        "pairs": 4000,
+        "max_L": 200000,
+        "decode_integers": 600
+      },
+      "workers": 0
+    },
+    "failures": {
+      "bases": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        23,
+        29,
+        31
+      ],
+      "prime_limit": 100000000,
+      "prefix_checks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "brute_limit": 3000000,
+      "workers": 0
+    },
+    "validate": {
+      "prime_list": "empirical-scripts/11.0/results/primes-db/cache/txt/primes50.txt",
+      "source": "https://t5k.org/lists/small/millions/primes50.zip",
+      "sha256_txt": "fd6f4957747e777b3e0e5458911f62c75f6f6981a3182304df5fa5d9a1163b0d",
+      "expected_count": 1000000,
+      "families": {
+        "prime": 5000,
+        "two_primes": 20000,
+        "three_primes": 5000,
+        "square_times_prime": 2000,
+        "list_times_medium": 5000,
+        "list_times_small": 3000
+      },
+      "medium_max": 100000,
+      "gap_checks": 200,
+      "workers": 7,
+      "chunk": 500
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "validate": {
+      "status": "done",
+      "finished": "2026-11-24T23:01:42+01:00",
+      "seconds": 90.67,
+      "validate_file": "validate.json"
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-24T23:01:42+01:00",
+      "seconds": 0.02,
+      "report": "report.md",
+      "report_json": "report.json",
+      "figures": []
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/orders.json",
+    "--run-id",
+    "validate-s0",
+    "--stages",
+    "validate,report"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "5151430eb2f457b4ee30a6d40566c1577cf31203",
+      "dirty": true,
+      "changed_paths": [
+        "M empirical-scripts/11.0/config/orders.json",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/sieve_echo_decoder.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        "?? empirical-scripts/11.0/tests/test_validate.py",
+        "?? empirical-scripts/11.0/validate.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "7c4249b9b5d9113c8c124f8a4dd7e325d92de1ec417de7568140acabb8c28816"
+  },
+  "ndr_version": "ndr-v11.1"
+}

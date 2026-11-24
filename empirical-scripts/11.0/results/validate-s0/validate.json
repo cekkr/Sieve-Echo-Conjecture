@@ -1,0 +1,140 @@
+{
+  "settings": {
+    "prime_list": "empirical-scripts/11.0/results/primes-db/cache/txt/primes50.txt",
+    "source": "https://t5k.org/lists/small/millions/primes50.zip",
+    "sha256_txt": "fd6f4957747e777b3e0e5458911f62c75f6f6981a3182304df5fa5d9a1163b0d",
+    "expected_count": 1000000,
+    "families": {
+      "prime": 5000,
+      "two_primes": 20000,
+      "three_primes": 5000,
+      "square_times_prime": 2000,
+      "list_times_medium": 5000,
+      "list_times_small": 3000
+    },
+    "medium_max": 100000,
+    "gap_checks": 200,
+    "workers": 7,
+    "chunk": 500
+  },
+  "prime_list": {
+    "count": 1000000,
+    "count_ok": true,
+    "sorted": true,
+    "first": 961748941,
+    "last": 982451653,
+    "consecutive_checked": 200,
+    "consecutive_ok": true,
+    "path": "empirical-scripts/11.0/results/primes-db/cache/txt/primes50.txt",
+    "source": "https://t5k.org/lists/small/millions/primes50.zip",
+    "sha256": "fd6f4957747e777b3e0e5458911f62c75f6f6981a3182304df5fa5d9a1163b0d",
+    "primes_used": 70851,
+    "primes_used_all_prime": true
+  },
+  "families": {
+    "prime": {
+      "integers": 5000,
+      "exact": 5000,
+      "lengths_verified": 5000,
+      "all_19_bases_coprime": 5000,
+      "n_min": 961753241,
+      "n_max": 982450531,
+      "omega": {
+        "1": 5000
+      },
+      "seconds": 4.438038577980478,
+      "failures": [],
+      "accuracy": 1.0,
+      "mean_ms": 0.8876077155960956
+    },
+    "two_primes": {
+      "integers": 20000,
+      "exact": 20000,
+      "lengths_verified": 20000,
+      "all_19_bases_coprime": 20000,
+      "n_min": 925083994797705877,
+      "n_max": 965003451367586567,
+      "omega": {
+        "2": 20000
+      },
+      "seconds": 173.0422203373164,
+      "failures": [],
+      "accuracy": 1.0,
+      "mean_ms": 8.65211101686582
+    },
+    "three_primes": {
+      "integers": 5000,
+      "exact": 5000,
+      "lengths_verified": 5000,
+      "all_19_bases_coprime": 5000,
+      "n_min": 892510685322033496133555587,
+      "n_max": 946032747856180153613836369,
+      "omega": {
+        "3": 5000
+      },
+      "seconds": 104.09733213590516,
+      "failures": [],
+      "accuracy": 1.0,
+      "mean_ms": 20.819466427181034
+    },
+    "square_times_prime": {
+      "integers": 2000,
+      "exact": 2000,
+      "lengths_verified": 2000,
+      "all_19_bases_coprime": 2000,
+      "n_min": 890420481765230319405128911,
+      "n_max": 947107479766691496280556819,
+      "omega": {
+        "2": 2000
+      },
+      "seconds": 108.02886230121658,
+      "failures": [],
+      "accuracy": 1.0,
+      "mean_ms": 54.01443115060829
+    },
+    "list_times_medium": {
+      "integers": 5000,
+      "exact": 5000,
+      "lengths_verified": 5000,
+      "all_19_bases_coprime": 5000,
+      "n_min": 93634829731,
+      "n_max": 2378184052451712182706679563065733137024866540259,
+      "omega": {
+        "3": 1295,
+        "2": 1231,
+        "4": 1213,
+        "5": 1261
+      },
+      "seconds": 41.37152252587839,
+      "failures": [],
+      "accuracy": 1.0,
+      "mean_ms": 8.274304505175678
+    },
+    "list_times_small": {
+      "integers": 3000,
+      "exact": 3000,
+      "lengths_verified": 3000,
+      "all_19_bases_coprime": 0,
+      "n_min": 1926329386,
+      "n_max": 102531202918655751005109842545426301,
+      "omega": {
+        "2": 289,
+        "4": 574,
+        "6": 606,
+        "5": 647,
+        "3": 592,
+        "7": 292
+      },
+      "seconds": 11.050059606001014,
+      "failures": [],
+      "accuracy": 1.0,
+      "mean_ms": 3.683353202000338
+    }
+  },
+  "integers": 40000,
+  "exact": 40000,
+  "accuracy": 1.0,
+  "decoder": "sieve_echo_decoder.decode",
+  "decoder_sha256": "80d4296fc9e4814b6e07b7080dc820165ed6cd91407b51754ae94e3206029105",
+  "seconds": 90.10659718513489
+}

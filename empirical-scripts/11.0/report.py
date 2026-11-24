@@ -187,6 +187,9 @@ def step4_markdown(run_dir: Path) -> str:
     ff = run_dir / "failures.json"
     if ff.is_file():
         lines += failures_markdown(runtime.read_json(ff))
+    vf = run_dir / "validate.json"
+    if vf.is_file():
+        lines += validate_markdown(runtime.read_json(vf))
     return "\n".join(lines)
 
 
@@ -527,6 +530,31 @@ def failures_markdown(d: dict) -> list:
     return lines
 
 
+VALIDATE_LABELS = {"prime": "one list prime", "two_primes": "two list primes", "three_primes": "three list primes",
+                   "square_times_prime": "p² · q (list primes)", "list_times_medium": "list prime × primes in (31, 10⁵)",
+                   "list_times_small": "list primes × primes 2…31 (pre-periods act)"}
+
+
+def validate_markdown(d: dict) -> list:
+    pl = d["prime_list"]
+    lines = ["## Step 16 — The final decoder on an external prime list", "",
+             f"Prime list: {pl['count']:,} primes {pl['first']:,} … {pl['last']:,} from {pl['source']} (SHA-256 of the text `{pl['sha256'][:16]}…`), "
+             f"sorted: {pl['sorted']}, {pl['consecutive_checked']} random consecutive pairs confirmed by SymPy `nextprime`: {pl['consecutive_ok']}; "
+             f"{pl['primes_used']:,} list primes used, all confirmed prime by SymPy: {pl['primes_used_all_prime']}. "
+             "The list only builds the integers and checks the answers; the decoder (`sieve_echo_decoder.decode`) sees n and the repetend lengths, "
+             "and every length was verified from n alone (b^L ≡ 1, b^(L/r) ≢ 1 for each prime r | L).", "",
+             f"**{d['exact']:,} of {d['integers']:,} integers decoded exactly ({100 * d['accuracy']:.3f}%).**", "",
+             "| integers | count | n range | all 19 bases coprime | lengths verified | exact | ms per integer |", "| --- | --- | --- | --- | --- | --- | --- |"]
+    for k, x in d["families"].items():
+        lines.append(f"| {VALIDATE_LABELS.get(k, k)} | {x['integers']:,} | {x['n_min']:.2e} – {x['n_max']:.2e} | {x['all_19_bases_coprime']:,} | "
+                     f"{x['lengths_verified']:,} | {x['exact']:,} | {x['mean_ms']:.1f} |")
+    lines.append("")
+    fails = [f for x in d["families"].values() for f in x["failures"]]
+    if fails:
+        lines += ["Failures (n, true factors, decoded): " + "; ".join(f"{f['n']}: {f['factors']} → {f['decoded']}" for f in fails[:10]), ""]
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     cpath = run_dir / "claims.json"
@@ -545,7 +573,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:

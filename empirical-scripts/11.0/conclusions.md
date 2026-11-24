@@ -1,6 +1,6 @@
 # Sieve Echo Conjecture — Conclusions of v11
 
-What version 11 of the empirical program ([`empirical-scripts/11.0/`](.)) established, after ROADMAP steps 0–15. Every number comes from a v11 run (seed 0, NDR definitions `ndr-v11.1`), named in parentheses; run summaries, manifests and figures are under [`results/<run-id>/`](results). Earlier script generations (v3.1–v10) are not sources here: v11 reproduces their stored statistics only to explain them. The detailed argument, with proofs (Propositions 1.4–1.8), is the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](../../studies/9/sieve-echo-conjecture-9.md); the step-by-step log is the [ROADMAP Results log](../../ROADMAP.md#results-log).
+What version 11 of the empirical program ([`empirical-scripts/11.0/`](.)) established, after ROADMAP steps 0–16. Every number comes from a v11 run (seed 0, NDR definitions `ndr-v11.1`), named in parentheses; run summaries, manifests and figures are under [`results/<run-id>/`](results). Earlier script generations (v3.1–v10) are not sources here: v11 reproduces their stored statistics only to explain them. The detailed argument, with proofs (Propositions 1.4–1.8), is the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](../../studies/9/sieve-echo-conjecture-9.md); the step-by-step log is the [ROADMAP Results log](../../ROADMAP.md#results-log).
 
 ## The question
 
@@ -83,6 +83,7 @@ Proposition 1.7 of `studies/9` (tested for every n < 30 000 in `tests/test_decod
 | every n in [2, 10⁸], plus gcd(b, n) of non-coprime bases (pre-periods) | **all exact** |
 | every n < 3 700 000 259 (Proposition 1.8; no two primes < 10⁸ share all 19 orders; `failures-s0`) | **all exact** (certified) |
 | every n in [2, 10⁸], Shor's half-period chain only (q = 2) | 99.896% |
+| 40 000 integers built from an external prime list (t5k.org, primes 961 748 941 … 982 451 653): 1–3 list primes, p²q, × primes in (31, 10⁵), × primes 2…31; n up to 2.4·10⁴⁸; lengths verified from n alone; the published `sieve_echo_decoder.py` (`validate-s0`) | **all exact**; 37 000 are coprime to every base, so no pre-period acts |
 | ω-balanced decades 10⁴…10¹² (118 808 integers) | all exact; the first four decades are the `orders-s0` integers, where the best learned model reached 98.6 / 98.2 / 97.0 / 94.2% on min(ω, 5) |
 | uniform samples in the same decades (157 698 integers) | all exact |
 | 600 integers of 10⁴–10⁶ decoded from their digits only | all exact; 4 001 remainder readings, 0 errors, mean 6.05 digits each |
@@ -164,7 +165,7 @@ The conjecture's intuition — that the sieve leaves an echo in 1/*n* — is rig
 - **Samples, not all integers.** NDR data covers every n ≤ 150 000 (`full-s0`) and ω-balanced samples of 3 000 per class per decade to 10⁶ (`scale-s0`); orders-only results reach 10⁸ on the same kind of samples. Rare classes are over-represented relative to their natural frequency, and ω ≥ 5 is pooled.
 - **Bases.** Entropy and zeros are measured in 19 bases (v8, v10, primes < 32); orders in up to 498. A larger digit base set was not tried, since the orders that would be its baseline would then also be larger.
 - **Evolutionary search** found the known structure (Fermat's test, log(n/λ(n))) and no new formula; the differences between Evolvo guides, including the PyTorch policy guide, are not significant over 5 seeds (`full-s0-step4`).
-- **Exactness is certified only below 3.7·10⁹.** Above it the decoder must eventually fail (at the latest when no base is coprime: n ≥ 2·3·…·31·37·41 ≈ 3.0·10¹⁴); the samples to 10¹² had no failure, but the density of failures between 3.7·10⁹ and 3·10¹⁴ is unmeasured.
+- **Exactness is certified only below 3.7·10⁹.** Above it the decoder must eventually fail (at the latest when no base is coprime: n ≥ 2·3·…·31·37·41 ≈ 3.0·10¹⁴); the samples to 10¹² and the 40 000 integers built from external primes up to 2.4·10⁴⁸ (`validate-s0`) had no failure, but the density of failures between 3.7·10⁹ and 3·10¹⁴ is unmeasured.
 - **Owner review.** The revision-9 draft and the step 6–11 reports await the author's review.
 
 ## 11. Open questions

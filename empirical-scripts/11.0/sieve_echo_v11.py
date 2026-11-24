@@ -7,7 +7,7 @@ One command runs the whole pipeline from a config file and a seed and writes eve
     .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json
 
 Stages (ROADMAP.md): data (step 1) -> claims (step 2) -> formulas, nn (steps 3-4) -> report (steps 2/6).
-All stages are implemented (`scale` is ROADMAP step 5, `lengths` step 7, `zeros` step 8, `whisky` step 8e, `euler` step 9a, `orders` step 9b, `tworank` step 10, `decode` step 13, `subgroup` step 14, `failures` step 15): `formulas` runs the Evolvo GFSL formula experiments (guides x
+All stages are implemented (`scale` is ROADMAP step 5, `lengths` step 7, `zeros` step 8, `whisky` step 8e, `euler` step 9a, `orders` step 9b, `tworank` step 10, `decode` step 13, `subgroup` step 14, `failures` step 15, `validate` step 16): `formulas` runs the Evolvo GFSL formula experiments (guides x
 seeds, S1 adaptive evaluation size, S2 RL guide, warm starts); `nn` runs the held-out baselines,
 the §3.1 three-feature retest and the GFSL-NN architecture search.
 
@@ -29,6 +29,7 @@ Run directory:
     decode.json        step 13: exact decoding of omega (the factorization) from repetend lengths and digits
     subgroup.json      step 14: exact membership q in <b> mod n (non-cyclic groups too) and the C7 residue structure
     failures.json      step 15: the decoder's failure set: least failing n per base set, certified from prime order vectors
+    validate.json      step 16: the final decoder on integers built from an external prime list (t5k.org)
     report.md/.json    verdict table and per-claim summary
     log.txt            stage log
     cache/             disposable dataset cache (git-ignored)
@@ -48,9 +49,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import runtime  # noqa: E402
 
-STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "zeros", "whisky", "euler", "orders", "tworank", "decode", "subgroup", "failures", "report")
+STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "zeros", "whisky", "euler", "orders", "tworank", "decode", "subgroup", "failures", "validate", "report")
 IMPLEMENTED = set(STAGES)
-ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "zeros": "step 8", "whisky": "step 8e", "euler": "step 9a", "orders": "step 9b", "tworank": "step 10", "decode": "step 13", "subgroup": "step 14", "failures": "step 15", "report": "step 6"}
+ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "zeros": "step 8", "whisky": "step 8e", "euler": "step 9a", "orders": "step 9b", "tworank": "step 10", "decode": "step 13", "subgroup": "step 14", "failures": "step 15", "validate": "step 16", "report": "step 6"}
 DEFAULT_STAGES = "data,claims,formulas,nn,scale,lengths,zeros,whisky,euler,report"
 
 
@@ -329,11 +330,19 @@ def stage_failures(run: Run) -> dict:
     return {"failures_file": "failures.json"}
 
 
+def stage_validate(run: Run) -> dict:
+    import validate
+
+    out = validate.run_stage(run.config.get("validate", {}), run.seed, log=run.log)
+    runtime.write_json(run.dir / "validate.json", out)
+    return {"validate_file": "validate.json"}
+
+
 def stage_report(run: Run) -> dict:
     import report
 
-    if not any((run.dir / f).is_file() for f in ("claims.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "euler.json", "zeros.json", "lengths.json", "scale.json")):
-        raise SystemExit("report needs the output of at least one analysis stage (claims, scale, lengths, zeros, euler, orders, tworank, decode, subgroup, failures)")
+    if not any((run.dir / f).is_file() for f in ("claims.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "euler.json", "zeros.json", "lengths.json", "scale.json")):
+        raise SystemExit("report needs the output of at least one analysis stage (claims, scale, lengths, zeros, euler, orders, tworank, decode, subgroup, failures, validate)")
     try:
         table = load_table(run)
     except SystemExit:
@@ -341,7 +350,7 @@ def stage_report(run: Run) -> dict:
     return report.write_report(run.dir, table)
 
 
-STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "zeros": stage_zeros, "whisky": stage_whisky, "euler": stage_euler, "orders": stage_orders, "tworank": stage_tworank, "decode": stage_decode, "subgroup": stage_subgroup, "failures": stage_failures, "report": stage_report}
+STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "zeros": stage_zeros, "whisky": stage_whisky, "euler": stage_euler, "orders": stage_orders, "tworank": stage_tworank, "decode": stage_decode, "subgroup": stage_subgroup, "failures": stage_failures, "validate": stage_validate, "report": stage_report}
 
 
 # ---------------------------------------------------------------------------------------------

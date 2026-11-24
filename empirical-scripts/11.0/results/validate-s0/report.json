@@ -1,0 +1,25 @@
+{
+  "run_id": "validate-s0",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/orders.json",
+  "git_root": {
+    "sha": "5151430eb2f457b4ee30a6d40566c1577cf31203",
+    "dirty": true,
+    "changed_paths": [
+      "M empirical-scripts/11.0/config/orders.json",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/sieve_echo_decoder.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/tests/test_validate.py",
+      "?? empirical-scripts/11.0/validate.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "7c4249b9b5d9113c8c124f8a4dd7e325d92de1ec417de7568140acabb8c28816",
+  "ndr_version": null,
+  "verdicts": {}
+}

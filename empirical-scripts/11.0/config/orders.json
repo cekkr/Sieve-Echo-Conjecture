@@ -254,5 +254,23 @@
     ],
     "brute_limit": 3000000,
     "workers": 0
+  },
+  "validate": {
+    "prime_list": "empirical-scripts/11.0/results/primes-db/cache/txt/primes50.txt",
+    "source": "https://t5k.org/lists/small/millions/primes50.zip",
+    "sha256_txt": "fd6f4957747e777b3e0e5458911f62c75f6f6981a3182304df5fa5d9a1163b0d",
+    "expected_count": 1000000,
+    "families": {
+      "prime": 5000,
+      "two_primes": 20000,
+      "three_primes": 5000,
+      "square_times_prime": 2000,
+      "list_times_medium": 5000,
+      "list_times_small": 3000
+    },
+    "medium_max": 100000,
+    "gap_checks": 200,
+    "workers": 7,
+    "chunk": 500
   }
 }

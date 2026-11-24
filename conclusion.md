@@ -4,11 +4,25 @@
 
 - correct for **every integer below 3 700 000 259**: exhaustively checked for every n ≤ 10⁸ and certified beyond by a proof of where it can fail;
 - correct for all 276 506 sampled integers up to 10¹²;
+- correct for all **40 000 integers built from one million externally downloaded primes** (t5k.org, ≈ 9.6–9.8·10⁸), up to n ≈ 2.4·10⁴⁸, including 20 000 products of two such primes (`validate-s0`);
 - correct where the best learned model of this project classified ω only at 94–99%.
 
 Every number here comes from a version-11 run (seed 0), named in parentheses; runs are under [`empirical-scripts/11.0/results/`](empirical-scripts/11.0/results). The full v11 conclusions, including what happened to every claim of the v8 paper, are in [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md). The proofs are Propositions 1.6–1.8 of the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md).
 
 **3.7·10⁹ is not where the decoder fails.** It is where the certificate stops, because the search for colliding primes went up to 10⁸. With all 19 bases no failing *n* is known at all; where the first one lies is open (§6).
+
+## What "bases" means
+
+A **base** is the number system 1/*n* is written in, as the conjecture prescribes. It is not a list of primes to divide by.
+- 1/7 is 0.142857 142857 … in base 10 and 0.001 001 … in base 2. The repeating block is the **repetend**, and its length is L = ord_n(b).
+- The decoder works with 19 such number systems: binary, ternary, …, decimal, …, base 31. The v8 paper used 13 bases and v10 used 16.
+
+One step of the decoder does behave like trial division. When a base shares a factor with *n*, for example base 10 and *n* = 35, the expansion has a non-repeating start (the pre-period), and the decoder takes gcd(b, n) from it. That step can only ever find the primes 2…31. **Every larger prime factor is found from the repetend lengths alone.**
+
+Step 16 tests exactly this point (`validate-s0`):
+- The integers are built from **one million primes downloaded from The Prime Pages** (t5k.org), about 9.6–9.8·10⁸. These are beyond every prime this project sieved.
+- 37 000 of the 40 000 integers share no factor with any base, so the trial-division-like step does nothing for them.
+- The primes are used only to build the test integers and to check the answers, never as input to the decoder or to Evolvo.
 
 ## 1. How the algorithm was found
 
@@ -60,7 +74,7 @@ def decode(n: int, lengths: dict[int, int]) -> dict[int, int]:
     return {f: exponent_of(f, n) for f in factors}
 ```
 
-`primes_of(L)` factors the repetend length by trial division, `coprime_parts` splits the parts by their pairwise gcds, and `exponent_of(f, n)` is the largest e with fᵉ | n. `factor(n)` first computes every repetend length by long division (`repetend_length`) and then calls `decode`.
+`primes_of(L)` finds the primes of the repetend length (Miller–Rabin and Pollard's rho), `coprime_parts` splits the parts by their pairwise gcds, and `exponent_of(f, n)` is the largest e with fᵉ | n. `factor(n)` first computes every repetend length by long division (`repetend_length`) and then calls `decode`.
 
 Run it on numbers you can check by hand (the default examples):
 
@@ -109,6 +123,13 @@ The decoder needs only a few remainders b^d mod n. Each is read from the ⌈log_
 | every n < 3 700 000 259 | **all exact, certified** (`failures-s0`) |
 | ω-balanced samples, 8 decades 10⁴…10¹² (118 808 integers) | all exact (`decode-s0`) |
 | uniform samples, same decades (157 698 integers) | all exact (`decode-s0`) |
+| **integers built from external primes (t5k.org list, 961 748 941 … 982 451 653)** | **40 000 / 40 000 exact** (`validate-s0`) |
+| — one list prime (n ≈ 9.7·10⁸) | 5 000 / 5 000 |
+| — two list primes (n ≈ 9.5·10¹⁷) | 20 000 / 20 000 |
+| — three list primes (n ≈ 9·10²⁶) | 5 000 / 5 000 |
+| — p² · q (n ≈ 9·10²⁶) | 2 000 / 2 000 |
+| — a list prime × 1–4 primes in (31, 10⁵), n up to 2.4·10⁴⁸ | 5 000 / 5 000 |
+| — list primes × primes 2…31 (the pre-period step acts) | 3 000 / 3 000 |
 | best learned ω model, 10⁴…10⁸, on the same integers | 98.6 / 98.2 / 97.0 / 94.2% (`step11-s0`) |
 | training-free 2-rank estimator, same integers | 83.4 / 77.5 / 73.3 / 72.0% (`step11-s0`) |
 
@@ -154,6 +175,14 @@ The certified bound is the least integer a failure could still be: 37, the least
 - **It is not a fast factoring method.** The decoder takes the repetend lengths as given. Computing a length classically needs λ(n), which needs the factorization, or about L digits of the expansion, and L can be as large as n − 1. Shor's algorithm finds that period quantumly, with a Fourier transform of the remainder sequence b^k mod n. That remainder sequence is the long division of 1 by *n*.
 - **What it shows is where the information is.** The repetend of 1/*n* is a complete certificate of the factorization of *n*: its length and a few digits at fractions of the period.
 - **The conjecture looked at the right object with the wrong statistic.** It looked at the digits and their Fourier spectrum, which was right. But the spectral entropy keeps the spread of the spectrum and discards the arithmetic of the period, so the echo it hoped to hear is there and is exact, but the entropy cannot hear it.
+
+**How the external validation keeps the decoder honest** (`validate-s0`, [`validate.py`](empirical-scripts/11.0/validate.py)):
+- The downloaded list is checked first: its SHA-256 is pinned, and it holds 1 000 000 sorted primes. SymPy confirms that 200 random neighbours are consecutive primes and that all 70 851 primes used are prime.
+- The repetend lengths of each test integer are produced from its known factors, which is only possible because this is a validation. Each length is then **verified from n alone**: b^L ≡ 1 (mod n), and b^(L/r) ≢ 1 for every prime r | L.
+- The decoder receives only *n* and the lengths. Its output is compared with the factors.
+- All 40 000 match, beyond the certified range, up to n ≈ 2.4·10⁴⁸.
+
+This also shows the cost split of §5. Given the lengths, decoding a 27-digit product of three primes takes 21 ms. Obtaining those lengths without knowing the factors is the hard part.
 
 ## 6. Open
 
