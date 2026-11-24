@@ -14,11 +14,57 @@ The repetends of 1/*n* in 19 bases (2–7, 9–17, 19, 23, 29, 31) determine the
 2. The lengths carry ω. As Proposition 1.6 shows, ω is the 2-rank of (ℤ/nℤ)*, which the 2-adic valuations of the lengths reveal.
 3. Reading those valuations prime by prime, rather than statistically, is the reduction of factoring to order finding used by Miller and Shor. The data confirmed the link: Shor's half-period split fails exactly on Midy's pairs.
 
-**How it works.** For each base *b* coprime to *n* and each prime q | L:
+**The final algorithm** is [`empirical-scripts/11.0/sieve_echo_decoder.py`](empirical-scripts/11.0/sieve_echo_decoder.py) — pure Python, no dependencies, tested against SymPy. It is not an Evolvo formula: it was derived from what the analyses showed, and it needs no training. Its core:
 
-1. Compute gcd(b^{(L/q^e)·q^i} − 1, n) for i < e = v_q(L). Each remainder b^d mod n is read from about log_b *n* repetend digits.
-2. Refine *n* by these gcds, and by gcd(b, n) for the bases that share a factor with *n*.
-3. The coprime parts that remain are the prime-power factors.
+```python
+BASES = [2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 23, 29, 31]
+
+def decode(n, lengths):                                  # lengths = {b: repetend length of 1/n in base b}
+    parts = [n]
+
+    def split(g):
+        nonlocal parts
+        parts = [y for x in parts for y in ((math.gcd(x, g), x // math.gcd(x, g)) if 1 < math.gcd(x, g) < x else (x,))]
+
+    for b in BASES:
+        if math.gcd(b, n) > 1:
+            split(math.gcd(b, n))                        # pre-period: the primes b shares with n
+            continue
+        L = lengths[b]
+        for q in primes_of(L):                           # every prime q dividing the repetend length
+            m = L
+            while m % q == 0:
+                m //= q                                  # m = L / q^e
+            while m < L:                                 # m = (L / q^e) q^i, i = 0 … e−1
+                split(math.gcd(pow(b, m, n) - 1, n))     # b^m mod n: a remainder of the long division of 1/n
+                m *= q
+    factors = coprime_parts(parts)                       # split the parts by their gcds until pairwise coprime
+    return {f: exponent_of(f, n) for f in factors}       # {prime: exponent}
+```
+
+Each remainder b^m mod n can also be read from about log_b *n* repetend digits. Run it on hand-checkable examples:
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_decoder.py
+```
+
+```
+2047 = 23 · 89   ω = 2   check: product = n, all factors prime
+1001 = 7 · 11 · 13   ω = 3   check: product = n, all factors prime
+1024 = 2^10   ω = 1   check: product = n, all factors prime
+214935 = 3 · 5 · 7 · 23 · 89   ω = 5   check: product = n, all factors prime
+```
+
+The check multiplies the factors back and tests each by trial division, independently of the decoder. Keep your own inputs small (up to about 10⁶): the repetend lengths are computed by long division, which takes up to *n* steps per base.
+
+**What Evolvo found, for comparison** (`full-s0-step4`):
+
+| target | best evolved formula | held-out accuracy |
+| --- | --- | --- |
+| is_prime | `[lcm of lengths divides n−1] ^ (2 % ([mean digit] / 10))` | 99.99% — Fermat's test in repetend form |
+| ω | `([log n − log lcm] · \|lcm divides n−1\|^(1/4)) + e`, essentially log(n/λ(n)) | 65.5% |
+
+The decoder above gets 100%.
 
 **Why it works so well.**
 - **Every test is exact.** p | b^m − 1 exactly when ord_p(b) | m, so two prime factors are separated as soon as one base gives them different orders.

@@ -25,25 +25,74 @@ The conjecture said that ω(*n*) is encoded in the spectral entropy of the repet
    - The decoder generalizes it to every prime q dividing every repetend length, and to 19 bases at once.
 6. **Where it fails** (step 15). A proof says exactly which *n* can defeat the decoder (Proposition 1.8). That turns "checked up to 10⁸" into "certified up to 3.7·10⁹" at the cost of one computation over single primes (`failures-s0`).
 
-## 2. The algorithm
+## 2. The final algorithm
 
-Input: *n*, and for each base *b* in B = {2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 23, 29, 31}:
+**It is not an Evolvo formula.** It was derived from what the analyses showed, and it needs no training and no genome. Evolvo's best results are in §2.1 for comparison.
 
-- the repetend length L_b of 1/*n* when gcd(b, n) = 1;
-- the pre-period, i.e. gcd(b, n), otherwise.
+The complete algorithm is [`empirical-scripts/11.0/sieve_echo_decoder.py`](empirical-scripts/11.0/sieve_echo_decoder.py): pure Python, no dependencies. It is tested against SymPy in [`tests/test_sieve_echo_decoder.py`](empirical-scripts/11.0/tests/test_sieve_echo_decoder.py), and it is the same procedure as the `decode` stage that produced `decode-s0` and `failures-s0`.
+
+Its core, as it appears in that file (docstring shortened):
+
+```python
+BASES = [2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 23, 29, 31]
+
+def decode(n: int, lengths: dict[int, int]) -> dict[int, int]:
+    """{factor: exponent} of n from its repetend lengths {b: L_b}; a base missing from `lengths` shares a factor with n."""
+    parts = [n]
+
+    def split(g: int) -> None:
+        nonlocal parts
+        parts = [y for x in parts for y in ((math.gcd(x, g), x // math.gcd(x, g)) if 1 < math.gcd(x, g) < x else (x,))]
+
+    for b in BASES:
+        if math.gcd(b, n) > 1:
+            split(math.gcd(b, n))                        # pre-period: the primes b shares with n
+            continue
+        L = lengths[b]
+        for q in primes_of(L):                           # every prime q dividing the repetend length
+            m = L
+            while m % q == 0:
+                m //= q                                  # m = L / q^e
+            while m < L:                                 # m = (L / q^e) q^i, i = 0 … e−1
+                split(math.gcd(pow(b, m, n) - 1, n))     # b^m mod n: a remainder of the long division of 1/n
+                m *= q
+    factors = coprime_parts(parts)                       # split the parts by their gcds until pairwise coprime
+    return {f: exponent_of(f, n) for f in factors}
+```
+
+`primes_of(L)` factors the repetend length by trial division, `coprime_parts` splits the parts by their pairwise gcds, and `exponent_of(f, n)` is the largest e with fᵉ | n. `factor(n)` first computes every repetend length by long division (`repetend_length`) and then calls `decode`.
+
+Run it on numbers you can check by hand (the default examples):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_decoder.py
+```
 
 ```
-parts ← {n}
-for each base b sharing a factor with n:            # pre-periods
-    refine parts by gcd(b, n)
-for each base b coprime to n, with L = L_b:
-    for each prime q dividing L, with e = v_q(L):
-        for i = 0 … e−1:
-            x ← b^((L / q^e) · q^i) mod n           # a remainder of the long division of 1/n
-            refine parts by gcd(x − 1, n)
-reduce parts to pairwise coprime numbers
-ω̂ ← number of parts                                 # the parts are the prime-power factors
+2047 = 23 · 89   ω = 2   check: product = n, all factors prime
+1001 = 7 · 11 · 13   ω = 3   check: product = n, all factors prime
+1024 = 2^10   ω = 1   check: product = n, all factors prime
+214935 = 3 · 5 · 7 · 23 · 89   ω = 5   check: product = n, all factors prime
 ```
+
+The "check" is independent of the decoder: it multiplies the factors back and tests each by trial division. Two of these examples are hard cases:
+- 2047 = 2¹¹ − 1 cannot be split by base 2;
+- 214 935 is the least integer the first 9 bases fail on.
+
+For larger tests the test file checks every n < 20 000 against SymPy's factorization (`tests/test_sieve_echo_decoder.py`). The exhaustive and certified ranges are from the `decode` and `failures` stages.
+
+Pass other integers as arguments, but keep them small (up to about 10⁶). The long division takes L steps per base, and L can be close to *n*, so the lengths are the expensive part. The `decode` step itself is polynomial in log *n*. The `decode` step itself is polynomial in log *n*.
+
+### 2.1 What Evolvo found (for comparison)
+
+The Evolvo formula search of step 4 (`full-s0-step4`, inputs z-scored, selected on validation, scored once on test) found two formulas.
+
+| target | best evolved formula | held-out test accuracy |
+| --- | --- | --- |
+| is_prime | `[lcm divides n−1] ^ (2 % ([mean digit] / 10))` | **99.99%** — Fermat's little theorem in repetend form |
+| ω | `([log n − log lcm] · |lcm divides n−1|^(1/4)) + e` | 65.5% |
+
+For ω the best evolved formula is essentially log(n/λ(n)). Gradient boosting on the same inputs reaches 89.6%, the length-arithmetic model 98.2%, and the decoder above 100%. Evolvo found the right ingredients — the lcm of the lengths and its relation to *n* — but a formula over aggregate features cannot express "split *n* by gcds". That step had to be derived.
 
 **Worked example: n = 2047 = 23 · 89.**
 - Base 2 has L = 11. Both primes give 2 the order 11, so every base-2 test returns 1 or *n*, and base 2 alone cannot split 2047.

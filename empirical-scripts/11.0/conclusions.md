@@ -92,6 +92,38 @@ Proposition 1.7 of `studies/9` (tested for every n < 30 000 in `tests/test_decod
 
 Few bases are needed: with the first five (2, 3, 4, 5, 6) the decoder is exact for 90.0% of the ω-balanced integers at 10⁴–10⁵ and 97.2% at 10¹¹–10¹², and it improves with *n* because two prime factors rarely share all their orders. On average 2.45 (10⁴–10⁵) to 1.78 (10¹¹–10¹²) bases suffice.
 
+**The final algorithm.** It is this decoder, not an Evolvo formula. Evolvo's best ω formula, essentially log(n/λ(n)), reaches 65.5% (`full-s0-step4`). The decoder is the standalone, dependency-free [`sieve_echo_decoder.py`](sieve_echo_decoder.py), tested against SymPy for every n < 20 000. Its core:
+
+```python
+def decode(n, lengths):                                  # lengths = {b: repetend length of 1/n in base b}
+    parts = [n]
+
+    def split(g):
+        nonlocal parts
+        parts = [y for x in parts for y in ((math.gcd(x, g), x // math.gcd(x, g)) if 1 < math.gcd(x, g) < x else (x,))]
+
+    for b in BASES:                                      # the 19 bases
+        if math.gcd(b, n) > 1:
+            split(math.gcd(b, n))                        # pre-period
+            continue
+        L = lengths[b]
+        for q in primes_of(L):
+            m = L
+            while m % q == 0:
+                m //= q                                  # L / q^e
+            while m < L:                                 # (L / q^e) q^i, i < e
+                split(math.gcd(pow(b, m, n) - 1, n))
+                m *= q
+    factors = coprime_parts(parts)
+    return {f: exponent_of(f, n) for f in factors}
+```
+
+`python sieve_echo_decoder.py` decodes hand-checkable examples and verifies each result independently:
+- 2047 = 23 · 89, which base 2 cannot split;
+- 1001 = 7 · 11 · 13;
+- 1024 = 2¹⁰;
+- 214 935 = 3 · 5 · 7 · 23 · 89, the least failure of the first 9 bases.
+
 **What this means.** ω(*n*) is trivially a function of *n*; the content of the result is computational. Given the repetend lengths, the factorization follows in polynomial time; computing those lengths classically needs λ(n) — the factorization itself — or Θ(L) digits of the expansion. Shor's algorithm finds them with a quantum Fourier transform of the remainder sequence b^k mod n, which is the long division of 1 by *n*. So the repetend of 1/*n* is a complete certificate of the factorization of *n*, and finding its period by Fourier analysis of the remainder sequence is exactly the step Shor's algorithm performs. The conjecture looked at the right object with the wrong statistic: entropy keeps the spectrum's spread and discards the period's arithmetic.
 
 ## 8. Residue-class structure
