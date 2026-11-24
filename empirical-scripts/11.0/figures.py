@@ -312,6 +312,32 @@ def fig_tworank(d: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
                                                       "the histograms of the 2-adic and 3-adic valuations of the orders (bases 2…499) with log n and v₂(n), and both (step 10).")
 
 
+def fig_decode(d: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    rows = d.get("balanced") or []
+    if not rows:
+        return None
+    pick = rows if len(rows) <= 4 else [rows[i] for i in sorted({0, len(rows) // 3, (2 * len(rows)) // 3, len(rows) - 1})]
+    ramp = [BLUE_RAMP[k] for k in (2, 3, 5, 6)][-len(pick):] if len(pick) <= 4 else list(BLUE_RAMP.values())
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(7.4, 4.4))
+    k = np.arange(1, len(d["bases"]) + 1)
+    ends = []
+    for j, r in enumerate(pick):
+        v = np.array(r["accuracy_by_prefix"]) * 100
+        lab = _decade_label(*r["decade"])
+        ax.plot(k, v, marker="o", ms=4, lw=2, color=ramp[j], label=lab)
+        ends.append((v[2], lab))
+    ax.set_xticks(k, [str(b) for b in d["bases"]], fontsize=8)
+    ax.set_xlabel("bases used, in order (the last tick is the 19th base)")
+    ax.set_ylabel("integers with ω̂ = ω exactly (%)")
+    ax.set_ylim(min(40, ax.get_ylim()[0]), 101)
+    ax.axhline(100, color=GRID, lw=1, zorder=0)
+    ax.set_title("ω decoded exactly from repetend lengths, ω-balanced samples")
+    ax.legend(title="decade of n", loc="lower right", fontsize=8)
+    return _save(fig, out / "decode_bases.png"), ("Share of integers whose ω is recovered exactly by the training-free decoder (Proposition 1.7) using the first k of the 19 bases, "
+                                                  "per decade of n (ω-balanced samples, step 13). Base 4 adds nothing to base 2 because 4 = 2².")
+
+
 def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -> List[Tuple[str, str]]:
     out = run_dir / "figures"
     made: List[Tuple[str, str]] = []
@@ -341,4 +367,6 @@ def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -
         add(fig_zeros_by_omega(runtime.read_json(run_dir / "zeros.json"), out))
     if (run_dir / "tworank.json").is_file():
         add(fig_tworank(runtime.read_json(run_dir / "tworank.json"), out))
+    if (run_dir / "decode.json").is_file():
+        add(fig_decode(runtime.read_json(run_dir / "decode.json"), out))
     return made

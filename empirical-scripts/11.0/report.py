@@ -178,6 +178,9 @@ def step4_markdown(run_dir: Path) -> str:
     tf = run_dir / "tworank.json"
     if tf.is_file():
         lines += tworank_markdown(runtime.read_json(tf))
+    df = run_dir / "decode.json"
+    if df.is_file():
+        lines += decode_markdown(runtime.read_json(df))
     return "\n".join(lines)
 
 
@@ -412,6 +415,48 @@ def tworank_markdown(d: dict) -> list:
     return lines
 
 
+def _acc(x: float) -> str:
+    return "100%" if x == 1 else f"{100 * x:.3f}%"
+
+
+def decode_markdown(d: dict) -> list:
+    bases = d["bases"]
+    lines = ["## Step 13 — Exact decoding of ω from the repetends", "",
+             f"For each base b of {bases} coprime to n, with L = ord_n(b) and each prime q | L, the tests gcd(b^((L/q^v) q^i) − 1, n) (i < v = v_q(L)) "
+             "split n; ω̂ = size of the resulting coprime base (Proposition 1.7: ω̂ ≤ ω, exact when the prime divisors have distinct order vectors). "
+             "No training; b^d mod n is the remainder after d digits of 1/n in base b.", ""]
+    ex = d.get("exhaustive")
+    if ex:
+        pre = ex["accuracy_by_prefix"]
+        lines += [f"**Every n in [{ex['n_range'][0]}, {ex['n_range'][1]}]** ({ex['integers']} integers): ω̂ = ω for {_acc(ex['accuracy'])} "
+                  f"({ex['failures_all_bases']} failures); q = 2 only (Shor's half-period split): {_acc(ex['accuracy_shor_only'])}; with pre-periods of non-coprime bases: {_acc(ex['accuracy_with_preperiod'])}. "
+                  f"First 1 / 2 / 5 / 10 bases: {_acc(pre[0])} / {_acc(pre[1])} / {_acc(pre[4])} / {_acc(pre[min(9, len(pre) - 1)])}.", ""]
+        if ex["failures"]:
+            lines += ["Failures (n, ω, ω̂, ω̂ with pre-periods): " + ", ".join(str(tuple(f)) for f in ex["failures"][:20]), ""]
+    for key, title in (("balanced", "ω-balanced samples"), ("uniform", "uniform samples")):
+        rows = d.get(key)
+        if not rows:
+            continue
+        lines += [f"**{title}** (exact ω):", "", "| decade | integers | all bases | failures | first 5 bases | 11 prime bases | q = 2 only | bases needed (mean / p99 / max) | Midy = Shor failure |",
+                  "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+        for x in rows:
+            m = x["midy_equals_shor_failure"]
+            bn = x["bases_needed"]
+            lines.append(f"| {x['decade'][0]}–{x['decade'][1]} | {x['integers']} | {_acc(x['accuracy'])} | {x['failures']} | {_acc(x['accuracy_by_prefix'][4])} | "
+                         f"{_acc(x['accuracy_prime_bases_by_prefix'][-1])} | {_acc(x['accuracy_shor_only'])} | {bn['mean']:.2f} / {bn['p99']:.0f} / {bn['max']} | {m['agree']}/{m['pairs']} |")
+        lines.append("")
+    if d.get("balanced"):
+        lines += ["Accuracy by class min(ω, 5), ω-balanced (all bases / q = 2 only):", ""]
+        for x in d["balanced"]:
+            lines.append(f"- {x['decade'][0]}–{x['decade'][1]}: " + "; ".join(f"{c}: {_acc(v['accuracy'])} / {_acc(v['accuracy_shor_only'])}" for c, v in x["by_class"].items()))
+        lines.append("")
+    dc = d.get("digit_check")
+    if dc:
+        lines += [f"**From the digits** (13c): {dc['remainders_checked']} remainders read from ⌈log_b n⌉ repetend digits (mean {dc['digits_per_reading']['mean']:.1f}, max {dc['digits_per_reading']['max']}), "
+                  f"{dc['mismatches']} mismatches; {dc['integers_correct']}/{dc['integers_decoded_from_digits']} integers (all 19 repetends ≤ {dc['max_L']} digits) decoded to the exact ω from digits alone.", ""]
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     cpath = run_dir / "claims.json"
@@ -430,7 +475,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:

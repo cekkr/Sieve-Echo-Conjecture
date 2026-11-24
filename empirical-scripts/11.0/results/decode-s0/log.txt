@@ -1,0 +1,31 @@
+[20:39:30] run decode-s0 seed=0 stages=['decode', 'report'] dir=empirical-scripts/11.0/results/decode-s0
+[21:51:21]   13d: exhaustive n ≤ 100000000: accuracy 0.9999999 (9 failures), q=2 only 0.99896, 4311s
+[21:51:21]   13d: ω-balanced sample, 3000 per class min(ω, 5) in 8 decades
+[21:51:35]     decade [10000, 99999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 1808} from 90000 draws
+[21:52:13]     decade [100000, 999999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 3000} from 179445 draws
+[21:52:55]     decade [1000000, 9999999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 3000} from 197793 draws
+[21:53:37]     decade [10000000, 99999999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 3000} from 199787 draws
+[21:54:20]     decade [100000000, 999999999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 3000} from 199976 draws
+[21:55:02]     decade [1000000000, 9999999999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 3000} from 199997 draws
+[21:55:45]     decade [10000000000, 99999999999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 3000} from 200000 draws
+[21:56:27]     decade [100000000000, 999999999999]: {1: 3000, 2: 3000, 3: 3000, 4: 3000, 5: 3000} from 200000 draws
+[21:56:43]   13d: decoded 118808 integers in 16s
+[21:56:43]     balanced [10000, 99999]: accuracy 1.00000 (0 failures), first 5 bases 0.9001, q=2 only 0.9993
+[21:56:43]     balanced [100000, 999999]: accuracy 1.00000 (0 failures), first 5 bases 0.9132, q=2 only 0.9988
+[21:56:43]     balanced [1000000, 9999999]: accuracy 1.00000 (0 failures), first 5 bases 0.9381, q=2 only 0.9989
+[21:56:43]     balanced [10000000, 99999999]: accuracy 1.00000 (0 failures), first 5 bases 0.9518, q=2 only 0.9989
+[21:56:43]     balanced [100000000, 999999999]: accuracy 1.00000 (0 failures), first 5 bases 0.9567, q=2 only 0.9989
+[21:56:43]     balanced [1000000000, 9999999999]: accuracy 1.00000 (0 failures), first 5 bases 0.9656, q=2 only 0.9987
+[21:56:43]     balanced [10000000000, 99999999999]: accuracy 1.00000 (0 failures), first 5 bases 0.9687, q=2 only 0.9987
+[21:56:43]     balanced [100000000000, 999999999999]: accuracy 1.00000 (0 failures), first 5 bases 0.9719, q=2 only 0.9981
+[21:56:45]     uniform [10000, 99999]: 17949 integers, accuracy 1.00000 (0 failures)
+[21:56:48]     uniform [100000, 999999]: 19774 integers, accuracy 1.00000 (0 failures)
+[21:56:50]     uniform [1000000, 9999999]: 19978 integers, accuracy 1.00000 (0 failures)
+[21:56:53]     uniform [10000000, 99999999]: 19998 integers, accuracy 1.00000 (0 failures)
+[21:56:55]     uniform [100000000, 999999999]: 19999 integers, accuracy 1.00000 (0 failures)
+[21:57:00]     uniform [1000000000, 9999999999]: 20000 integers, accuracy 1.00000 (0 failures)
+[21:57:05]     uniform [10000000000, 99999999999]: 20000 integers, accuracy 1.00000 (0 failures)
+[21:57:11]     uniform [100000000000, 999999999999]: 20000 integers, accuracy 1.00000 (0 failures)
+[21:57:12]   13c: 4001 remainders read from digits, 0 mismatches; 600/600 integers decoded from digits alone
+[21:57:12] decode: done in 4662.1s
+[21:57:13] report: done in 0.4s

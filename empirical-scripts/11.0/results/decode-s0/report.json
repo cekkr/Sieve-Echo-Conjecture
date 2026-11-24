@@ -1,0 +1,26 @@
+{
+  "run_id": "decode-s0",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/orders.json",
+  "git_root": {
+    "sha": "61b63ebb1535f64386dd5e4583c68afec8f542f3",
+    "dirty": true,
+    "changed_paths": [
+      "M ROADMAP.md",
+      " M empirical-scripts/11.0/config/orders.json",
+      " M empirical-scripts/11.0/figures.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/decode.py",
+      "?? empirical-scripts/11.0/tests/test_decode.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "79637a1f5835c22aa68685b2c6ac2232852930fc30ea1e6366075f55569275ef",
+  "ndr_version": null,
+  "verdicts": {}
+}

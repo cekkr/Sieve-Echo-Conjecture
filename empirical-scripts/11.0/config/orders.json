@@ -1,6 +1,6 @@
 {
   "name": "orders",
-  "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report Step 10: --stages tworank,report (same integers; 2-rank estimator and l-adic order profiles) Step 11: the `tworank` block lists explicit models and fixed-base-set comparisons.",
+  "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report Step 10: --stages tworank,report (same integers; 2-rank estimator and l-adic order profiles) Step 11: the `tworank` block lists explicit models and fixed-base-set comparisons. Step 13: --stages decode,report (exact decoding of omega from the repetend lengths of 19 bases; exhaustive to 10^8, sampled decades to 10^12; the first four decades are the orders-s0 integers).",
   "seed": 0,
   "orders": {
     "decades": [
@@ -114,5 +114,99 @@
         "lengths 2..199"
       ]
     ]
+  },
+  "decode": {
+    "bases": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "prime_bases": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "decades": [
+      [
+        10000,
+        99999
+      ],
+      [
+        100000,
+        999999
+      ],
+      [
+        1000000,
+        9999999
+      ],
+      [
+        10000000,
+        99999999
+      ],
+      [
+        100000000,
+        999999999
+      ],
+      [
+        1000000000,
+        9999999999
+      ],
+      [
+        10000000000,
+        99999999999
+      ],
+      [
+        100000000000,
+        999999999999
+      ]
+    ],
+    "per_class": 3000,
+    "max_class": 5,
+    "batch": 200000,
+    "max_batches": 60,
+    "uniform_per_decade": 20000,
+    "exhaustive_max": 100000000,
+    "exhaustive_chunk": 200000,
+    "max_failures": 200,
+    "digit_check": {
+      "decades": [
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          999999
+        ]
+      ],
+      "pairs": 4000,
+      "max_L": 200000,
+      "decode_integers": 600
+    },
+    "workers": 0
   }
 }
