@@ -1,0 +1,321 @@
+{
+  "settings": {
+    "small_primes": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13
+    ],
+    "length_bases": "2..99",
+    "sets": [
+      "v8",
+      "v10",
+      "primes31"
+    ],
+    "tolerance": 1e-09,
+    "bootstrap": 500,
+    "workers": 0
+  },
+  "small_primes": [
+    2,
+    3,
+    5,
+    7,
+    11,
+    13
+  ],
+  "pair_level": {
+    "pairs": 517642,
+    "share_member": {
+      "2": 0.49471556166835134,
+      "3": 0.5039833777538554,
+      "5": 0.5121004156224056,
+      "7": 0.5218244514414552,
+      "11": 0.5455604467515832,
+      "13": 0.5269036366247855
+    },
+    "variants": {
+      "H_nodc": {
+        "test_pairs": 77709,
+        "r2_structure": 0.9976545144171008,
+        "r2_plus_membership": 0.997963131755854,
+        "delta_r2": 0.0003086173387532032,
+        "delta_r2_ci": [
+          0.0002973786853139593,
+          0.0003208764221198673
+        ],
+        "residual_variance_explained": 0.13157929471121907,
+        "coefficients": {
+          "2": -0.10915264828681912,
+          "3": -0.02313756584799883,
+          "5": 0.010322338948968501,
+          "7": 0.011627111278817633,
+          "11": 0.029376413703308586,
+          "13": 0.028230501826511205
+        }
+      },
+      "H_paper": {
+        "test_pairs": 77709,
+        "r2_structure": 0.9139535100253164,
+        "r2_plus_membership": 0.9236746234347685,
+        "delta_r2": 0.009721113409452031,
+        "delta_r2_ci": [
+          0.009232976892004172,
+          0.010128489995954174
+        ],
+        "residual_variance_explained": 0.11297513021521459,
+        "coefficients": {
+          "2": -0.03383561598649574,
+          "3": 0.005653505943232591,
+          "5": 0.013504394532341557,
+          "7": 0.00163033578099636,
+          "11": 0.031007748481707773,
+          "13": 0.006256004746452265
+        }
+      }
+    }
+  },
+  "residues": {
+    "controls": "C7 controls + Midy flag + extra-zero share/indicator of each primary-set base; then + [ord(q) | ord(b)] for each small prime q and primary-set base b; then + the mean digit (NDR mean) of each primary-set base",
+    "membership_columns": 72,
+    "variants": {
+      "H_paper": {
+        "test_rows": 6155,
+        "c7_midy_zeros": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.26979607575209485,
+            "eta2_residual": 0.003115887264723834,
+            "eta2_residual_null_mean": 0.0008141905406253438,
+            "excess": 0.00230169672409849,
+            "perm_p_residual": 0.003992015968063872,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.28345521300867554,
+            "eta2_residual": 0.023474654372434144,
+            "eta2_residual_null_mean": 0.0017480136251810724,
+            "excess": 0.02172664074725307,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.30611359508213565,
+            "eta2_residual": 0.019041392550569403,
+            "eta2_residual_null_mean": 0.004810239950548497,
+            "excess": 0.014231152600020907,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.34626158280712593,
+            "eta2_residual": 0.0656689023877893,
+            "eta2_residual_null_mean": 0.03378789394505501,
+            "excess": 0.03188100844273429,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        },
+        "plus_membership": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.26979607575209485,
+            "eta2_residual": 0.0019587102296343122,
+            "eta2_residual_null_mean": 0.0008094146632984109,
+            "excess": 0.0011492955663359012,
+            "perm_p_residual": 0.03992015968063872,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.28345521300867554,
+            "eta2_residual": 0.01256752046832883,
+            "eta2_residual_null_mean": 0.0017028590927247239,
+            "excess": 0.010864661375604105,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.30611359508213565,
+            "eta2_residual": 0.017090924328182617,
+            "eta2_residual_null_mean": 0.004781986405254821,
+            "excess": 0.012308937922927796,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.34626158280712593,
+            "eta2_residual": 0.0571020658585234,
+            "eta2_residual_null_mean": 0.03439836566259912,
+            "excess": 0.022703700195924277,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        },
+        "plus_membership_mean_digit": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.26979607575209485,
+            "eta2_residual": 0.002028628714603986,
+            "eta2_residual_null_mean": 0.0008185751964663638,
+            "excess": 0.0012100535181376222,
+            "perm_p_residual": 0.029940119760479042,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.28345521300867554,
+            "eta2_residual": 0.01421579563350519,
+            "eta2_residual_null_mean": 0.0017168673484071748,
+            "excess": 0.012498928285098016,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.30611359508213565,
+            "eta2_residual": 0.0175084448032864,
+            "eta2_residual_null_mean": 0.004588978229959304,
+            "excess": 0.012919466573327097,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.34626158280712593,
+            "eta2_residual": 0.05845037721513477,
+            "eta2_residual_null_mean": 0.03424824679905659,
+            "excess": 0.02420213041607818,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        }
+      },
+      "H_nodc": {
+        "test_rows": 6155,
+        "c7_midy_zeros": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.19129511764969093,
+            "eta2_residual": 0.0025180778780943256,
+            "eta2_residual_null_mean": 0.0008640161999145657,
+            "excess": 0.0016540616781797598,
+            "perm_p_residual": 0.005988023952095809,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.2087884206903141,
+            "eta2_residual": 0.03427641481857568,
+            "eta2_residual_null_mean": 0.0018056995482072958,
+            "excess": 0.032470715270368385,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.23671458032516648,
+            "eta2_residual": 0.010967275807837164,
+            "eta2_residual_null_mean": 0.004736067542673826,
+            "excess": 0.006231208265163338,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": false
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.28625928768042164,
+            "eta2_residual": 0.04939471862726932,
+            "eta2_residual_null_mean": 0.0340490847295995,
+            "excess": 0.015345633897669818,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        },
+        "plus_membership": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.19129511764969093,
+            "eta2_residual": 0.001554631022086355,
+            "eta2_residual_null_mean": 0.0008930161124481565,
+            "excess": 0.0006616149096381985,
+            "perm_p_residual": 0.08982035928143713,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.2087884206903141,
+            "eta2_residual": 0.021865242990310972,
+            "eta2_residual_null_mean": 0.0017801414304129078,
+            "excess": 0.020085101559898063,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.23671458032516648,
+            "eta2_residual": 0.010349544578392721,
+            "eta2_residual_null_mean": 0.004613907038795691,
+            "excess": 0.00573563753959703,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": false
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.28625928768042164,
+            "eta2_residual": 0.044546233419248675,
+            "eta2_residual_null_mean": 0.033838535931879514,
+            "excess": 0.010707697487369161,
+            "perm_p_residual": 0.005988023952095809,
+            "supported": true
+          }
+        },
+        "plus_membership_mean_digit": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.19129511764969093,
+            "eta2_residual": 0.001201390911419874,
+            "eta2_residual_null_mean": 0.0008586674887433951,
+            "excess": 0.00034272342267647885,
+            "perm_p_residual": 0.2155688622754491,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.2087884206903141,
+            "eta2_residual": 0.020053622430063964,
+            "eta2_residual_null_mean": 0.00173408729279038,
+            "excess": 0.018319535137273583,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.23671458032516648,
+            "eta2_residual": 0.00883084128595631,
+            "eta2_residual_null_mean": 0.004794212643545442,
+            "excess": 0.004036628642410868,
+            "perm_p_residual": 0.007984031936127744,
+            "supported": false
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.28625928768042164,
+            "eta2_residual": 0.04316971195650775,
+            "eta2_residual_null_mean": 0.03398367989154013,
+            "excess": 0.009186032064967618,
+            "perm_p_residual": 0.007984031936127744,
+            "supported": false
+          }
+        }
+      }
+    }
+  },
+  "seconds": 11.2
+}

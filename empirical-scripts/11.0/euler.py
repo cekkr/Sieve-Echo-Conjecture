@@ -108,14 +108,17 @@ def residues(table, claims_cfg, base_sets, seed, L98, M98, bases98, Eb, zbases, 
     zero_cols = [np.nan_to_num(Eb[:, cz[b]], nan=0.0) for b in pbases if b in cz] + [(Eb[:, cz[b]] > 0).astype(float) for b in pbases if b in cz]
     mem = membership(L98, bases98, qs)
     mem_cols = [np.nan_to_num(mem[q][:, c98[b]], nan=0.0) for q in qs for b in pbases if b != q]
-    out: Dict[str, Any] = {"controls": "C7 controls + Midy flag + extra-zero share/indicator of each primary-set base; then + [ord(q) | ord(b)] for each small prime q and primary-set base b",
+    # step 11c: the mean digit of each primary-set base (the DC bin of H_paper; an NDR feature)
+    mean_cols = [np.nan_to_num(c, nan=0.0) for c in features.per_base(table, pbases, "mean").T]
+    out: Dict[str, Any] = {"controls": "C7 controls + Midy flag + extra-zero share/indicator of each primary-set base; then + [ord(q) | ord(b)] for each small prime q and primary-set base b; then + the mean digit (NDR mean) of each primary-set base",
                            "membership_columns": len(mem_cols), "variants": {}}
     for var in ctx.cfg["entropies"][:2]:
         H, cols, tr, te = claims.c7_design(ctx, var, per_base_L, coprime)
         base = cols + midy_cols + zero_cols
         out["variants"][var] = {"test_rows": int(te.sum()),
                                 "c7_midy_zeros": claims.residue_excess(ctx, H, base, tr, te),
-                                "plus_membership": claims.residue_excess(ctx, H, base + mem_cols, tr, te)}
+                                "plus_membership": claims.residue_excess(ctx, H, base + mem_cols, tr, te),
+                                "plus_membership_mean_digit": claims.residue_excess(ctx, H, base + mem_cols + mean_cols, tr, te)}
     return out
 
 

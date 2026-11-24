@@ -1,0 +1,198 @@
+{
+  "run_id": "step11-s0",
+  "created": "2026-11-24T19:52:13+01:00",
+  "config_path": "empirical-scripts/11.0/config/orders.json",
+  "config_sha256": "fd6bd07dd2881ff7b30171d5028fd89e0800d7ad42a25f40b2700fd8249b89e7",
+  "config": {
+    "name": "orders",
+    "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report Step 10: --stages tworank,report (same integers; 2-rank estimator and l-adic order profiles) Step 11: the `tworank` block lists explicit models and fixed-base-set comparisons.",
+    "seed": 0,
+    "orders": {
+      "decades": [
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          999999
+        ],
+        [
+          1000000,
+          9999999
+        ],
+        [
+          10000000,
+          99999999
+        ]
+      ],
+      "per_class": 3000,
+      "max_class": 5,
+      "batch": 200000,
+      "max_batches": 60,
+      "bases": "2..199",
+      "base_sets": {
+        "L19": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "L2..31": "2..31",
+        "L2..99": "2..99",
+        "L2..199": "2..199"
+      },
+      "split": {
+        "train": 0.7,
+        "val": 0.15,
+        "test": 0.15
+      },
+      "model_seeds": 3,
+      "bootstrap": 500,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "workers": 0
+    },
+    "tworank": {
+      "bases": "2..499",
+      "length_set": "2..199",
+      "profile_sets": [
+        "2..199",
+        "2..499"
+      ],
+      "v2_bins": 14,
+      "v3_bins": 8,
+      "model_seeds": 3,
+      "bootstrap": 500,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "workers": 0,
+      "models": [
+        {
+          "lengths": "2..199"
+        },
+        {
+          "lengths": "2..199",
+          "profiles": "2..199"
+        },
+        {
+          "profiles": "2..499"
+        },
+        {
+          "lengths": "2..499"
+        },
+        {
+          "lengths": "2..499",
+          "profiles": "2..499"
+        }
+      ],
+      "comparisons": [
+        [
+          "lengths 2..199 + \u2113-adic 2..199",
+          "lengths 2..199"
+        ],
+        [
+          "lengths 2..499 + \u2113-adic 2..499",
+          "lengths 2..499"
+        ],
+        [
+          "lengths 2..499",
+          "lengths 2..199"
+        ]
+      ]
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "tworank": {
+      "status": "done",
+      "finished": "2026-11-24T20:13:55+01:00",
+      "seconds": 1296.15,
+      "tworank_file": "tworank.json",
+      "integers": 58808
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-24T20:13:56+01:00",
+      "seconds": 0.51,
+      "report": "report.md",
+      "report_json": "report.json",
+      "figures": [
+        "figures/tworank_accuracy.png"
+      ]
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/orders.json",
+    "--run-id",
+    "step11-s0",
+    "--stages",
+    "tworank,report"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "a5fe95302f4e8fba5717b8fd414fa39842b3ef47",
+      "dirty": true,
+      "changed_paths": [
+        "M ROADMAP.md",
+        " M empirical-scripts/11.0/config/orders.json",
+        " M empirical-scripts/11.0/euler.py",
+        " M empirical-scripts/11.0/figures.py",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/tests/test_step9.py",
+        " M empirical-scripts/11.0/tests/test_tworank.py",
+        " M empirical-scripts/11.0/tworank.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "4bde378b86702118db5fec1dc16e9fcb995d220d2d5f22167f36835a6e2b1eff"
+  },
+  "ndr_version": "ndr-v11.1"
+}

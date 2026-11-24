@@ -354,11 +354,13 @@ def euler_markdown(d: dict) -> list:
         lines.append(f"| {var} | {v['test_pairs']} | {v['r2_structure']:.5f} | {v['r2_plus_membership']:.5f} | {v['delta_r2']:+.5f} {_ci(v['delta_r2_ci'])} | {v['residual_variance_explained']:.3f} | "
                      + ", ".join(f"{q}: {c:+.3f}" for q, c in v["coefficients"].items()) + " |")
     lines += ["", f"**C7 residues** ({r['controls']}; {r['membership_columns']} membership columns). Excess η² over the permutation null (p):", "",
-              "| entropy | modulus | C7 + Midy + zeros | + membership |", "| --- | --- | --- | --- |"]
+              "| entropy | modulus | C7 + Midy + zeros | + membership | + membership + mean digit |", "| --- | --- | --- | --- | --- |"]
     for var, v in r["variants"].items():
         for q, t in v["c7_midy_zeros"].items():
             t1 = v["plus_membership"][q]
-            lines.append(f"| {var} | {q} | {t['excess']:+.4f} (p {t['perm_p_residual']:.3f}) | {t1['excess']:+.4f} (p {t1['perm_p_residual']:.3f}) |")
+            t2 = v.get("plus_membership_mean_digit", {}).get(q) or v.get("plus_membership_mean_digit", {}).get(str(q))
+            cell = f"{t2['excess']:+.4f} (p {t2['perm_p_residual']:.3f})" if t2 else "–"
+            lines.append(f"| {var} | {q} | {t['excess']:+.4f} (p {t['perm_p_residual']:.3f}) | {t1['excess']:+.4f} (p {t1['perm_p_residual']:.3f}) | {cell} |")
     lines.append("")
     return lines
 
@@ -389,10 +391,11 @@ def tworank_markdown(d: dict) -> list:
     lines = ["## Step 10 — The 2-rank of (ℤ/nℤ)*", "",
              f"{d['integers']} integers (the `orders` sample: {cfg['orders']['per_class']} per class min(ω, {cfg['orders']['max_class']}) per decade); orders in bases {cfg['bases']}. "
              "ω(n) = rank₂ − δ(v₂(n)) + [n even], and P(v₂(ord b) ≤ 1)/P(v₂(ord b) = 0) = 2^rank₂ for uniform b.", "",
-             "**10b — ratio estimator** round(log₂(#{v₂ ≤ 1}/#{v₂ = 0})), accuracy per decade (share of n with no odd-order base):", "",
+             "**10b/11b — estimators**: ratio round(log₂(#{v₂ ≤ 1}/#{v₂ = 0})) and, when present, the maximum-likelihood rank from the whole v₂ profile; accuracy per decade "
+             "(cells: ratio / MLE, share of n with no odd-order base):", "",
              "| bases | count | " + " | ".join(dec) + " |", "| --- | --- | " + " | ".join("---" for _ in dec) + " |"]
     for name, e in d["estimators"].items():
-        lines.append(f"| {name} | {e['bases']} | " + " | ".join(f"{x['accuracy']:.3f} ({x['share_no_odd_order']:.2f})" for x in e["decades"]) + " |")
+        lines.append(f"| {name} | {e['bases']} | " + " | ".join(f"{x['accuracy']:.3f}" + (f" / {x['accuracy_mle']:.3f}" if "accuracy_mle" in x else "") + f" ({x['share_no_odd_order']:.2f})" for x in e["decades"]) + " |")
     names = list(d["decades"][0]["accuracy"]) if d["decades"] else []
     lines += ["", f"**10c — what carries ω** (GBM accuracy, {cfg['model_seeds']} seeds; ℓ-adic profiles = log n, v₂(n), histograms of v₂ and v₃ of the orders, ratio estimates):", "",
               "| model | " + " | ".join(dec) + " |", "| --- | " + " | ".join("---" for _ in dec) + " |"]
@@ -401,6 +404,10 @@ def tworank_markdown(d: dict) -> list:
     lines += ["", "Gains over the length model (points, 95% CI):", ""]
     for x in d["decades"]:
         lines.append(f"- {x['decade'][0]}–{x['decade'][1]}: " + "; ".join(f"{k}: {_pts(g)}" for k, g in x["gain_vs_lengths"].items()))
+    if any("comparisons" in x for x in d["decades"]):
+        lines += ["", "Comparisons at a fixed base set (points, 95% CI):", ""]
+        for x in d["decades"]:
+            lines.append(f"- {x['decade'][0]}–{x['decade'][1]}: " + "; ".join(f"{k}: {_pts(g)}" for k, g in x.get("comparisons", {}).items()))
     lines.append("")
     return lines
 

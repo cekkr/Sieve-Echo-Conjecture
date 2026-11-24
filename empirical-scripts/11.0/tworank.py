@@ -107,6 +107,34 @@ def ratio_estimate(V2: np.ndarray, n: np.ndarray) -> Dict[str, np.ndarray]:
     return {"rank": rank, "omega": omega_from_rank(rank, n), "no_odd_order": c0 == 0}
 
 
+def mle_rank(V2: np.ndarray, levels: int = 24, rmax: int = 12) -> np.ndarray:
+    """Maximum-likelihood rank₂ from the v₂ profile of the orders (step 11b).
+
+    Treating the bases as uniform units, Proposition 1.6 gives P(v₂ ≤ k) = 2^{−s_k} with s_k = Σ_{j ≥ k} r_j and
+    r_j = #{i : e_i > j} non-increasing. With n_k bases at level k and N_{≤j} = Σ_{k ≤ j} n_k the log-likelihood is
+    Σ_j [−r_j N_{≤j} ln 2 + n_{j+1} ln(1 − 2^{−r_j})], separable in j; it is maximized exactly over integers
+    0 ≤ r_j ≤ rmax with r_0 ≥ r_1 ≥ … by a dynamic program over j (vectorized over rows). Levels ≥ `levels`
+    are lumped into the top level; N_{≤0} = 0 (no odd-order base) is replaced by 1/2, as in the ratio estimator.
+    Returns r_0 = rank₂.
+    """
+    has = V2 >= 0
+    V = np.where(has, np.minimum(V2, levels - 1), -1)
+    nk = np.stack([((V == k) & has).sum(axis=1) for k in range(levels)], axis=1).astype(float)  # rows × levels
+    N = np.cumsum(nk, axis=1)
+    N[:, 0] = np.maximum(N[:, 0], 0.5)
+    r = np.arange(rmax + 1, dtype=float)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        log1m = np.log1p(-(2.0 ** -r))  # −inf at r = 0
+    best = None  # B_j(r) = f_j(r) + max_{r' ≤ r} B_{j+1}(r')
+    for j in range(levels - 2, -1, -1):
+        nxt = nk[:, j + 1][:, None]
+        with np.errstate(invalid="ignore"):  # 0 · (−inf) where n_{j+1} = 0 is discarded by the where
+            f = -r[None, :] * N[:, j][:, None] * math.log(2) + np.where(nxt > 0, nxt * log1m[None, :], 0.0)
+        f = np.where((nxt > 0) & (r[None, :] == 0), -np.inf, f)
+        best = f if best is None else f + np.maximum.accumulate(best, axis=1)
+    return np.argmax(best, axis=1).astype(float)
+
+
 def _set(spec, bases: Sequence[int]) -> List[int]:
     if spec == "primes":
         return [b for b in bases if all(b % p for p in range(2, int(math.isqrt(b)) + 1))]
@@ -139,30 +167,49 @@ def run_stage(ocfg: Dict[str, Any], tcfg_in: Dict[str, Any], seed: int, log=prin
         j = cols(spec)
         r = ratio_estimate(V2[:, j], n)
         pred = np.clip(r["omega"], 1, K)
+        pred_mle = np.clip(omega_from_rank(mle_rank(V2[:, j]), n), 1, K)
         est[name] = {"bases": len(j), "decades": []}
         for lo, hi_ in ocfg["decades"]:
             rows = (n >= lo) & (n <= hi_)
             est[name]["decades"].append({"decade": [int(lo), int(hi_)], "accuracy": float((pred[rows] == cls[rows]).mean()),
+                                         "accuracy_mle": float((pred_mle[rows] == cls[rows]).mean()),
                                          "accuracy_when_odd_order_seen": float((pred[rows & ~r["no_odd_order"]] == cls[rows & ~r["no_odd_order"]]).mean()) if (rows & ~r["no_odd_order"]).any() else None,
                                          "share_no_odd_order": float(r["no_odd_order"][rows].mean())})
-        log(f"    estimator [{name}]: " + ", ".join(f"{d['accuracy']:.3f}" for d in est[name]["decades"]))
+        log(f"    estimator [{name}]: ratio " + ", ".join(f"{d['accuracy']:.3f}" for d in est[name]["decades"]) + "; MLE " + ", ".join(f"{d['accuracy_mle']:.3f}" for d in est[name]["decades"]))
 
-    # 10c: what carries ω
-    jl = cols(cfg["length_set"])
-    Xl, _ = lengths.length_block(n, L[:, jl])
-    Xm, _ = lengths.midy_block(L[:, jl], M[:, jl])
-    base_len = np.column_stack([Xl, Xm])
+    # 10c / 11a: what carries ω
     logn = np.log(n.astype(float))
-    prof = {}
-    for spec in cfg["profile_sets"]:
-        j = cols(spec)
-        r = ratio_estimate(V2[:, j], n)
-        prof[spec] = np.column_stack([logn, a, histogram(V2[:, j], int(cfg["v2_bins"])), histogram(V3[:, j], int(cfg["v3_bins"])), r["rank"], r["omega"]])
-    big = cfg["profile_sets"][-1]
-    models = {f"lengths {cfg['length_set']} (step 9b)": base_len}
-    for spec in cfg["profile_sets"]:
-        models[f"ℓ-adic profiles {spec}"] = prof[spec]
-    models[f"lengths {cfg['length_set']} + ℓ-adic {big}"] = np.column_stack([base_len, prof[big]])
+    cache: Dict[tuple, np.ndarray] = {}
+
+    def lengths_X(spec):
+        if ("L", spec) not in cache:
+            j = cols(spec)
+            Xl, _ = lengths.length_block(n, L[:, j])
+            Xm, _ = lengths.midy_block(L[:, j], M[:, j])
+            cache[("L", spec)] = np.column_stack([Xl, Xm])
+        return cache[("L", spec)]
+
+    def profile_X(spec):
+        if ("P", spec) not in cache:
+            j = cols(spec)
+            r = ratio_estimate(V2[:, j], n)
+            cache[("P", spec)] = np.column_stack([logn, a, histogram(V2[:, j], int(cfg["v2_bins"])), histogram(V3[:, j], int(cfg["v3_bins"])),
+                                                  r["rank"], r["omega"], mle_rank(V2[:, j])])
+        return cache[("P", spec)]
+
+    specs = cfg.get("models") or ([{"lengths": cfg["length_set"]}] + [{"profiles": sp} for sp in cfg["profile_sets"]]
+                                  + [{"lengths": cfg["length_set"], "profiles": cfg["profile_sets"][-1]}])
+    models = {}
+    for m in specs:
+        parts, label = [], []
+        if m.get("lengths"):
+            parts.append(lengths_X(m["lengths"]))
+            label.append(f"lengths {m['lengths']}")
+        if m.get("profiles"):
+            parts.append(profile_X(m["profiles"]))
+            label.append(f"ℓ-adic {m['profiles']}")
+        models[m.get("name") or " + ".join(label)] = np.column_stack(parts)
+    pairs = [tuple(p_) for p_ in cfg.get("comparisons") or []]
     names = list(models)
     out_dec = []
     for d, (lo, hi_) in enumerate(ocfg["decades"]):
@@ -173,6 +220,8 @@ def run_stage(ocfg: Dict[str, Any], tcfg_in: Dict[str, Any], seed: int, log=prin
         corr = {nm: lengths._correct(cfg, s, X, cls, tr, te) for nm, X in models.items()}
         rec["accuracy"] = {nm: float(c.mean()) for nm, c in corr.items()}
         rec["gain_vs_lengths"] = {nm: lengths._delta(corr[nm], corr[names[0]], int(cfg["bootstrap"]), s + 11 + k) for k, nm in enumerate(names[1:])}
+        if pairs:
+            rec["comparisons"] = {f"{x} vs {y}": lengths._delta(corr[x], corr[y], int(cfg["bootstrap"]), s + 31 + k) for k, (x, y) in enumerate(pairs)}
         log(f"    decade [{lo}, {hi_}]: " + ", ".join(f"{nm} {rec['accuracy'][nm]:.4f}" for nm in names))
         out_dec.append(rec)
     return {"settings": {**cfg, "orders": {k: ocfg[k] for k in ("decades", "per_class", "max_class")}}, "integers": int(n.size), "sampling": scheme,

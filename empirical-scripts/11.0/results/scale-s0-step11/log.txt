@@ -1,0 +1,11 @@
+[19:52:19] run scale-s0-step11 seed=0 stages=['data', 'euler', 'report'] dir=empirical-scripts/11.0/results/scale-s0-step11
+[19:52:19] data: cache hit dataset-9768d7f9ec7d09fb.npz (reused from run scale-s0)
+[19:52:19] data: done in 0.6s
+[19:52:20]   lengths: cache lengths-c753916581a0323f.npz
+[19:52:20]   zeros: cache zeros-ad1530f7441831ed.npz
+[19:52:20]   9a: pair-level membership model
+[19:52:22]     H_nodc: test R² 0.99765 → 0.99796 (ΔR² +0.00031)
+[19:52:22]     H_paper: test R² 0.91395 → 0.92367 (ΔR² +0.00972)
+[19:52:22]   9a: C7 residues with membership controls
+[19:52:31] euler: done in 11.2s
+[19:52:32] report: done in 1.0s

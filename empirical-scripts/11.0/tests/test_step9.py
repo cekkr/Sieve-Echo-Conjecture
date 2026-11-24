@@ -89,6 +89,7 @@ class EulerStageTests(unittest.TestCase):
         self.assertGreaterEqual(v["r2_plus_membership"], v["r2_structure"] - 0.01)
         self.assertEqual(set(v["coefficients"]), {2, 3, 5, 7, 11, 13})
         self.assertIn("plus_membership", out["residues"]["variants"]["H_paper"])
+        self.assertIn("plus_membership_mean_digit", out["residues"]["variants"]["H_paper"])
         import report
 
         self.assertIn("## Step 9a", "\n".join(report.euler_markdown(out)))

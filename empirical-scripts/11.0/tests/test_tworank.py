@@ -38,6 +38,26 @@ class TwoRankTheoremTests(unittest.TestCase):
             # the ratio estimator is exact when the "bases" are all units
             V2 = v[None, :]
             self.assertEqual(int(tworank.ratio_estimate(V2, np.array([n]))["omega"][0]), len(f), n)
+            self.assertEqual(int(tworank.mle_rank(V2)[0]), r, n)  # exact profile -> exact MLE
+
+    def test_mle_monotone_and_ratio_consistent(self):
+        rng = np.random.default_rng(1)
+        V2 = rng.integers(-1, 6, size=(200, 60))
+        r = tworank.mle_rank(V2)
+        self.assertTrue(((r >= 0) & (r <= 12)).all())
+        # one odd-order base and many v2 = 1 bases: the MLE and the ratio both see a large rank
+        V = np.array([[0] + [1] * 31 + [2] * 10])
+        self.assertEqual(int(tworank.ratio_estimate(V, np.array([3]))["rank"][0]), 5)
+        self.assertGreaterEqual(int(tworank.mle_rank(V)[0]), 5)
+
+    def test_run_stage_models_and_comparisons(self):
+        warnings.simplefilter("ignore")
+        ocfg = {"decades": [[10000, 99999]], "per_class": 60, "batch": 20000, "max_batches": 3}
+        tcfg = {"bases": "2..40", "estimator_sets": {"2..40": "2..40"}, "model_seeds": 1, "bootstrap": 20, "gbm": {"max_iter": 20, "learning_rate": 0.2}, "workers": 1,
+                "models": [{"lengths": "2..20"}, {"lengths": "2..20", "profiles": "2..20"}, {"lengths": "2..40"}, {"lengths": "2..40", "profiles": "2..40"}],
+                "comparisons": [["lengths 2..20 + ℓ-adic 2..20", "lengths 2..20"], ["lengths 2..40 + ℓ-adic 2..40", "lengths 2..40"]]}
+        out = tworank.run_stage(ocfg, tcfg, 4, log=lambda *_: None)
+        self.assertEqual(set(out["decades"][0]["comparisons"]), {"lengths 2..20 + ℓ-adic 2..20 vs lengths 2..20", "lengths 2..40 + ℓ-adic 2..40 vs lengths 2..40"})
 
     def test_valuation_and_histogram(self):
         L = np.array([[12, 0, 9, 1], [8, 3, 0, 0]])
@@ -56,7 +76,8 @@ class TwoRankTheoremTests(unittest.TestCase):
         self.assertEqual(len(out["decades"]), 2)
         self.assertEqual(set(out["estimators"]), {"2..30", "2..60", "primes"})
         acc = out["decades"][-1]["accuracy"]
-        self.assertIn("ℓ-adic profiles 2..60", acc)
+        self.assertIn("ℓ-adic 2..60", acc)
+        self.assertIn("accuracy_mle", out["estimators"]["2..60"]["decades"][0])
         self.assertGreater(min(acc.values()), 0.3)
         import report
 

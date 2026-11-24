@@ -222,11 +222,11 @@ ROADMAP step 9b: order-only ω classification per decade up to 10⁸, no NDR dat
 
 ### [`empirical-scripts/11.0/tworank.py`](empirical-scripts/11.0/tworank.py)
 
-ROADMAP step 10: the 2-rank of (ℤ/nℤ)* (docstring = Proposition 1.6 of `studies/9`: P(v₂(ord b) ≤ k) = 2^{−Σ max(e_i − k, 0)}, ratio 2^{rank₂}, ω = rank₂ − δ(v₂(n)) + [n even]). `valuation` (ℓ-adic valuations of an order matrix), `histogram`, `ratio_estimate`, `omega_from_rank`, `sylow2_exponents` (tests), `run_stage` (same integers as `orders_scale` via its `sample`; orders in bases 2..499; estimator accuracy per base set and decade; GBM: raw lengths vs ℓ-adic profiles vs both).
+ROADMAP step 10: the 2-rank of (ℤ/nℤ)* (docstring = Proposition 1.6 of `studies/9`: P(v₂(ord b) ≤ k) = 2^{−Σ max(e_i − k, 0)}, ratio 2^{rank₂}, ω = rank₂ − δ(v₂(n)) + [n even]). `valuation` (ℓ-adic valuations of an order matrix), `histogram`, `ratio_estimate`, `mle_rank` (step 11b: exact integer DP maximizing the v₂-profile likelihood under r_0 ≥ r_1 ≥ …), `omega_from_rank`, `sylow2_exponents` (tests), `run_stage` (same integers as `orders_scale` via its `sample`; orders in bases 2..499; ratio and MLE accuracy per base set and decade; GBM models from `tworank.models` — lengths and/or profiles per base set — with fixed-base-set `comparisons`).
 
 ### [`empirical-scripts/11.0/config/`](empirical-scripts/11.0/config)
 
-`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s), `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; data ~20 min) and `scale.json` (step 5: n ∈ [2, 9999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶], wide set on 6 000; run with `--stages data,claims,scale,report`). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. `lengths.{bases, bins, per_omega_cap, min_per_omega, bootstrap, max_omega_class, gbm, ablation, pair_bins, formulas.{guides, seeds, population, generations, …}, workers}` (step 7; `formulas: null` skips the Evolvo part). `zeros.{tolerance, exact_sample, exact_max_L, bins, per_omega_cap, min_per_omega, bootstrap, model_seeds, max_omega_class, gbm, length_bases, sets, workers}` (step 8). `whisky.{zoom, neighbors, bins, per_stratum, max_L, min_L, sets, bootstrap}` (step 8e). `euler.{small_primes, length_bases, sets, tolerance, bootstrap, workers}` (step 9a). [`config/orders.json`](empirical-scripts/11.0/config/orders.json): `orders.{decades, per_class, max_class, batch, max_batches, bases, base_sets, split, model_seeds, bootstrap, gbm, workers}` (step 9b; no `data` block — run `--stages orders,report`); `tworank.{bases, estimator_sets, length_set, profile_sets, v2_bins, v3_bins, model_seeds, bootstrap, gbm, workers}` (step 10, `--stages tworank,report`). `formulas.{targets, guides, seeds, population, generations, parsimony, eval_size_min/max/step, q_target (per target), top_fraction, save_threshold_ratio, save_top_per_gen, safety_net, ablation_guide, fixed_size, warm_start, knowledge_seed, inputs, workers}`; `nn.baselines.{max_train_rows, gbm}`, `nn.search.{population, generations, patience, max_train_rows, max_val_rows, hard_max_epochs, max_rows, max_params, knowledge_in}`. Quick: population 100 × 30 generations, N step 500 (train has 7 366 rows); full: 200 × 60, N step 5 000 up to 100 000. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
+`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s), `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; data ~20 min) and `scale.json` (step 5: n ∈ [2, 9999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶], wide set on 6 000; run with `--stages data,claims,scale,report`). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. `lengths.{bases, bins, per_omega_cap, min_per_omega, bootstrap, max_omega_class, gbm, ablation, pair_bins, formulas.{guides, seeds, population, generations, …}, workers}` (step 7; `formulas: null` skips the Evolvo part). `zeros.{tolerance, exact_sample, exact_max_L, bins, per_omega_cap, min_per_omega, bootstrap, model_seeds, max_omega_class, gbm, length_bases, sets, workers}` (step 8). `whisky.{zoom, neighbors, bins, per_stratum, max_L, min_L, sets, bootstrap}` (step 8e). `euler.{small_primes, length_bases, sets, tolerance, bootstrap, workers}` (step 9a). [`config/orders.json`](empirical-scripts/11.0/config/orders.json): `orders.{decades, per_class, max_class, batch, max_batches, bases, base_sets, split, model_seeds, bootstrap, gbm, workers}` (step 9b; no `data` block — run `--stages orders,report`); `tworank.{bases, estimator_sets, length_set, profile_sets, models, comparisons, v2_bins, v3_bins, model_seeds, bootstrap, gbm, workers}` (step 10, `--stages tworank,report`). `formulas.{targets, guides, seeds, population, generations, parsimony, eval_size_min/max/step, q_target (per target), top_fraction, save_threshold_ratio, save_top_per_gen, safety_net, ablation_guide, fixed_size, warm_start, knowledge_seed, inputs, workers}`; `nn.baselines.{max_train_rows, gbm}`, `nn.search.{population, generations, patience, max_train_rows, max_val_rows, hard_max_epochs, max_rows, max_params, knowledge_in}`. Quick: population 100 × 30 generations, N step 500 (train has 7 366 rows); full: 200 × 60, N step 5 000 up to 100 000. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
 
 ### [`empirical-scripts/11.0/tests/`](empirical-scripts/11.0/tests)
 
@@ -407,7 +407,7 @@ Run Evolvo's tests:
 cd libs/evolvo && PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests
 ```
 
-Run the v11 tests from the repo root (56 tests incl. figures, ~2–2.5 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
+Run the v11 tests from the repo root (58 tests incl. figures, ~2–2.5 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
 
 ```bash
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests -v
@@ -459,10 +459,10 @@ Run step 9 (9a reuses the scale dataset, lengths and zeros caches; 9b samples it
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/orders.json --run-id orders-s0 --stages orders,report
 ```
 
-Run step 10 (same integers as `orders-s0`, orders in bases 2..499):
+Run step 10/11 (same integers as `orders-s0`, orders in bases 2..499; the current `tworank` block is step 11's model list — `tworank-s0` used the step-10 defaults) and step 11c (`--config …/scale.json --run-id scale-s0-step11 --stages data,euler,report`):
 
 ```bash
-.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/orders.json --run-id tworank-s0 --stages tworank,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/orders.json --run-id step11-s0 --stages tworank,report
 ```
 
 Resume an existing run (finished stages are skipped; config and seed must match):
@@ -493,11 +493,11 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
 - Evolvo submodule at [`libs/evolvo`](libs/evolvo) with the step-3 features (see [Standing Evolvo Facts](#standing-evolvo-facts-relevant-to-v11)).
 
-- v11 steps 0–5 and 7–10 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), step-8 exact spectral zeros (`zeros`) and SinWhisky spectra (`whisky`, submodule `libs/sinwhisky`), step-9 small-prime membership (`euler`) and order-only ω to 10⁸ (`orders`), step-10 2-rank estimator and ℓ-adic profiles (`tworank`), Markdown/JSON report with figures, 56 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
+- v11 steps 0–5 and 7–11 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), step-8 exact spectral zeros (`zeros`) and SinWhisky spectra (`whisky`, submodule `libs/sinwhisky`), step-9 small-prime membership (`euler`) and order-only ω to 10⁸ (`orders`), step-10/11 2-rank estimators (ratio and maximum likelihood) and ℓ-adic profiles (`tworank`), Markdown/JSON report with figures, 58 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
 
 ### Experimental / Scaffold
 
-- Every n up to 10⁶ was not built (≈ 15 h); steps 5 and 7 use ω-stratified decades instead. The `studies/9` draft (now including steps 7–10) awaits owner review.
+- Every n up to 10⁶ was not built (≈ 15 h); steps 5 and 7 use ω-stratified decades instead. The `studies/9` draft (now including steps 7–11) awaits owner review.
 
 ### Known Gaps
 
@@ -506,8 +506,8 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Near-Term Priorities
 
-1. Owner review of the step-6…10 reports and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) steps 6–10).
-2. Remaining open questions of `studies/9` §8: the rest of the C7 residue structure (exact membership for non-cyclic groups, larger q, the class-number term of the mean digit) and the step-10 confound (ℓ-adic gain vs extra bases) — ROADMAP step 11.
+1. Owner review of the step-6…11 reports and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) steps 6–11).
+2. Remaining open questions of `studies/9` §8: the rest of the C7 residue structure (exact membership for non-cyclic groups, larger q, the class-number term of the mean digit) and a closed-form ω estimator from the orders that approaches the learned models (the MLE 2-rank trails by 15–24 points).
 
 ## Task Start and Handoff Checklist
 

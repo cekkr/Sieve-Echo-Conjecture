@@ -289,7 +289,8 @@ def fig_tworank(d: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
     plt = _plt()
     x = np.arange(len(decs))
     fig, ax = plt.subplots(figsize=(7.4, 4.4))
-    short = {pick[0]: "raw lengths (step 9b)", pick[1]: "ℓ-adic order profiles", pick[2]: "both"}
+    legacy = {"lengths 2..199 (step 9b)": "raw lengths (step 9b)", "ℓ-adic profiles 2..499": "ℓ-adic order profiles", "lengths 2..199 + ℓ-adic 2..499": "both"}
+    short = {nm: legacy.get(nm, nm) for nm in pick}
     ends = []
     for j, nm in enumerate(pick):
         v = np.array([x_["accuracy"][nm] for x_ in decs]) * 100
