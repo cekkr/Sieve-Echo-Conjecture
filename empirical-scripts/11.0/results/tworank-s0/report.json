@@ -1,0 +1,26 @@
+{
+  "run_id": "tworank-s0",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/orders.json",
+  "git_root": {
+    "sha": "ab81e95007e4e56bbb9b9d86289aeeb6e0d1c839",
+    "dirty": true,
+    "changed_paths": [
+      "M ROADMAP.md",
+      " M empirical-scripts/11.0/config/orders.json",
+      " M empirical-scripts/11.0/figures.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/tests/test_tworank.py",
+      "?? empirical-scripts/11.0/tworank.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "2b770f551cf208d70f22e3f5ce746e730f1db772e8d25000c5b2bab8eff0afe1",
+  "ndr_version": null,
+  "verdicts": {}
+}

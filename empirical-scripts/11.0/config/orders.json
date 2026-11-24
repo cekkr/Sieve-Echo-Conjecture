@@ -1,6 +1,6 @@
 {
   "name": "orders",
-  "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report.",
+  "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report Step 10: --stages tworank,report (same integers; 2-rank estimator and l-adic order profiles).",
   "seed": 0,
   "orders": {
     "decades": [
@@ -57,6 +57,23 @@
       "val": 0.15,
       "test": 0.15
     },
+    "model_seeds": 3,
+    "bootstrap": 500,
+    "gbm": {
+      "max_iter": 200,
+      "learning_rate": 0.1
+    },
+    "workers": 0
+  },
+  "tworank": {
+    "bases": "2..499",
+    "length_set": "2..199",
+    "profile_sets": [
+      "2..199",
+      "2..499"
+    ],
+    "v2_bins": 14,
+    "v3_bins": 8,
     "model_seeds": 3,
     "bootstrap": 500,
     "gbm": {

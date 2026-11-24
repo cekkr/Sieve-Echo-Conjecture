@@ -7,7 +7,7 @@ One command runs the whole pipeline from a config file and a seed and writes eve
     .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json
 
 Stages (ROADMAP.md): data (step 1) -> claims (step 2) -> formulas, nn (steps 3-4) -> report (steps 2/6).
-All stages are implemented (`scale` is ROADMAP step 5, `lengths` step 7, `zeros` step 8, `whisky` step 8e, `euler` step 9a, `orders` step 9b): `formulas` runs the Evolvo GFSL formula experiments (guides x
+All stages are implemented (`scale` is ROADMAP step 5, `lengths` step 7, `zeros` step 8, `whisky` step 8e, `euler` step 9a, `orders` step 9b, `tworank` step 10): `formulas` runs the Evolvo GFSL formula experiments (guides x
 seeds, S1 adaptive evaluation size, S2 RL guide, warm starts); `nn` runs the held-out baselines,
 the §3.1 three-feature retest and the GFSL-NN architecture search.
 
@@ -25,6 +25,7 @@ Run directory:
     whisky.json        step 8e: NDR spectra after SinWhisky resampling (libs/sinwhisky): zero leakage, Midy, omega
     euler.json         step 9a: small-prime membership [ord(q) | ord(b)] vs the C7 residue structure
     orders.json        step 9b: order-only omega classification per decade up to 10^8 (config/orders.json; no NDR data)
+    tworank.json       step 10: 2-rank of (Z/nZ)*: ratio estimator of omega and l-adic order profiles vs raw lengths
     report.md/.json    verdict table and per-claim summary
     log.txt            stage log
     cache/             disposable dataset cache (git-ignored)
@@ -44,9 +45,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import runtime  # noqa: E402
 
-STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "zeros", "whisky", "euler", "orders", "report")
+STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "zeros", "whisky", "euler", "orders", "tworank", "report")
 IMPLEMENTED = set(STAGES)
-ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "zeros": "step 8", "whisky": "step 8e", "euler": "step 9a", "orders": "step 9b", "report": "step 6"}
+ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "zeros": "step 8", "whisky": "step 8e", "euler": "step 9a", "orders": "step 9b", "tworank": "step 10", "report": "step 6"}
 DEFAULT_STAGES = "data,claims,formulas,nn,scale,lengths,zeros,whisky,euler,report"
 
 
@@ -291,10 +292,18 @@ def stage_orders(run: Run) -> dict:
     return {"orders_file": "orders.json", "integers": out["integers"]}
 
 
+def stage_tworank(run: Run) -> dict:
+    import tworank
+
+    out = tworank.run_stage(run.config.get("orders", {}), run.config.get("tworank", {}), run.seed, log=run.log)
+    runtime.write_json(run.dir / "tworank.json", out)
+    return {"tworank_file": "tworank.json", "integers": out["integers"]}
+
+
 def stage_report(run: Run) -> dict:
     import report
 
-    if not any((run.dir / f).is_file() for f in ("claims.json", "orders.json", "euler.json", "zeros.json", "lengths.json", "scale.json")):
+    if not any((run.dir / f).is_file() for f in ("claims.json", "orders.json", "tworank.json", "euler.json", "zeros.json", "lengths.json", "scale.json")):
         raise SystemExit("report needs the output of at least one analysis stage (claims, scale, lengths, zeros, euler, orders)")
     try:
         table = load_table(run)
@@ -303,7 +312,7 @@ def stage_report(run: Run) -> dict:
     return report.write_report(run.dir, table)
 
 
-STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "zeros": stage_zeros, "whisky": stage_whisky, "euler": stage_euler, "orders": stage_orders, "report": stage_report}
+STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "zeros": stage_zeros, "whisky": stage_whisky, "euler": stage_euler, "orders": stage_orders, "tworank": stage_tworank, "report": stage_report}
 
 
 # ---------------------------------------------------------------------------------------------

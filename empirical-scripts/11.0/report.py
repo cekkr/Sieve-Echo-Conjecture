@@ -175,6 +175,9 @@ def step4_markdown(run_dir: Path) -> str:
     of = run_dir / "orders.json"
     if of.is_file():
         lines += orders_markdown(runtime.read_json(of))
+    tf = run_dir / "tworank.json"
+    if tf.is_file():
+        lines += tworank_markdown(runtime.read_json(tf))
     return "\n".join(lines)
 
 
@@ -380,6 +383,28 @@ def orders_markdown(d: dict) -> list:
     return lines
 
 
+def tworank_markdown(d: dict) -> list:
+    cfg = d["settings"]
+    dec = [f"{x['decade'][0]}–{x['decade'][1]}" for x in d["decades"]]
+    lines = ["## Step 10 — The 2-rank of (ℤ/nℤ)*", "",
+             f"{d['integers']} integers (the `orders` sample: {cfg['orders']['per_class']} per class min(ω, {cfg['orders']['max_class']}) per decade); orders in bases {cfg['bases']}. "
+             "ω(n) = rank₂ − δ(v₂(n)) + [n even], and P(v₂(ord b) ≤ 1)/P(v₂(ord b) = 0) = 2^rank₂ for uniform b.", "",
+             "**10b — ratio estimator** round(log₂(#{v₂ ≤ 1}/#{v₂ = 0})), accuracy per decade (share of n with no odd-order base):", "",
+             "| bases | count | " + " | ".join(dec) + " |", "| --- | --- | " + " | ".join("---" for _ in dec) + " |"]
+    for name, e in d["estimators"].items():
+        lines.append(f"| {name} | {e['bases']} | " + " | ".join(f"{x['accuracy']:.3f} ({x['share_no_odd_order']:.2f})" for x in e["decades"]) + " |")
+    names = list(d["decades"][0]["accuracy"]) if d["decades"] else []
+    lines += ["", f"**10c — what carries ω** (GBM accuracy, {cfg['model_seeds']} seeds; ℓ-adic profiles = log n, v₂(n), histograms of v₂ and v₃ of the orders, ratio estimates):", "",
+              "| model | " + " | ".join(dec) + " |", "| --- | " + " | ".join("---" for _ in dec) + " |"]
+    for nm in names:
+        lines.append(f"| {nm} | " + " | ".join(f"{x['accuracy'][nm]:.4f}" for x in d["decades"]) + " |")
+    lines += ["", "Gains over the length model (points, 95% CI):", ""]
+    for x in d["decades"]:
+        lines.append(f"- {x['decade'][0]}–{x['decade'][1]}: " + "; ".join(f"{k}: {_pts(g)}" for k, g in x["gain_vs_lengths"].items()))
+    lines.append("")
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     cpath = run_dir / "claims.json"
@@ -398,7 +423,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:

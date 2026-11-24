@@ -280,6 +280,37 @@ def fig_zeros_by_omega(zeros: Dict[str, Any], out: Path) -> Optional[Tuple[str, 
                                                               "by ω and n-range (step 8a). Imprimitive characters contribute Euler factors (1 − χ*(p)) that vanish at the prime factors of n.")
 
 
+def fig_tworank(d: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    decs = d.get("decades") or []
+    if not decs:
+        return None
+    names = list(decs[0]["accuracy"])
+    pick = [names[0], names[-2], names[-1]] if len(names) >= 3 else names
+    plt = _plt()
+    x = np.arange(len(decs))
+    fig, ax = plt.subplots(figsize=(7.4, 4.4))
+    short = {pick[0]: "raw lengths (step 9b)", pick[1]: "ℓ-adic order profiles", pick[2]: "both"}
+    ends = []
+    for j, nm in enumerate(pick):
+        v = np.array([x_["accuracy"][nm] for x_ in decs]) * 100
+        ax.plot(x, v, marker=MARKERS[j], ms=6, lw=2, color=SERIES[j], label=short.get(nm, nm))
+        ends.append((v[-1], short.get(nm, nm)))
+    lo_, hi_ = ax.get_ylim()
+    gap = 0.06 * (hi_ - lo_)  # keep end labels apart when lines finish close together
+    placed = []
+    for y, label in sorted(ends):
+        y = max(y, placed[-1] + gap) if placed else y
+        placed.append(y)
+        ax.text(x[-1] + 0.12, y, label, color=TEXT, fontsize=9, va="center")
+    ax.set_xticks(x, [_decade_label(*x_["decade"]) for x_ in decs])
+    ax.set_xlim(-0.3, len(decs) - 1 + 1.1)
+    ax.set_ylabel("held-out accuracy for min(ω, 5) (%)")
+    ax.set_title("ω from multiplicative orders: raw lengths vs 2-adic and 3-adic structure")
+    ax.legend(loc="lower left", fontsize=8)
+    return _save(fig, out / "tworank_accuracy.png"), ("Gradient-boosting accuracy per decade on the same integers: raw per-base log lengths with lcm arithmetic and Midy flags (bases 2…199), "
+                                                      "the histograms of the 2-adic and 3-adic valuations of the orders (bases 2…499) with log n and v₂(n), and both (step 10).")
+
+
 def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -> List[Tuple[str, str]]:
     out = run_dir / "figures"
     made: List[Tuple[str, str]] = []
@@ -307,4 +338,6 @@ def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -
         add(fig_midy_gap(ln, out))
     if (run_dir / "zeros.json").is_file():
         add(fig_zeros_by_omega(runtime.read_json(run_dir / "zeros.json"), out))
+    if (run_dir / "tworank.json").is_file():
+        add(fig_tworank(runtime.read_json(run_dir / "tworank.json"), out))
     return made

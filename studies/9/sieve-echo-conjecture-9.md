@@ -61,6 +61,16 @@ All definitions are implemented once in [`ndr.py`](../../empirical-scripts/11.0/
 
   Even nontrivial characters have B_{1,χ} = 0 — when every extension of ψ_j is even, the bin vanishes, which is Proposition 1.4(b) again. For χ induced by a primitive χ*, B_{1,χ} = B_{1,χ*} ∏_{p | n} (1 − χ*(p)) (standard; e.g. Washington, *Introduction to Cyclotomic Fields*, ch. 4): an Euler factor vanishes when χ*(p) = 1 for a prime *p* dividing *n*, a relation between the prime factors of *n* that the digit spectrum records as an exact zero. For prime *n* there are no such factors, and zeros need a cancellation among the extensions. Parts (a)–(c) and the Euler-factor formula (for *n* = *p·q*) are checked exactly in [`tests/test_zeros.py`](../../empirical-scripts/11.0/tests/test_zeros.py).
 
+* **Proposition 1.6 (the 2-rank; added in step 10).** Let G = (ℤ/*n*ℤ)* have Sylow-2 subgroup ∏_{i ≤ r} C_{2^{e_i}} (r = rank₂ G, all e_i ≥ 1), and write *n* = 2^a·*m* with *m* odd. Then
+
+  (a) for *b* uniform in G, P(v₂(ord_n b) ≤ k) = 2^{−Σ_i max(e_i − k, 0)} for every k ≥ 0; in particular P(v₂ ≤ 1)/P(v₂ = 0) = 2^r, and G has exactly 2^r elements x with x² = 1;
+
+  (b) r = ω(*m*) + δ(a) with δ(0) = δ(1) = 0, δ(2) = 1, δ(a ≥ 3) = 2, so **ω(*n*) = rank₂ G − δ(a) + [a ≥ 1]**.
+
+  *Proof.* (a) G = S × T with S the Sylow-2 subgroup and |T| odd; the S-component of a uniform *b* is uniform in S, and v₂(ord b) = v₂(ord of the S-component) = max_i of the components' v₂. Component i has v₂ ≤ k with probability 2^{min(e_i, k)}/2^{e_i}, independently. (b) By the CRT G ≅ ∏ (ℤ/p^k)*; for odd *p* the factor is cyclic of even order φ(p^k) and contributes one 2-cyclic component, while (ℤ/2)* is trivial, (ℤ/4)* ≅ C₂ and (ℤ/2^a)* ≅ C₂ × C_{2^{a−2}} for a ≥ 3. ∎
+
+  ω is therefore a property of the group whose elements the bases *b* sample: the orders ord_n(b) — the repetend lengths — determine ω through the 2-adic valuations of their distribution, a quantity a model fed log *L* cannot compute directly. Both parts are checked exactly on every unit of (ℤ/*n*ℤ)* for *n* < 3 000 in [`tests/test_tworank.py`](../../empirical-scripts/11.0/tests/test_tworank.py).
+
 ## 2. Data and method
 
 | run | config | content |
@@ -73,6 +83,7 @@ All definitions are implemented once in [`ndr.py`](../../empirical-scripts/11.0/
 | `scale-s0-step8e` | `config/scale.json` | 4 851 sampled pairs; spectra after SinWhisky resampling ([`libs/sinwhisky`](../../libs/sinwhisky)) |
 | `scale-s0-step9` | `config/scale.json` | the same integers; small-prime membership [ord(q) \| ord(b)] (step 9a) |
 | `orders-s0` | `config/orders.json` | 58 808 integers, 3 000 per class min(ω, 5) per decade 10⁴–10⁸; orders only, no digits (step 9b) |
+| `tworank-s0` | `config/orders.json` | the same integers; orders in bases 2…499, 2-rank estimator and ℓ-adic order profiles (step 10) |
 
 Base sets: the v8 paper's 13 bases {2–7, 9–11, 13–16} (`v8`), v10's 16 bases, the primes ≤ 31, and a wide set 2…99 on a sub-sample. Integers are split once, by *n*, stratified by ω, 70/15/15 (train/validation/test). Every fitted quantity is fitted on train and reported on test; every claim is also tested conditional on log *L* and log *n*, with 95% bootstrap confidence intervals and permutation nulls. Factorization labels (ω, Ω, τ, φ, λ, μ, primality) are never inputs of a predictor of ω.
 
@@ -180,6 +191,10 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 
 **Observation 6.9 (orders alone, up to 10⁸).** Orders need no digits, so the order-only classifier can be followed far beyond the NDR data (`orders-s0`: 3 000 integers per class min(ω, 5) per decade, orders and Midy flags in bases 2…199). Held-out accuracy with all 198 bases is 97.9%, 97.3%, 94.5%, 89.7% in the decades 10⁴…10⁸ (majority class 19–20%); with the 19 bases of this study it is 96.0%, 93.3%, 89.0%, 85.9%. Going from 98 to 198 bases adds +0.2, +1.1, +1.7, +1.2 points. The lcm of the 19 orders still equals λ(n) for 99.97% of integers at 10⁷–10⁸. The orders' information about ω is not lost, but a fixed set of bases reads less of it as *n* grows.
 
+**Observation 6.10 (ω through the 2-rank).** Proposition 1.6 turns the orders into a formula for ω: count the bases whose order is odd and those whose order has v₂ ≤ 1, take log₂ of the ratio, and correct for v₂(*n*). With no training, this is right for 81.7%, 75.5%, 71.2%, 69.4% of the integers in the decades 10⁴…10⁸ using the orders in bases 2…499, against 35.7–40.9% with 19 bases (`tworank-s0`). Its errors come mostly from integers for which no base of odd order appears (about 2^{−Σ v₂(p−1)} of the bases have one: 10% of integers have none among 498 bases); the 95 prime bases below 500 do better than the 98 bases 2…99 (61.8% vs 49.5% at 10⁷–10⁸) because the orders of composite bases are tied to those of their factors. As features, the histograms of the 2- and 3-adic valuations of the orders are weaker than the raw lengths on the same bases (−2.0 to −6.2 points with bases 2…199) — the lengths also carry the lcm/λ and primality structure — but added to the raw lengths 2…199 (with bases up to 499) they raise held-out accuracy to 98.7%, 98.2%, 96.9%, 93.5% (+0.7 to +3.8 points, growing with *n*). How much of that gain is the 2-adic reading itself rather than the 300 additional bases is not yet separated.
+
+![ω from multiplicative orders](../../empirical-scripts/11.0/results/tworank-s0/figures/tworank_accuracy.png)
+
 **Observation 6.2 (growth exponents).** A v8-style fit on n ∈ [2, 9 999] gives H ≈ 0.460 · n^{0.129} (v7 reported 0.431 · n^{0.142}). On ω-balanced decades the exponent is 0.068 (0.096 with ω fixed effects) and falls to **0.020 once log L is controlled**: the growth of entropy with *n* is the growth of repetend length. The "predicted exponent 0.743" of the earlier papers belongs to a different quantity, T(x) = Σ_{p≤x} Σ_{n≤x, gcd(n,p)=1} log ord_n(p); computed for x = 100 … 3 200 its exponent is 2.07, as its x·π(x) terms imply. The two exponents are not comparable.
 
 ![Growth exponents](../../empirical-scripts/11.0/results/scale-s0/figures/growth_exponents.png)
@@ -189,6 +204,7 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 * **The order survives, the entropy does not.** Factorization structure reaches the repetend of 1/*n* through its length ord_n(b), which divides λ(n) and shrinks with each additional prime factor (Theorem 1.3). Digit entropy inherits that structure because H ≤ log L. Once length is known, entropy adds at most about one accuracy point for ω, and nothing once the orders in all bases 2…99 are known (Observation 6.3).
 * **One digit symmetry survives.** Midy's symmetry (Proposition 1.4) is visible in the digits and in the spectrum (a log 2 entropy deficit), depends on the factorization through the 2-adic valuations of the local orders, and adds a fraction of a point beyond the lengths (Observation 6.4). It is a classical theorem, not a new law, and it is computed from (*n*, *b*) by one modular exponentiation.
 * **Exact zeros survive too, and they are redundant.** The spectrum's exact zeros record relations between the prime factors of *n* through Euler factors (Proposition 1.5); they are rare for primes and common for composites, but the orders in 98 bases already contain everything they say about ω (Observation 6.6).
+* **ω is a property of the unit group.** By Proposition 1.6, ω(*n*) is the 2-rank of (ℤ/*n*ℤ)* up to a correction for v₂(*n*); the repetend lengths are samples of element orders and reveal it through their 2-adic valuations (Observation 6.10). This is the precise sense in which the lengths "echo" the sieve.
 * **The residue structure is partly Euler-product structure.** Whether small primes lie in ⟨*b*⟩ explains a third to two thirds of the residue-class excess (Observation 6.8); the remainder is open.
 * **Reformulated conjecture — not supported.** *The NDR spectra of 1/n carry information about ω(n) beyond the orders {ord_n(b)}, the Midy flags and n, and that information grows with n.* At 10⁵–10⁶ the measured gain is −0.07 points (CI [−0.33, +0.24]) against a baseline of 98 orders and Midy flags (`scale-s0-step7`). The step-5 drift was an under-powered baseline.
 * **Not supported:** the law's constants (golden ratio, 5 − 1/15), base invariance as a universal property, links to ζ(s) or the PNT, the prime-power dichotomy, and three-feature sufficiency.
@@ -198,7 +214,7 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 Answered in step 7 (`scale-s0-step7`): the residual signal at 10⁵–10⁶ is carried by the statistics that see Midy's vanished half-spectrum and does not survive orders in all bases 2…99 (Observations 6.3–6.4); Midy's symmetry explains about a third of the *n* mod 4 residue structure and none of the *n* mod 7 structure (Observation 4.7); λ(n) is recovered exactly by the lcm of the 19 orders, no formula is needed, and *n*/λ(n) gives only ~72% ω accuracy (Observation 6.5). Still open:
 
 1. What explains the rest of the C7 residue structure? Midy flags and small-prime membership (Observation 6.8) leave a mod-12 excess of 0.011 and a mod-210 excess of 0.023 (`H_paper`). Candidates: exact membership for non-cyclic (ℤ/*n*ℤ)* (the divisibility test is only necessary there), larger primes *q*, and the class-number term in the mean digit (the DC bin of `H_paper`) for *n* ≡ 3 (mod 4).
-2. How fast must the number of bases grow with *n* to keep order-only ω accuracy constant (Observation 6.9), and is there a closed form for the information about ω in the multiset {ord_n(b)}?
+2. Proposition 1.6 gives the closed form (the 2-rank). Open: how much of the gain of ℓ-adic profiles is the reading itself and how much is the extra bases (Observation 6.10), and whether a maximum-likelihood estimate of the Sylow-2 type from the full v₂ profile approaches the learned models with fewer bases.
 
 ## 9. Reproducing these results
 
@@ -210,6 +226,7 @@ git submodule update --init --recursive
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/full.json --run-id full-s0-repro
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-repro --stages data,claims,scale,lengths,zeros,whisky,euler,report
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/orders.json --run-id orders-s0-repro --stages orders,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/orders.json --run-id tworank-s0-repro --stages tworank,report
 ```
 
 Each run writes `manifest.json` (code and submodule SHAs, v11 source hash, environment, config, seed, NDR version), the claim, search and scale results, and `report.md` with the figures. The full run takes about 53 minutes and the scale run (with the step-7 `lengths`, step-8 `zeros` and `whisky` stages) about 90 minutes on an 8-core machine.
