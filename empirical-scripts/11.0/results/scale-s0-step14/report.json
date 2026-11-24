@@ -1,0 +1,27 @@
+{
+  "run_id": "scale-s0-step14",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/scale.json",
+  "git_root": {
+    "sha": "3b64d0b4dc5d5186f8d962bbf5d3fd451f447ef1",
+    "dirty": true,
+    "changed_paths": [
+      "M AGENTS.md",
+      " M ROADMAP.md",
+      " M empirical-scripts/11.0/config/quick.json",
+      " M empirical-scripts/11.0/config/scale.json",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/subgroup.py",
+      "?? empirical-scripts/11.0/tests/test_subgroup.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "929b99da4e8baff50881374d81c48b699f7b82fd05c070e47de3e9f0efeb4a6b",
+  "ndr_version": null,
+  "verdicts": {}
+}

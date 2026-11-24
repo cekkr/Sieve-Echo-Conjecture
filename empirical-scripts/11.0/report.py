@@ -181,6 +181,9 @@ def step4_markdown(run_dir: Path) -> str:
     df = run_dir / "decode.json"
     if df.is_file():
         lines += decode_markdown(runtime.read_json(df))
+    sf = run_dir / "subgroup.json"
+    if sf.is_file():
+        lines += subgroup_markdown(runtime.read_json(sf))
     return "\n".join(lines)
 
 
@@ -457,6 +460,36 @@ def decode_markdown(d: dict) -> list:
     return lines
 
 
+SUBGROUP_LABELS = {"c7_midy_zeros": "C7 + Midy + zeros", "divisibility_small": "+ [ord q | ord b], q ≤ 13 (step 9a)", "exact_small": "+ exact q ∈ ⟨b⟩, q ≤ 13",
+                   "divisibility_large": "+ [ord q | ord b], q < 100", "exact_large": "+ exact q ∈ ⟨b⟩, q < 100",
+                   "exact_signed_small": "+ exact q ∈ ⟨b⟩ and −q ∈ ⟨b⟩, q ≤ 13", "exact_signed_small_divisibility_large": "+ exact ±q ∈ ⟨b⟩ (q ≤ 13) + [ord q | ord b] (q < 100)",
+                   "diag_coprime_pattern": "diagnostic: … + joint coprimality pattern (labelled)", "diag_coprime_pattern_v2": "diagnostic: … + pattern + min(v₂(n), 3) (labelled)",
+                   "diag_pattern_v2_without_membership": "diagnostic: C7 + Midy + zeros + pattern + min(v₂(n), 3), no membership"}
+
+
+def subgroup_markdown(d: dict) -> list:
+    m = d["membership"]
+    lines = ["## Step 14 — Exact subgroup membership and the C7 residue structure", "",
+             f"Primary-set bases {d['bases']}; q ∈ {{{', '.join(map(str, d['primes_small']))}}} and the {len(d['primes_large'])} primes below 100. "
+             f"(ℤ/nℤ)* is cyclic for {100 * m['cyclic_share']:.1f}% of the rows; in the non-cyclic groups [ord q | ord b] holds for {m['candidates_checked']} (row, b, q) cells, "
+             f"of which {m['divisibility_true_but_not_member']} ({100 * m['share_not_member_given_divisible_noncyclic']:.1f}%) have q ∉ ⟨b⟩.", "",
+             "Residue-class η² excess over the permutation null on the test residuals:", ""]
+    for var, v in d["residues"].items():
+        mods = [k for k in v["c7_midy_zeros"]]
+        lines += [f"**{var}** ({v['test_rows']} test rows)", "", "| controls | columns | " + " | ".join(f"mod {q}" for q in mods) + " |", "| --- | --- | " + " | ".join("---" for _ in mods) + " |"]
+        for k, lab in SUBGROUP_LABELS.items():
+            if k in v:
+                lines.append(f"| {lab} | {v['columns'][k]} | " + " | ".join(f"{v[k][q]['excess']:.4f}" + ("" if v[k][q]["supported"] else " †") for q in mods) + " |")
+        if "remainder_by_prime_power_modulus" in v:
+            pp = v["remainder_by_prime_power_modulus"]
+            lines += ["", "† not supported: excess below the C7 effect threshold or permutation p ≥ 0.01. The first two diagnostic rows add the listed columns to the ±q, q < 100 row; the last adds them to C7 + Midy + zeros.", "",
+                      "With the ±q and q < 100 controls, excess by prime-power modulus: " + ", ".join(f"mod {q} {x['excess']:.4f} (p {x['perm_p_residual']:.3f})" for q, x in pp.items()) + ".",
+                      "Mean test residual by n mod 12: " + ", ".join(f"{c}: {x['mean_residual']:+.4f} ({x['rows']})" for c, x in v["remainder_class_means"]["12"].items()) + "."
+                      if "12" in v["remainder_class_means"] else ""]
+        lines.append("")
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     cpath = run_dir / "claims.json"
@@ -475,7 +508,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:

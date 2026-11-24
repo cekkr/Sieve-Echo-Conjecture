@@ -1,0 +1,11 @@
+[22:05:39] run scale-s0-step14 seed=0 stages=['data', 'subgroup', 'report'] dir=empirical-scripts/11.0/results/scale-s0-step14
+[22:05:40] data: cache hit dataset-9768d7f9ec7d09fb.npz (reused from run scale-s0)
+[22:05:40] data: done in 0.5s
+[22:05:40]   lengths: cache lengths-c753916581a0323f.npz
+[22:05:40]   zeros: cache zeros-ad1530f7441831ed.npz
+[22:05:46]   14a: exact membership of 25 primes in ⟨b⟩ for 13 bases: 2419419 non-cyclic candidates, 1893459 where [ord q | ord b] holds but q ∉ ⟨b⟩ (6s)
+[22:05:52]   14a: exact membership of −q (q ≤ 13) in ⟨b⟩ (6s)
+[22:06:04]     H_paper: mod-12 / mod-210 excess c7_midy_zeros 0.0217/0.0319, divisibility_small 0.0109/0.0227, exact_small 0.0131/0.0331, divisibility_large 0.0111/0.0191, exact_large 0.0123/0.0304, exact_signed_small 0.0119/0.0309, exact_signed_small_divisibility_large 0.0099/0.0180
+[22:06:16]     H_nodc: mod-12 / mod-210 excess c7_midy_zeros 0.0325/0.0153, divisibility_small 0.0202/0.0105, exact_small 0.0232/0.0135, divisibility_large 0.0231/0.0060, exact_large 0.0220/0.0089, exact_signed_small 0.0217/0.0106, exact_signed_small_divisibility_large 0.0211/0.0042
+[22:06:16] subgroup: done in 36.1s
+[22:06:16] report: done in 0.4s

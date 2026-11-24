@@ -1,6 +1,6 @@
 # Sieve Echo Conjecture — Conclusions of v11
 
-What version 11 of the empirical program ([`empirical-scripts/11.0/`](.)) established, after ROADMAP steps 0–13. Every number comes from a v11 run (seed 0, NDR definitions `ndr-v11.1`), named in parentheses; run summaries, manifests and figures are under [`results/<run-id>/`](results). Earlier script generations (v3.1–v10) are not sources here: v11 reproduces their stored statistics only to explain them. The detailed argument, with proofs (Propositions 1.4–1.7), is the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](../../studies/9/sieve-echo-conjecture-9.md); the step-by-step log is the [ROADMAP Results log](../../ROADMAP.md#results-log).
+What version 11 of the empirical program ([`empirical-scripts/11.0/`](.)) established, after ROADMAP steps 0–14. Every number comes from a v11 run (seed 0, NDR definitions `ndr-v11.1`), named in parentheses; run summaries, manifests and figures are under [`results/<run-id>/`](results). Earlier script generations (v3.1–v10) are not sources here: v11 reproduces their stored statistics only to explain them. The detailed argument, with proofs (Propositions 1.4–1.7), is the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](../../studies/9/sieve-echo-conjecture-9.md); the step-by-step log is the [ROADMAP Results log](../../ROADMAP.md#results-log).
 
 ## The question
 
@@ -93,7 +93,20 @@ Few bases are needed: with the first five (2, 3, 4, 5, 6) the decoder is exact f
 
 ## 8. Residue-class structure
 
-Residue classes of *n* mod 12 and mod 210 leave a small excess in entropy after per-base length, coprimality, size and ω controls (η² above the permutation null 0.033 and 0.032; `full-s0-claims`). Part of it is Euler-product structure: Midy flags plus the flags "q ∈ ⟨b⟩" for q = 2…13 reduce it to 0.011 (mod 12) and 0.023 (mod 210) (`scale-s0-step9`). The mean digit — the class-number-type DC term — does not explain the rest (0.011 → 0.013; `scale-s0-step11`).
+Residue classes of *n* mod 12 and mod 210 leave a small excess in entropy after per-base length, coprimality, size and ω controls (η² above the permutation null 0.033 and 0.032; `full-s0-claims`). It is group structure (`scale-s0-step9`, `scale-s0-step11`, `scale-s0-step14`):
+
+| `H_paper`, excess over the permutation null | mod 12 | mod 210 |
+| --- | --- | --- |
+| C7 controls + Midy flags + zeros | 0.022 | 0.032 |
+| + [ord q \| ord b] for q ≤ 13 (step 9a) | 0.011 | 0.023 |
+| + exact q ∈ ⟨b⟩ for q ≤ 13 | 0.013 | 0.033 |
+| + exact ±q ∈ ⟨b⟩ (q ≤ 13) + [ord q \| ord b] for primes q < 100 | 0.010 | 0.018 |
+| … + joint coprimality pattern + v₂(n) (labelled diagnostics) | 0.002 | 0.003 |
+
+- With the ±q and q < 100 flags, the odd prime moduli 3, 5, 7 carry no excess (≤ 0.0011 for both entropies); the remainder is 2-adic (mod 8) and follows 2 ∥ n versus 4 | n.
+- The class-number-type DC term (mean digit) explains nothing (`scale-s0-step11`).
+- Exact membership is a *worse* control than the divisibility test, although the two differ in 78% of the non-cyclic cells where the test holds; why membership of *q* in the L-torsion of the group matters more than membership in ⟨b⟩ is not derived here.
+- The diagnostics absorb, by construction, the classes of *n* sharing a factor with small primes; the claim is that among the units no residue structure is left.
 
 ## 9. Verdict
 
@@ -105,6 +118,7 @@ Residue classes of *n* mod 12 and mod 210 leave a small excess in entropy after 
 | the digits carry factorization traces | yes: Midy's symmetry and exact spectral zeros — both classical, both redundant given the orders |
 | the repetend lengths encode ω | yes: statistically as the 2-rank of (ℤ/nℤ)*; **exactly**, with the prime factors, by Proposition 1.7 (every n ≤ 10⁸, all sampled n ≤ 10¹²) |
 | the repetends of 1/n determine the factorization of n | **yes** — through lengths and remainders at fractions of the period, at the cost of computing the lengths |
+| residue-class structure of the entropy | group structure: ±q ∈ ⟨b⟩ and ord q \| ord b among the units, small-prime divisibility of *n* otherwise; nothing left (§8) |
 | law constants, universal base invariance, ζ/PNT links, prime-power dichotomy, three-feature sufficiency | not supported |
 
 The conjecture's intuition — that the sieve leaves an echo in 1/*n* — is right, and stronger than it claimed: the echo is exact and complete. It is carried by the multiplicative order and the remainders at fractions of the period, not by the entropy of the digits.
@@ -120,5 +134,5 @@ The conjecture's intuition — that the sieve leaves an echo in 1/*n* — is rig
 
 ## 11. Open questions
 
-1. The rest of the residue-class excess (mod 12: 0.011, mod 210: 0.023): exact subgroup membership for non-cyclic (ℤ/nℤ)*, where [ord(q) | ord(b)] is only necessary, and larger primes *q*.
+1. ~~The rest of the residue-class excess~~ — accounted for in step 14 (§8). Left: why [ord q | ord b] is a better control than exact membership.
 2. ~~A closed-form ω estimator that approaches the learned models~~ — answered by the exact decoder (§7). Left: how its failure set grows beyond 10⁸, and the smallest base set that decodes a given range.

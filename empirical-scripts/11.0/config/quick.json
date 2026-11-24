@@ -288,5 +288,24 @@
     "length_bases": "2..99",
     "tolerance": 1e-09,
     "bootstrap": 200
+  },
+  "subgroup": {
+    "small_primes": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13
+    ],
+    "large_primes": "primes<100",
+    "length_bases": "2..99",
+    "sets": [
+      "v8",
+      "v10",
+      "primes31"
+    ],
+    "tolerance": 1e-09,
+    "workers": 0
   }
 }
