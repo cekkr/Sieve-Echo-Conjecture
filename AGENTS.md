@@ -2,20 +2,18 @@
 
 Fast-access operational reference for AI agents working in this repository. Read it completely before changing anything, and keep it true for the checked-out revision (see [Maintenance rules](#collaboration-and-maintenance-rules)).
 
-**What this project is.** An empirical research repository by Riccardo Cecchini that tests the *Sieve Echo Conjecture*: the claim that the prime-factorization complexity of an integer `n` (mainly ω(n), the number of distinct prime factors) is encoded in the spectral entropy of the repeating digits of `1/n` written in several bases, after normalizing digits to `[0,1]` (NDR, see [Vocabulary](#vocabulary)). The work is a sequence of numbered script versions (`empirical-scripts/3.1` … `10.0`) plus papers in `studies/`. Maturity: exploratory research code. No package, no test suite, no CI.
+**What this project is.** An empirical number theory repository that studies the arithmetic of the repetends of `1/n` across bases. The original Sieve Echo Conjecture proposed spectral entropy as a signal of ω(n). Version 11 tests that claim and identifies multiplicative order, Midy symmetry, and character-induced spectral zeros as the central objects. The v11 test suite lives in [`empirical-scripts/11.0/tests/`](empirical-scripts/11.0/tests). Evolvo and SinWhisky have separate submodule handbooks.
 
-**What it is not.** It is not a proof, and no script so far is a rigorous demonstration. It is not the Evolvo library: Evolvo is a separate repository vendored as the git submodule [`libs/evolvo`](libs/evolvo) with its own [`AGENTS.md`](libs/evolvo/AGENTS.md). The copies named `evolvo*.py` inside old version folders are historical forks of that library, not the library to use.
-
-**Current goal.** Build **version 11** in [`empirical-scripts/11.0/`](empirical-scripts/11.0) (every stage exists: dataset, claim verdicts, Evolvo formula and GFSL-NN search, scale analysis, step-7 length/Midy analysis, report): one reproducible, leakage-free execution script that tests every claim of the current paper [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) and uses the submodule [`libs/evolvo`](libs/evolvo) for all evolutionary search. The step plan lives in [`ROADMAP.md`](ROADMAP.md).
+**Current research goal.** Study the joint distribution of repetend lengths at prime denominators. Use fixed divisibility conditions on the index `(p−1)/ord_p(b)`. Count primes over explicit ranges, verify the conditions independently, and compare the counts with densities from residue classes or splitting fields. Keep exact identities, finite computations and asymptotic estimates distinct. A Riemann-related statement needs a named L-function, a precise observable or bound, and an explicit implication or hypothesis. See the [research roadmap](ROADMAP.md#next-research-joint-distribution-of-repetend-lengths).
 
 ## Read This First
 
 Source-of-truth order. When two sources disagree, the higher one wins, and the agent fixes or records the mismatch in the same change.
 
 1. **This file's [Directives](#standing-directives-from-the-project-owner)** — standing instructions from the project owner.
-2. [`ROADMAP.md`](ROADMAP.md) — the v11 implementation plan and its live status. It governs *what to do next*; it never proves that something exists.
+2. [`ROADMAP.md`](ROADMAP.md) — the research plan and the completed v11 experimental record. It governs *what to do next*; it never proves that something exists.
 3. Executable code: [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo) (the library) and [`empirical-scripts/11.0/`](empirical-scripts/11.0). Evolvo's own rules are in [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) and its specs in [`libs/evolvo/papers/`](libs/evolvo/papers).
-4. [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) — the current paper. It states the claims that v11 must test. Its numbers are **claims to re-verify**, not facts (see [Known gaps](#known-gaps)).
+4. [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) — the historical claims tested by v11. The current research summary is the [revision-9 draft](studies/9/sieve-echo-conjecture-9.md).
 5. Stored results under [`empirical-scripts/results/`](empirical-scripts/results) and `empirical-scripts/<ver>/results/` — evidence of what past runs produced, with the methodological defects listed below.
 6. Older papers ([`studies/7/`](studies/7), [`studies/8/future.md`](studies/8/future.md)), the notes in [`studies/claude/`](studies/claude), and commit messages — history only. Commit messages in this repo carry no technical information.
 
@@ -23,7 +21,7 @@ Source-of-truth order. When two sources disagree, the higher one wins, and the a
 
 These are mandatory for every task from v11 onward.
 
-- **D1 — Version 11 lives in `empirical-scripts/11.0/`.** Create the folder; do not edit older version folders except to fix a link. Its goal is to complete the "demonstration" (empirical implementation) of [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md), reusing the best ideas and results of the previous scripts.
+- **D1 — Version 11 lives in `empirical-scripts/11.0/`.** Keep the reproducible evaluation of the [revision-8 claims](studies/8/sieve-echo-conjecture-8.md) available as the experimental record. Edit older version folders only to fix a link. The [research roadmap](ROADMAP.md#next-research-joint-distribution-of-repetend-lengths) defines the order-distribution follow-up. The fixed-base decoder serves as a benchmark showing what the orders capture.
 - **D2 — Use the Evolvo library from the submodule.** All formula search and neural-architecture search MUST import `evolvo` from [`libs/evolvo/src`](libs/evolvo/src) (upstream: `https://github.com/Geckos-Ink/evolvo`). Do NOT copy `evolvo.py`, `evolvo_model.py`, `evolvo_nn.py`, or `gold/evolvo.py` into `11.0/`, and do NOT import the historical copies in older version folders.
 - **D3 — Fix Evolvo in Evolvo.** When v11 needs a feature or bug fix in Evolvo, implement it inside [`libs/evolvo`](libs/evolvo), following [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) (update its `AGENTS.md` and `README.md`, add a test under [`libs/evolvo/tests/`](libs/evolvo/tests)), commit it on the submodule's `main` branch, then commit the updated submodule pointer in this repository. Do not work around an Evolvo defect inside the v11 script when the fix belongs in the library.
 - **D4 — Keep [`ROADMAP.md`](ROADMAP.md) live.** Update step status while implementing: mark steps done only after verification, add newly discovered fixes or follow-ups, and record results with the run that produced them.
@@ -46,6 +44,7 @@ These are mandatory for every task from v11 onward.
 
 - **ω(n)** — number of distinct prime factors. **Ω(n)** — with multiplicity. **τ(n)** — number of divisors. **φ(n)** — Euler totient. **λ(n)** — Carmichael function.
 - **Repetend** — the repeating block of `1/n` in base `b`. Defined only when `gcd(n, b) = 1`; then it is purely periodic with length `L = ord_n(b)`, the multiplicative order of `b` modulo `n`.
+- **Order index** — for a prime `p ∤ b`, `I_b(p) = (p−1)/ord_p(b)`, the index of the subgroup generated by the base. The planned prime-counting benchmarks use fixed divisibility conditions on these indices.
 - **NDR** (Normalized Digit Representation) — the repetend digits divided by the base. The paper (Definition 1.1) uses `d/b`; v10 used `d/(b-1)`. See [pitfall](#ndr-normalization-and-entropy-definition-drift).
 - **H_NDR** (NDR entropy) — Shannon entropy of the normalized power spectrum of the NDR sequence (paper Definition 1.2). v11 names: `H_paper` (all L bins, DC kept), `H_nodc` (DC dropped), `Hn_*` (divided by log length), `H_v8`/`H_v10` (historical definitions, reproduction only). Definitions in [`ndr.py`](empirical-scripts/11.0/ndr.py), tag `ndr-v11.1`.
 - **Base invariance** — coefficient of variation (CV = std/mean) of H_NDR across bases below 0.1.
@@ -53,9 +52,10 @@ These are mandatory for every task from v11 onward.
 
 ## Essential Project Principles
 
-### A claim is tested only against a null model and on held-out data
+### Fitted claims use a null model and held-out data
 
 - Every reported fit, correlation, or accuracy MUST be measured on data not used to fit it (train/validation/test split by `n`, fixed seed), and compared with a baseline that uses only trivial covariates (`log n`, `log L`) and with a permutation/shuffled-label null.
+- Exact enumerations use a declared finite range, an independent arithmetic check, and a theoretical comparison when one is available.
 - Training-set accuracy MUST NOT be reported as accuracy. v8's "98.8%" is training-set accuracy ([pitfall](#training-set-accuracy-reported-as-model-accuracy)).
 
 ### Features fed to a predictor of ω(n) MUST NOT encode factorization
@@ -105,17 +105,25 @@ Verified against `libs/evolvo` after ROADMAP step 3 (the commit the root repo po
 
 ## Linked Source Tree and File Reference
 
+### [`README.md`](README.md)
+
+Public entry point. Summarizes the entropy controls, exact order results and prime-counting benchmarks. Its best-Evolvo-algorithms table lists the four exact formulas with their held-out counts, the congruence-only control and links to both replayable program files. Reproduction includes both prime-order run commands.
+
+### [`ROADMAP.md`](ROADMAP.md)
+
+Live research plan. The prime-counting milestones cover verified quadratic and cubic counts, a mixed-index implication and a symbolic search with Evolvo. The completed v11 steps and their results preserve the experiment history. The [counterexample entry](ROADMAP.md#all-19-base-counterexample) records the deterministic standalone decoder command, its input, and the matching prime-order vectors.
+
 ### [`conclusion.md`](conclusion.md)
 
-Root summary of the main v11 result: the exact decoder of the factorization from the repetends (steps 13, 15 and 16) — what a base is, how the ROADMAP steps led to it, the algorithm with a worked example, results, why it works (exact gcd tests, rarity of shared order vectors, the shape of every known failure), what it is not (not a fast factoring method), open questions. Numbers name their runs (`decode-s0`, `failures-s0`, `step11-s0`, …); keep it consistent with `empirical-scripts/11.0/conclusions.md` and `studies/9`. The README's "Main result" section summarizes it.
+Research synthesis. Explains the entropy result and the order tests, gives the fixed-base decoder as a reconstruction example with explicit failure and supporting run IDs, and connects the order index to the prime-counting benchmarks. Section 7 includes the selected Evolvo algorithms as runnable Python, the scope of their checks, both reproduction commands and the milestone status.
 
 ### [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md)
 
-Conclusions of v11 (ROADMAP step 12): what steps 0–11 established, from v11 runs only, each number with its run id; verdict table, limits and open questions. The README's Conclusions section summarizes it. Change it only together with the run or Results-log entry behind the changed number, and keep it consistent with `studies/9`.
+Version 11 experimental record. Preserves the original conjecture, reproduction results, statistical tables, exact calculations and assumptions. Change empirical numbers with their backing run or Results-log entry.
 
 ### [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md)
 
-Revision 9 draft (step 6, awaiting owner review): the v11 findings with every number tied to a run (`full-s0-step4`, `scale-s0`, `quick-s0-step4`, `quick-s0-step6`), the v8 reproduction table, Observations 4.1–6.2, Theorem 1.3 (λ(n) ≤ φ(n)/2^{ω−1} for odd n), the reformulated open conjecture, reproduction commands, embedded figures from the run directories. Byline intentionally empty (no personal data in new files). Change numbers here only together with the run that produced them.
+Revision-9 draft for owner review. Makes the v11 claims with their run IDs, gives the arithmetic definitions and proofs, and states the fixed prime-counting observables at prime denominators in §8.
 
 ### [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md)
 
@@ -142,10 +150,10 @@ The owner's Mathematical Annotation Language proposal. The `level: … connects_
 
 ### [`empirical-scripts/11.0/sieve_echo_v11.py`](empirical-scripts/11.0/sieve_echo_v11.py)
 
-v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, scale, lengths, zeros, whisky, euler, orders, tworank, decode, subgroup, failures, validate, report`).
+v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, scale, lengths, zeros, whisky, euler, orders, tworank, decode, subgroup, failures, validate, prime_orders, report`).
 
-- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_formulas` (`formulas.json`, `best_formulas.md`, `knowledge/policy_<target>.pt`), `stage_nn` (`baselines.json`, `nn.json`, `knowledge/nn_<input>.json`), `stage_scale` (`scale.json`), `stage_lengths` (`lengths.json`, `cache/lengths-<key>.npz`), `stage_zeros` (`zeros.json`, `cache/zeros-<key>.npz`), `stage_whisky` (`whisky.json`), `stage_euler` (`euler.json`), `stage_orders` (`orders.json`; needs no dataset), `stage_tworank` (`tworank.json`; needs no dataset), `stage_decode` (`decode.json`; needs no dataset), `stage_subgroup` (`subgroup.json`), `stage_failures` (`failures.json`; needs no dataset), `stage_validate` (`validate.json`; needs the external prime list), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED` = all sixteen stages.
-- **Contract:** default `--stages` is `data,claims,formulas,nn,scale,lengths,zeros,whisky,euler,report` (`orders`, `tworank`, `decode` and `failures` run with `config/orders.json`). `report` needs at least one analysis output; without `claims.json` it writes the other sections only. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
+- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_formulas` (`formulas.json`, `best_formulas.md`, `knowledge/policy_<target>.pt`), `stage_nn` (`baselines.json`, `nn.json`, `knowledge/nn_<input>.json`), `stage_scale` (`scale.json`), `stage_lengths` (`lengths.json`, `cache/lengths-<key>.npz`), `stage_zeros` (`zeros.json`, `cache/zeros-<key>.npz`), `stage_whisky` (`whisky.json`), `stage_euler` (`euler.json`), `stage_orders` (`orders.json`; needs no dataset), `stage_tworank` (`tworank.json`; needs no dataset), `stage_decode` (`decode.json`; needs no dataset), `stage_subgroup` (`subgroup.json`), `stage_failures` (`failures.json`; needs no dataset), `stage_validate` (`validate.json`; needs the external prime list), `stage_prime_orders` (`prime_orders.json`; no digit dataset or external prime list), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED` contains every registered stage.
+- **Contract:** default `--stages` is `data,claims,formulas,nn,scale,lengths,zeros,whisky,euler,report` (`orders`, `tworank`, `decode` and `failures` run with `config/orders.json`; `prime_orders` has its own configurations). `report` needs at least one analysis output; without `claims.json` it writes the other sections only. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
 
 ### [`empirical-scripts/11.0/runtime.py`](empirical-scripts/11.0/runtime.py)
 
@@ -172,7 +180,7 @@ ROADMAP step 2: one function per claim (`c1_law` … `c9_beyond_L`), driven by `
 
 ### [`empirical-scripts/11.0/report.py`](empirical-scripts/11.0/report.py)
 
-`write_report(run_dir, table=None)` reads `manifest.json` + `claims.json` (+ `formulas.json`, `baselines.json`, `nn.json`, `scale.json` when present), builds the figures (`figures.make_figures`), writes `report.md` (figures first, then (run provenance, verdict table, one section per claim, step-4 guide/variant table with S1/S2 checks and Mann–Whitney p-values, best formulas, held-out results table, three-feature retest, step-5 scale table) and `report.json`, and prints the verdict table. `python empirical-scripts/11.0/report.py <run_dir>` regenerates figures + report of a finished run (loads the dataset cache when present), without rerunning stages or touching the manifest.
+`write_report(run_dir, table=None)` reads `manifest.json` and available stage outputs. It writes `report.md` and `report.json`, including verdicts for claim runs, figures when available, and the exact counts and GFSL formula summary for `prime_orders.json`. `python empirical-scripts/11.0/report.py <run_dir>` regenerates the report and figures of a finished run without rerunning the analyses or changing the manifest.
 
 ### [`empirical-scripts/11.0/figures.py`](empirical-scripts/11.0/figures.py)
 
@@ -184,7 +192,7 @@ Predictor inputs shared by claims C9, baselines, formulas and GFSL-NN: `per_base
 
 ### [`empirical-scripts/11.0/search_formulas.py`](empirical-scripts/11.0/search_formulas.py)
 
-ROADMAP step 4 / S1 / S2. `prepare` (12 standardized inputs, train permutation, val/test arrays per target), `Sizer` (S1: monotone N driven by the top-k mean toward `q_target` and by the 2-SE spread trigger, capped by train size), `run_one` (one target × guide × seed × variant in a worker: `GFSLEvolver` with `inputs=`, `outputs=`, `InstructionProfile.formula(allow_custom=False)`, fitness `1/(1+NMSE) − parsimony·size` via `execute_batch` on the first N permuted train rows, `fitness_epoch=lambda: N`, v10 relative saving + safety net, validation selection, one test read), `formula_expression` (readable formula over named inputs), `summarize` (guide/variant table, S1/S2 checks with Mann–Whitney p), `run_stage` (phase A: guides × seeds adaptive, fixed-N ablation, one knowledge run per target; phase B: warm policy runs loading it).
+ROADMAP step 4 / S1 / S2. `prepare` (12 standardized inputs, train permutation, val/test arrays per target), `Sizer` (S1: monotone N driven by the top-k mean toward `q_target` and by the 2-SE spread trigger, capped by train size), `run_one` (one target × guide × seed × variant in a worker: `GFSLEvolver` with `inputs=`, `outputs=`, `InstructionProfile.formula(allow_custom=False)`, fitness `1/(1+NMSE) − parsimony·size` via `execute_batch` on the first N permuted train rows, `fitness_epoch=lambda: N`, v10 relative saving + safety net, validation selection, one test read), `formula_expression` (readable formula over named inputs), optional target-specific inputs, operation profiles, program slots and finite-domain audits for steps 17–19, `summarize` (guide/variant table, S1/S2 checks with Mann–Whitney p), `run_stage` (phase A: guides × seeds adaptive, fixed-N ablation, one knowledge run per target; phase B: warm policy runs loading it).
 
 - **Common mistakes:** reading S1/S2 "met" without the p-values — at 5 seeds the differences are within seed noise; a `q_target` no run reaches makes "evaluations to target" undefined.
 
@@ -236,11 +244,11 @@ ROADMAP step 10: the 2-rank of (ℤ/nℤ)* (docstring = Proposition 1.6 of `stud
 
 ROADMAP step 13: exact, training-free decoding of ω — and of the prime factors — from the repetend lengths (docstring = Proposition 1.7 of `studies/9`). For each base b coprime to n and each prime q | L = ord_n(b), the tests gcd(b^{(L/q^e) q^i} − 1, n) refine {n}; `coprime_base` reduces the parts; ω̂ = their number (ω̂ ≤ ω; exact when the prime divisors have distinct order vectors). `decode` (variants: q = 2 only — Shor's half-period split —, pre-periods of non-coprime bases, per-base checkpoints, a `remainder` callback), `remainder_from_digits` (b^d mod n from ⌈log_b n⌉ repetend digits: ⌊nD/b^k⌋ + 1), `prime_divisors` (primes of L from those of λ(n): a speed shortcut, same set), `order_vector_classes` (lower bound, tests only), `records`/`exhaustive` (process pools), `summarize`, `digit_check` (13c: remainders read from digits and whole integers decoded from digits only), `run_stage` (exhaustive range, ω-balanced decades via `orders_scale.sample` — the first four reproduce the `orders-s0` integers —, uniform samples, Midy ⇔ Shor-failure check).
 
-- **Common mistakes:** reading ω̂ = ω as "the digits factor n cheaply" — the decoder needs L, and computing L classically needs λ(n) (the factorization) or Θ(L) digits; it shows where the information is, not a fast factoring method. ω̂ is a lower bound (parts merge, never over-split).
+- **Common mistakes:** treating ω̂ = ω as a check of the full factor-and-exponent output. The experiment counts pairwise coprime parts. The standalone decoder must also compute or receive the lengths and find their prime divisors.
 
 ### [`empirical-scripts/11.0/sieve_echo_decoder.py`](empirical-scripts/11.0/sieve_echo_decoder.py)
 
-The final v11 algorithm as a standalone, dependency-free script (the same procedure as `decode.decode` with pre-periods over the 19 bases, returning the factors): `repetend_length` (long division, L steps — the expensive part), `primes_of`, `coprime_parts`, `decode(n, lengths)` → {factor: exponent}, `exponent_of`, `factor(n)`, `is_prime` (trial division, used only to check the output). `python sieve_echo_decoder.py [n …]` decodes and self-checks; the defaults are hand-checkable (2047, 1001, 1024, 214935). Its code is quoted in `conclusion.md`, `README.md` and `11.0/conclusions.md` §7 — keep them identical when it changes.
+The final v11 algorithm as a standalone, dependency-free script (the same procedure as `decode.decode` with pre-periods over the 19 bases, returning the factors): `repetend_length` (long division, L steps — the expensive part), `primes_of`, `coprime_parts`, `decode(n, lengths)` → {factor: exponent}, `exponent_of`, `factor(n)`, `is_prime` (trial division, used only to check the output). `python sieve_echo_decoder.py [n …]` decodes and self-checks; the defaults are hand-checkable (2047, 1001, 1024, 214935). Its code is quoted in `conclusion.md` and `11.0/conclusions.md` §7 — keep them identical when it changes.
 
 - **Common mistakes:** demo inputs above ~10⁶ (the long division takes up to n steps per base); presenting it as an Evolvo result (it is derived; Evolvo's best ω formula reaches 65.5%).
 
@@ -261,6 +269,22 @@ ROADMAP step 15: the failure set of the step-13 decoder (docstring = Proposition
 ROADMAP step 16: the published decoder (`sieve_echo_decoder.decode`) on integers built from an external prime list (`primes50.zip` of The Prime Pages, t5k.org: the 49 000 001st–50 000 000th primes, ≈ 9.6–9.8·10⁸), kept in the git-ignored `results/primes-db/cache/txt/primes50.txt` (download and unzip it there; the stage checks its SHA-256, count, order, random consecutive pairs and the primality of every prime used). `load_primes`, `check_list`, `build` (families: one/two/three list primes, p²·q, list prime × primes in (31, 10⁵), list primes × primes 2…31), `lengths_from_factors` (the lengths are produced from the known factors — validation only), `verify_length` (L = ord_n(b) checked from n alone), `run_stage`.
 
 - **Common mistakes:** feeding the list or the factors to the decoder (it sees n and the lengths only); reading the first five families as a test of the pre-period step (they are coprime to every base by design; the last family tests it).
+
+### [`empirical-scripts/11.0/prime_orders.py`](empirical-scripts/11.0/prime_orders.py)
+
+ROADMAP steps 17–18. Enumerates primes via the smallest-prime-factor sieve and computes exact order indices for bases 2, 3 and 5 using `ndr.multiplicative_order`. Checks every eligible prime against reciprocity or modular powers. Reports quadratic pattern counts, interval and cumulative discrepancies, and character von Mangoldt sums with prime-power corrections. Reports cubic marginal/joint rates, the conditional independence comparison, the mixed implication, and the GRH-conditional count envelope alongside the unconditional theorem's range. Exclusions are part of each output. The stage calls the optional formula search on primes coprime to all three bases.
+
+### [`empirical-scripts/11.0/prime_order_formulas.py`](empirical-scripts/11.0/prime_order_formulas.py)
+
+ROADMAP step 19. Uses `search_formulas` and the Evolvo PyTorch policy guide. Uses size-separated train/validation/test primes, exact finite-domain audits, a constant, seeded shuffle and a train-only residue lookup where relevant. Saves the selected programs' full GFSL slots and verifies replay by validation error. `replay(program, X)` takes the numeric input columns in `program["inputs"]` order. The marginal-event search inputs already include the individual order predicates. The cubic congruence-only problem uses functions of the residue modulo 120 and records a held-out error lower bound for that representation.
+
+### [`empirical-scripts/11.0/config/prime-orders.json`](empirical-scripts/11.0/config/prime-orders.json) and [`prime-orders-confirm.json`](empirical-scripts/11.0/config/prime-orders-confirm.json)
+
+Configurations for `--stages prime_orders,report`. The first runs the fixed benchmarks and all five formula cases. The follow-up folds the modulo-8 coordinate by its distance from 4, expands the search budget for the quadratic formulas, and uses only primes beyond the first run's range as test inputs. Omit the `search` block for counts alone.
+
+### [`empirical-scripts/11.0/tests/test_prime_orders.py`](empirical-scripts/11.0/tests/test_prime_orders.py)
+
+Checks reduced residue classes, character prime-power corrections, cubic and mixed counts, size splits, modulo-class ambiguity bounds and Evolvo slot replay.
 
 ### [`empirical-scripts/11.0/config/`](empirical-scripts/11.0/config)
 
@@ -398,7 +422,7 @@ Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dat
 - **Symptom:** r = 0.946 for `H·log n` (§4.2) and decreasing correlation with `n^-s` (§4.1).
 - **Cause:** both covariates are monotone functions of `n`, and H grows with `n` through `L`. They measure size, not primes or zeta.
 - **Safe pattern:** report partial correlations controlling for `log n` and `log L`; compare against the same statistic on a shuffled-ω null.
-- **Status:** active in the paper.
+- **Status:** v11 records the weak size-controlled correlations in revision 9. The planned prime-counting benchmarks use explicit index divisibility and residue classes.
 
 ### Repetend length as hidden variable
 
@@ -503,6 +527,12 @@ Run step 10/11 (same integers as `orders-s0`, orders in bases 2..499; the curren
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/orders.json --run-id step11-s0 --stages tworank,report
 ```
 
+Run steps 17–19 (prime counts and Evolvo formula search, no digit dataset):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/prime-orders.json --run-id prime-orders-s0 --stages prime_orders,report
+```
+
 Resume an existing run (finished stages are skipped; config and seed must match):
 
 ```bash
@@ -556,10 +586,11 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Shipped
 
+- The `prime_orders` stage implements the verified steps 17–19, including independent prime counts, GRH-conditional comparison, finite input audits, and executable GFSL programs. The [run records](ROADMAP.md#prime-order-benchmarks) identify the scripts, settings and seeds.
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
 - Evolvo submodule at [`libs/evolvo`](libs/evolvo) with the step-3 features (see [Standing Evolvo Facts](#standing-evolvo-facts-relevant-to-v11)).
 
-- v11 steps 0–5 and 7–16 ([`ROADMAP.md`](ROADMAP.md); conclusions in [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), step-8 exact spectral zeros (`zeros`) and SinWhisky spectra (`whisky`, submodule `libs/sinwhisky`), step-9 small-prime membership (`euler`) and order-only ω to 10⁸ (`orders`), step-10/11 2-rank estimators (ratio and maximum likelihood) and ℓ-adic profiles (`tworank`), step-13 exact decoding of ω and the prime factors from the repetend lengths (`decode`; exact for every n ≤ 10⁸ with pre-periods, run `decode-s0`), step-14 exact subgroup membership and the residue structure accounted for (`subgroup`, run `scale-s0-step14`), step-15 failure set of the decoder (`failures`; exact for every n < 3.7·10⁹, run `failures-s0`), step-16 external validation of the standalone decoder on integers built from the t5k.org prime list (`validate`; 40 000/40 000 exact up to 2.4·10⁴⁸, run `validate-s0`), Markdown/JSON report with figures, the standalone decoder `sieve_echo_decoder.py`, 83 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
+- v11 steps 0–5 and 7–16 ([`ROADMAP.md`](ROADMAP.md); conclusions in [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), step-8 exact spectral zeros (`zeros`) and SinWhisky spectra (`whisky`, submodule `libs/sinwhisky`), step-9 small-prime membership (`euler`) and order-only ω to 10⁸ (`orders`), step-10/11 2-rank estimators (ratio and maximum likelihood) and ℓ-adic profiles (`tworank`), step-13 order tests for recovering ω (`decode`; exact for every n ≤ 10⁸ with pre-periods, run `decode-s0`), step-14 exact subgroup membership and the residue structure accounted for (`subgroup`, run `scale-s0-step14`), step-15 failure set of the order tests (`failures`; exact ω for every n < 3.7·10⁹, run `failures-s0`), step-16 external validation of the standalone decoder on integers built from the t5k.org prime list (`validate`; 40 000/40 000 exact up to 2.4·10⁴⁸, run `validate-s0`), Markdown/JSON report with figures, the standalone decoder `sieve_echo_decoder.py`, 83 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
 
 ### Experimental / Scaffold
 
@@ -572,8 +603,8 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Near-Term Priorities
 
-1. Owner review of the step-6…11 reports, the `studies/9` draft and the v11 conclusions ([`ROADMAP.md`](ROADMAP.md) steps 6–11).
-2. Remaining open questions of `studies/9` §8: the density of decoder failures above 3.7·10⁹ (step 15 characterizes them), and why [ord q | ord b] controls the residue structure better than exact membership (step 14).
+1. Review the [prime-order benchmark results](ROADMAP.md#next-research-joint-distribution-of-repetend-lengths) and the [revision-9 draft](studies/9/sieve-echo-conjecture-9.md) against the stored runs.
+2. Any further counting experiment needs a stated observable, prime range, arithmetic comparison and explicit decision criterion.
 
 ## Task Start and Handoff Checklist
 

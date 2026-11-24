@@ -1,0 +1,122 @@
+{
+  "run_id": "prime-orders-confirm-s10",
+  "created": "2026-11-24T23:41:20+01:00",
+  "config_path": "empirical-scripts/11.0/config/prime-orders-confirm.json",
+  "config_sha256": "1469018ee6d8dbd2b3e82a829287781d3148ef72b0c21095d3a25d8b4352b7d2",
+  "config": {
+    "seed": 10,
+    "prime_orders": {
+      "cutoffs": [
+        10000,
+        100000,
+        1000000,
+        2000000
+      ],
+      "search": {
+        "targets": [
+          "quadratic_base2",
+          "quadratic_joint"
+        ],
+        "fold_mod8": true,
+        "split_at": [
+          200000,
+          1000000
+        ],
+        "seed_offsets": [
+          0,
+          1,
+          2
+        ],
+        "population": 144,
+        "generations": 70,
+        "initial_instructions": 8,
+        "max_instructions": 24,
+        "max_effective_instructions": 12,
+        "workers": 4
+      }
+    }
+  },
+  "seed": 10,
+  "stages": {
+    "prime_orders": {
+      "status": "done",
+      "finished": "2026-11-24T23:42:29+01:00",
+      "seconds": 65.78,
+      "prime_orders_file": "prime_orders.json",
+      "cutoffs": [
+        10000,
+        100000,
+        1000000,
+        2000000
+      ]
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-24T23:42:29+01:00",
+      "seconds": 0.02,
+      "report": "report.md",
+      "report_json": "report.json",
+      "figures": []
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/prime-orders-confirm.json",
+    "--run-id",
+    "prime-orders-confirm-s10",
+    "--stages",
+    "prime_orders,report"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": false
+    },
+    "git_root": {
+      "sha": "346dc45b7c00685c877e813315298dcfd4c671fa",
+      "dirty": true,
+      "changed_paths": [
+        "M AGENTS.md",
+        " M README.md",
+        " M ROADMAP.md",
+        " M conclusion.md",
+        " M empirical-scripts/11.0/conclusions.md",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/search_formulas.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        " M studies/9/sieve-echo-conjecture-9.md",
+        "?? empirical-scripts/11.0/config/prime-orders-confirm.json",
+        "?? empirical-scripts/11.0/config/prime-orders.json",
+        "?? empirical-scripts/11.0/prime_order_formulas.py",
+        "?? empirical-scripts/11.0/prime_orders.py",
+        "?? empirical-scripts/11.0/tests/test_prime_orders.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "c35be3ca7a4c8835d20dc2fe9f2c8546afc665a300dc14b439e383c528ab7795"
+  },
+  "ndr_version": "ndr-v11.1"
+}

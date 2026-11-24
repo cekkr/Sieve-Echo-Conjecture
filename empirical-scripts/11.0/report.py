@@ -51,11 +51,17 @@ def build_markdown(manifest: dict, claims_out: dict) -> str:
     root, evo = env.get("git_root", {}), env.get("git_evolvo", {})
     data = manifest.get("stages", {}).get("data", {})
     s = claims_out.get("settings", {})
+    has_claims = bool(claims_out["claims"])
+    title = "claim verdicts" if has_claims else "research report"
     lines = [
-        f"# Sieve Echo v11 — claim verdicts ({manifest.get('run_id')})",
+        f"# Sieve Echo v11 — {title} ({manifest.get('run_id')})",
         "",
         f"- **Run:** `{manifest.get('run_id')}`, config `{manifest.get('config_path')}` (sha256 `{_short(manifest.get('config_sha256'))}`), seed {manifest.get('seed')}.",
         f"- **Code:** root `{_short(root.get('sha'))}`{' (dirty)' if root.get('dirty') else ''}, libs/evolvo `{_short(evo.get('sha'))}`{' (dirty)' if evo.get('dirty') else ''}, v11 sources sha256 `{_short(env.get('v11_code_sha256'))}`.",
+    ]
+    if not has_claims:
+        return "\n".join(lines + ["", "## Verdicts", "", "Analyses for this run are below.", ""])
+    lines += [
         f"- **Definitions:** `{claims_out.get('ndr_version')}`; primary base set `{s.get('primary_set')}`; entropies {', '.join(f'`{e}`' for e in s.get('entropies', []))}.",
         f"- **Data:** {data.get('integers')} integers, {data.get('pairs')} coprime (n, b) pairs; split {data.get('split_counts')} (split sha256 `{_short(data.get('split_sha256'))}`).",
         f"- **Inference:** {s.get('bootstrap')} bootstrap resamples (95% percentile CIs over test rows), {s.get('permutations')} permutations; effect threshold {s.get('effect_threshold')} (ΔR², η² excess, r²).",
@@ -190,7 +196,80 @@ def step4_markdown(run_dir: Path) -> str:
     vf = run_dir / "validate.json"
     if vf.is_file():
         lines += validate_markdown(runtime.read_json(vf))
+    pf = run_dir / "prime_orders.json"
+    if pf.is_file():
+        lines += prime_orders_markdown(runtime.read_json(pf))
     return "\n".join(lines)
+
+
+def prime_orders_markdown(data: dict) -> list[str]:
+    q = data["quadratic"]
+    patterns = " | ".join(q["pattern_order"])
+    lines = [
+        "## Step 17 — Quadratic order indices", "",
+        "Exact orders agree prime by prime with quadratic reciprocity. Each pattern has density 1/8. "
+        "Pattern bits refer to bases 2, 3 and 5 in that order.", "",
+        f"| Through x | Eligible primes | {patterns} |",
+        "| --- | --- |" + " --- |" * len(q["pattern_order"]),
+    ]
+    for row in q["rows"]:
+        part = row["cumulative"]
+        counts = " | ".join(f"{n:,}" for n in part["counts"])
+        lines.append(f"| {row['x']:,} | {part['eligible']:,} | {counts} |")
+    lines += [
+        "", "The JSON records interval counts, centered count and log-weighted discrepancies, "
+        "and the seven character sums with the prime-power corrections.", "",
+        "## Step 18 — Cubic order indices", "",
+        "The joint count has unconditional density 1/18 and conditional density 1/9 among primes "
+        "congruent to 1 modulo 3. The last column assumes GRH for the Dedekind zeta function of the joint field. "
+        "[Grenié–Molteni, Corollary 1.2](https://arxiv.org/abs/1709.07609)", "",
+        "| Through x | Base 2 | Base 3 | Joint | Conditional joint rate | Joint minus conditional independence | Joint minus Li₂(x)/18 | GRH error bound |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for row in data["cubic"]["rows"]:
+        a, b, joint = row["counts"]
+        lines.append(
+            f"| {row['x']:,} | {a:,} | {b:,} | {joint:,} | {row['conditional_rates'][2]:.3%} | "
+            f"{row['conditional_joint_excess']:+.2f} | {row['joint_count_minus_li_over_18']:+.2f} | "
+            f"{row['grh_joint_count_error_bound']:,.2f} |"
+        )
+    last = data["mixed"]["rows"][-1]
+    lines += [
+        "", "The unconditional theorem gives an effective large-x estimate with a possible exceptional-zero term. "
+        "The JSON records its range and parameters. "
+        "[Thorner–Zaman, Theorem 1.1](https://doi.org/10.2140/ant.2019.13.1039)", "",
+        f"Through {last['x']:,}, all {last['quintic']:,} primes with `5 divides I_2` "
+        f"also satisfy `2 divides I_5`. The joint count is {last['joint']:,}.", "",
+    ]
+    if "formulas" not in data:
+        return lines
+    formulas = data["formulas"]
+    split = formulas["split"]
+    lines += [
+        "## Step 19 — Evolvo formulas", "",
+        f"Training uses primes through {split['train_end']:,}. Selection uses validation through "
+        f"{split['val_end']:,}. Held-out scores use larger primes. The finite domain checks use "
+        "the specified residue or Boolean input tables.", "",
+        "| Target | Selected formula | Test MSE | Constant MSE | Test F1 | Exact domain values |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for target, row in formulas["targets"].items():
+        audit = row.get("audit")
+        exact = f"{audit['exact']}/{audit['rows']}" if audit else "–"
+        lines.append(
+            f"| {target} | `{row['expression']}` | {row['test']['mse']:.5g} | "
+            f"{row['baseline']['constant_mse']:.5g} | {row['test']['f1']:.3f} | {exact} |"
+        )
+    if "cubic_congruence_only" in formulas["targets"]:
+        lookup = formulas["targets"]["cubic_congruence_only"]["baseline"]["mod_120_lookup"]
+        lines += [
+            "", f"The cubic target takes both values in {lookup['test_classes_with_both_labels']} of "
+            f"{lookup['test_residue_classes']} held-out residue classes modulo 120. Any deterministic "
+            f"classifier of these residues makes at least {lookup['test_errors_unavoidable_by_residue']:,} "
+            "errors on these held-out primes. The JSON includes the train-only lookup.",
+        ]
+    lines += ["", "The JSON includes a seeded shuffle comparison and replayable GFSL instructions.", ""]
+    return lines
 
 
 def _ci(c) -> str:
@@ -559,6 +638,8 @@ def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     cpath = run_dir / "claims.json"
     claims_out = runtime.read_json(cpath) if cpath.is_file() else {"claims": [], "settings": {}, "ndr_version": None}
+    prime_path = run_dir / "prime_orders.json"
+    prime_out = runtime.read_json(prime_path) if prime_path.is_file() else {}
     md = build_markdown(manifest, claims_out)
     try:
         import figures
@@ -573,7 +654,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "prime_orders.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:
@@ -590,7 +671,7 @@ def write_report(run_dir: Path, table=None) -> dict:
             "git_root": manifest.get("environment", {}).get("git_root"),
             "git_evolvo": manifest.get("environment", {}).get("git_evolvo"),
             "v11_code_sha256": manifest.get("environment", {}).get("v11_code_sha256"),
-            "ndr_version": claims_out.get("ndr_version"),
+            "ndr_version": claims_out.get("ndr_version") or prime_out.get("ndr_version"),
             "verdicts": {c["id"]: {"title": c["title"], "verdict": c["verdict"], "reproduction": c.get("reproduction", {}).get("status"), "reason": c["reason"]} for c in claims_out["claims"]},
         },
     )

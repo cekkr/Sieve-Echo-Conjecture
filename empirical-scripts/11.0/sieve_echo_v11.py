@@ -30,6 +30,7 @@ Run directory:
     subgroup.json      step 14: exact membership q in <b> mod n (non-cyclic groups too) and the C7 residue structure
     failures.json      step 15: the decoder's failure set: least failing n per base set, certified from prime order vectors
     validate.json      step 16: the final decoder on integers built from an external prime list (t5k.org)
+    prime_orders.json  steps 17–19: exact prime counts by order index and Evolvo formulas
     report.md/.json    verdict table and per-claim summary
     log.txt            stage log
     cache/             disposable dataset cache (git-ignored)
@@ -49,9 +50,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import runtime  # noqa: E402
 
-STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "zeros", "whisky", "euler", "orders", "tworank", "decode", "subgroup", "failures", "validate", "report")
+STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "zeros", "whisky", "euler", "orders", "tworank", "decode", "subgroup", "failures", "validate", "prime_orders", "report")
 IMPLEMENTED = set(STAGES)
-ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "zeros": "step 8", "whisky": "step 8e", "euler": "step 9a", "orders": "step 9b", "tworank": "step 10", "decode": "step 13", "subgroup": "step 14", "failures": "step 15", "validate": "step 16", "report": "step 6"}
+ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "zeros": "step 8", "whisky": "step 8e", "euler": "step 9a", "orders": "step 9b", "tworank": "step 10", "decode": "step 13", "subgroup": "step 14", "failures": "step 15", "validate": "step 16", "prime_orders": "steps 17–19", "report": "step 6"}
 DEFAULT_STAGES = "data,claims,formulas,nn,scale,lengths,zeros,whisky,euler,report"
 
 
@@ -338,11 +339,19 @@ def stage_validate(run: Run) -> dict:
     return {"validate_file": "validate.json"}
 
 
+def stage_prime_orders(run: Run) -> dict:
+    import prime_orders
+
+    out = prime_orders.run_stage(run.config["prime_orders"], run.seed, run.dir, log=run.log)
+    runtime.write_json(run.dir / "prime_orders.json", out)
+    return {"prime_orders_file": "prime_orders.json", "cutoffs": out["cutoffs"]}
+
+
 def stage_report(run: Run) -> dict:
     import report
 
-    if not any((run.dir / f).is_file() for f in ("claims.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "euler.json", "zeros.json", "lengths.json", "scale.json")):
-        raise SystemExit("report needs the output of at least one analysis stage (claims, scale, lengths, zeros, euler, orders, tworank, decode, subgroup, failures, validate)")
+    if not any((run.dir / f).is_file() for f in ("claims.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "prime_orders.json", "euler.json", "zeros.json", "lengths.json", "scale.json")):
+        raise SystemExit("report needs the output of at least one analysis stage")
     try:
         table = load_table(run)
     except SystemExit:
@@ -350,7 +359,7 @@ def stage_report(run: Run) -> dict:
     return report.write_report(run.dir, table)
 
 
-STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "zeros": stage_zeros, "whisky": stage_whisky, "euler": stage_euler, "orders": stage_orders, "tworank": stage_tworank, "decode": stage_decode, "subgroup": stage_subgroup, "failures": stage_failures, "validate": stage_validate, "report": stage_report}
+STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "zeros": stage_zeros, "whisky": stage_whisky, "euler": stage_euler, "orders": stage_orders, "tworank": stage_tworank, "decode": stage_decode, "subgroup": stage_subgroup, "failures": stage_failures, "validate": stage_validate, "prime_orders": stage_prime_orders, "report": stage_report}
 
 
 # ---------------------------------------------------------------------------------------------

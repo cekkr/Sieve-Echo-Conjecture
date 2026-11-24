@@ -1,0 +1,1176 @@
+{
+  "ndr_version": "ndr-v11.1",
+  "cutoffs": [
+    10000,
+    100000,
+    1000000,
+    2000000
+  ],
+  "quadratic": {
+    "bases": [
+      2,
+      3,
+      5
+    ],
+    "modulus": 120,
+    "excluded_primes": [
+      2,
+      3,
+      5
+    ],
+    "pattern_order": [
+      "000",
+      "001",
+      "010",
+      "011",
+      "100",
+      "101",
+      "110",
+      "111"
+    ],
+    "classes": [
+      [
+        43,
+        53,
+        67,
+        77
+      ],
+      [
+        19,
+        29,
+        91,
+        101
+      ],
+      [
+        13,
+        37,
+        83,
+        107
+      ],
+      [
+        11,
+        59,
+        61,
+        109
+      ],
+      [
+        7,
+        17,
+        103,
+        113
+      ],
+      [
+        31,
+        41,
+        79,
+        89
+      ],
+      [
+        23,
+        47,
+        73,
+        97
+      ],
+      [
+        1,
+        49,
+        71,
+        119
+      ]
+    ],
+    "densities": [
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125,
+      0.125
+    ],
+    "character_bases": [
+      [
+        5
+      ],
+      [
+        3
+      ],
+      [
+        3,
+        5
+      ],
+      [
+        2
+      ],
+      [
+        2,
+        5
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        2,
+        3,
+        5
+      ]
+    ],
+    "character_note": "Characters are taken modulo 120, so all powers of 2, 3 and 5 have value zero.",
+    "rows": [
+      {
+        "x": 10000,
+        "previous_x": 0,
+        "cumulative": {
+          "eligible": 1226,
+          "counts": [
+            160,
+            151,
+            154,
+            158,
+            153,
+            155,
+            150,
+            145
+          ],
+          "count_discrepancies": [
+            6.75,
+            -2.25,
+            0.75,
+            4.75,
+            -0.25,
+            1.75,
+            -3.25,
+            -8.25
+          ],
+          "log_weighted_discrepancies": [
+            60.62649183568578,
+            -23.981871324273243,
+            4.135508405652445,
+            37.64808814670096,
+            -10.401406083260326,
+            13.542289879942018,
+            -33.605639033446096,
+            -47.96346182700336
+          ]
+        },
+        "interval": {
+          "eligible": 1226,
+          "counts": [
+            160,
+            151,
+            154,
+            158,
+            153,
+            155,
+            150,
+            145
+          ],
+          "count_discrepancies": [
+            6.75,
+            -2.25,
+            0.75,
+            4.75,
+            -0.25,
+            1.75,
+            -3.25,
+            -8.25
+          ],
+          "log_weighted_discrepancies": [
+            60.62649183568578,
+            -23.981871324273243,
+            4.135508405652445,
+            37.64808814670096,
+            -10.401406083260326,
+            13.542289879942018,
+            -33.605639033446096,
+            -47.96346182700336
+          ]
+        },
+        "joint_character_residual": -47.963461827003485,
+        "character_prime_sums": [
+          -41.50991024926422,
+          -79.57100861619145,
+          79.81942414424775,
+          -156.85643412753342,
+          60.681656588554326,
+          -89.84896069807267,
+          -156.42246165776817
+        ],
+        "character_prime_power_corrections": [
+          80.27136456784882,
+          79.51238532443901,
+          83.940733595739,
+          79.14494305014227,
+          74.71659477884228,
+          75.47557402225209,
+          90.1637197233982
+        ],
+        "character_von_mangoldt_sums_mod_120": [
+          38.7614543185846,
+          -0.058623291752439854,
+          163.76015773998677,
+          -77.71149107739114,
+          135.3982513673966,
+          -14.373386675820583,
+          -66.25874193436997
+        ]
+      },
+      {
+        "x": 100000,
+        "previous_x": 10000,
+        "cumulative": {
+          "eligible": 9589,
+          "counts": [
+            1197,
+            1213,
+            1206,
+            1190,
+            1207,
+            1201,
+            1202,
+            1173
+          ],
+          "count_discrepancies": [
+            -1.625,
+            14.375,
+            7.375,
+            -8.625,
+            8.375,
+            2.375,
+            3.375,
+            -25.625
+          ],
+          "log_weighted_discrepancies": [
+            -18.46737807825957,
+            149.2214189977458,
+            72.26354560841537,
+            -108.29463053629479,
+            79.38008767108295,
+            21.814426728677063,
+            27.753829273904557,
+            -223.67129966524408
+          ]
+        },
+        "interval": {
+          "eligible": 8363,
+          "counts": [
+            1037,
+            1062,
+            1052,
+            1032,
+            1054,
+            1046,
+            1052,
+            1028
+          ],
+          "count_discrepancies": [
+            -8.375,
+            16.625,
+            6.625,
+            -13.375,
+            8.625,
+            0.625,
+            6.625,
+            -17.375
+          ],
+          "log_weighted_discrepancies": [
+            -79.0938699139515,
+            173.2032903220188,
+            68.12803720275588,
+            -145.94271868300893,
+            89.78149375433532,
+            8.272136848730952,
+            61.359468307346106,
+            -175.70783783823208
+          ]
+        },
+        "joint_character_residual": -223.67129966524212,
+        "character_prime_sums": [
+          -321.86016895033094,
+          -463.8971106384922,
+          -542.1064412174743,
+          -189.44591198313984,
+          -296.1214108128174,
+          -130.32685894368774,
+          154.38750522400557
+        ],
+        "character_prime_power_corrections": [
+          296.63822077659603,
+          288.3423555879811,
+          290.6921001316321,
+          298.94001632888546,
+          299.0930953842921,
+          291.3407003518658,
+          303.34911351316555
+        ],
+        "character_von_mangoldt_sums_mod_120": [
+          -25.221948173734916,
+          -175.55475505051112,
+          -251.41434108584218,
+          109.49410434574563,
+          2.971684571474725,
+          161.01384140817805,
+          457.7366187371711
+        ]
+      },
+      {
+        "x": 1000000,
+        "previous_x": 100000,
+        "cumulative": {
+          "eligible": 78495,
+          "counts": [
+            9818,
+            9815,
+            9825,
+            9816,
+            9814,
+            9830,
+            9828,
+            9749
+          ],
+          "count_discrepancies": [
+            6.125,
+            3.125,
+            13.125,
+            4.125,
+            2.125,
+            18.125,
+            16.125,
+            -62.875
+          ],
+          "log_weighted_discrepancies": [
+            53.93486743303947,
+            21.540646959052538,
+            169.15843969711568,
+            19.42847943783272,
+            -2.171749963221373,
+            223.68234257966105,
+            190.31459588698635,
+            -675.8876220312959
+          ]
+        },
+        "interval": {
+          "eligible": 68906,
+          "counts": [
+            8621,
+            8602,
+            8619,
+            8626,
+            8607,
+            8629,
+            8626,
+            8576
+          ],
+          "count_discrepancies": [
+            7.75,
+            -11.25,
+            5.75,
+            12.75,
+            -6.25,
+            15.75,
+            12.75,
+            -37.25
+          ],
+          "log_weighted_discrepancies": [
+            72.40224551153369,
+            -127.68077203880239,
+            96.89489408879308,
+            127.72310997417662,
+            -81.55183763433888,
+            201.8679158508021,
+            162.56076661303814,
+            -452.21632236592995
+          ]
+        },
+        "joint_character_residual": -675.8876220310219,
+        "character_prime_sums": [
+          -822.4723061097932,
+          -593.9722140179393,
+          -1209.3920502455105,
+          -528.1248670549307,
+          -458.22394464066116,
+          -820.195023502614,
+          -974.720570676726
+        ],
+        "character_prime_power_corrections": [
+          967.3598243611356,
+          980.7460067013625,
+          963.9393246357703,
+          977.8114630925046,
+          978.9596348034794,
+          964.9541274388622,
+          953.0413357201791
+        ],
+        "character_von_mangoldt_sums_mod_120": [
+          144.88751825134239,
+          386.77379268342315,
+          -245.45272560974024,
+          449.68659603757385,
+          520.7356901628182,
+          144.75910393624815,
+          -21.679234956546907
+        ]
+      },
+      {
+        "x": 2000000,
+        "previous_x": 1000000,
+        "cumulative": {
+          "eligible": 148930,
+          "counts": [
+            18596,
+            18623,
+            18696,
+            18644,
+            18606,
+            18642,
+            18624,
+            18499
+          ],
+          "count_discrepancies": [
+            -20.25,
+            6.75,
+            79.75,
+            27.75,
+            -10.25,
+            25.75,
+            7.75,
+            -117.25
+          ],
+          "log_weighted_discrepancies": [
+            -324.5373518720735,
+            63.56231632310664,
+            1123.9512274208246,
+            360.3288906640955,
+            -176.82769965770422,
+            327.7764988206036,
+            62.30205068917712,
+            -1436.5559323882335
+          ]
+        },
+        "interval": {
+          "eligible": 70435,
+          "counts": [
+            8778,
+            8808,
+            8871,
+            8828,
+            8792,
+            8812,
+            8796,
+            8750
+          ],
+          "count_discrepancies": [
+            -26.375,
+            3.625,
+            66.625,
+            23.625,
+            -12.375,
+            7.625,
+            -8.375,
+            -54.375
+          ],
+          "log_weighted_discrepancies": [
+            -378.47221930490923,
+            42.0216693636612,
+            954.7927877230395,
+            340.9004112252296,
+            -174.65594969390077,
+            104.09415624151006,
+            -128.01254519725626,
+            -760.6683103578689
+          ]
+        },
+        "joint_character_residual": -1436.5559323886712,
+        "character_prime_sums": [
+          -1369.7764531639857,
+          220.05247276924965,
+          -3155.1841865079514,
+          -2446.61016507022,
+          -618.7311160358746,
+          -3270.45783449461,
+          -851.7401766059771
+        ],
+        "character_prime_power_corrections": [
+          1355.12390876994,
+          1368.6255077454084,
+          1366.8638283128887,
+          1371.3532710051647,
+          1357.4564400830668,
+          1343.3355160832082,
+          1365.1590423354455
+        ],
+        "character_von_mangoldt_sums_mod_120": [
+          -14.652544394045663,
+          1588.677980514658,
+          -1788.3203581950627,
+          -1075.2568940650551,
+          738.7253240471922,
+          -1927.1223184114017,
+          513.4188657294684
+        ]
+      }
+    ]
+  },
+  "cubic": {
+    "bases": [
+      2,
+      3
+    ],
+    "excluded_primes": [
+      2,
+      3
+    ],
+    "field": "Q(zeta_3, cbrt(2), cbrt(3))",
+    "degrees": [
+      6,
+      6,
+      18
+    ],
+    "discriminant_upper_bound": 6430895714640206281279629570048,
+    "densities": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.05555555555555555
+    ],
+    "conditional_densities": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.1111111111111111
+    ],
+    "grh_reference": "Greni\u00e9\u2013Molteni (2019), Corollary 1.2, https://arxiv.org/abs/1709.07609",
+    "grh_assumption": "GRH for the Dedekind zeta function of the joint splitting field.",
+    "unconditional_reference": "Thorner\u2013Zaman (2019), Theorem 1.1, https://doi.org/10.2140/ant.2019.13.1039",
+    "unconditional_range": "x >= (D_L * n_L**n_L)**c2 for absolute effective c2. The asymptotic depends on D_L, n_L, and a possible exceptional zero. No numerical envelope is evaluated at these cutoffs.",
+    "rows": [
+      {
+        "x": 10000,
+        "eligible": 1227,
+        "p_eq_1_mod_3": 611,
+        "counts": [
+          200,
+          191,
+          58
+        ],
+        "rates": [
+          0.16299918500407498,
+          0.1556642216788916,
+          0.04726976365118175
+        ],
+        "conditional_rates": [
+          0.32733224222585927,
+          0.31260229132569556,
+          0.09492635024549918
+        ],
+        "conditional_independent_joint_count": 62.52045826513912,
+        "conditional_joint_excess": -4.520458265139119,
+        "li_from_2_over_18": 69.17178067329287,
+        "joint_count_minus_li_over_18": -11.171780673292872,
+        "grh_joint_count_error_bound": 300.84004965788733
+      },
+      {
+        "x": 100000,
+        "eligible": 9590,
+        "p_eq_1_mod_3": 4784,
+        "counts": [
+          1559,
+          1582,
+          516
+        ],
+        "rates": [
+          0.16256517205422316,
+          0.16496350364963502,
+          0.05380604796663191
+        ],
+        "conditional_rates": [
+          0.3258779264214047,
+          0.33068561872909696,
+          0.10785953177257525
+        ],
+        "conditional_independent_joint_count": 515.5388795986622,
+        "conditional_joint_excess": 0.4611204013377801,
+        "li_from_2_over_18": 534.9313242928156,
+        "joint_count_minus_li_over_18": -18.93132429281559,
+        "grh_joint_count_error_bound": 857.9238757184695
+      },
+      {
+        "x": 1000000,
+        "eligible": 78496,
+        "p_eq_1_mod_3": 39231,
+        "counts": [
+          13032,
+          13044,
+          4318
+        ],
+        "rates": [
+          0.1660211985324093,
+          0.1661740725642071,
+          0.055009172441907866
+        ],
+        "conditional_rates": [
+          0.3321862812571691,
+          0.33249216181081287,
+          0.11006601921949478
+        ],
+        "conditional_independent_joint_count": 4333.037852718513,
+        "conditional_joint_excess": -15.037852718513022,
+        "li_from_2_over_18": 4368.139110871224,
+        "joint_count_minus_li_over_18": -50.13911087122415,
+        "grh_joint_count_error_bound": 2546.5944960833745
+      },
+      {
+        "x": 2000000,
+        "eligible": 148931,
+        "p_eq_1_mod_3": 74412,
+        "counts": [
+          24797,
+          24716,
+          8181
+        ],
+        "rates": [
+          0.16649992278303374,
+          0.16595604675990894,
+          0.05493147833560508
+        ],
+        "conditional_rates": [
+          0.3332392624845455,
+          0.3321507283771435,
+          0.10994194484760522
+        ],
+        "conditional_independent_joint_count": 8236.341611568027,
+        "conditional_joint_excess": -55.341611568026565,
+        "li_from_2_over_18": 8280.766000574828,
+        "joint_count_minus_li_over_18": -99.76600057482756,
+        "grh_joint_count_error_bound": 3553.269182364629
+      }
+    ]
+  },
+  "mixed": {
+    "excluded_primes": [
+      2,
+      5
+    ],
+    "rows": [
+      {
+        "x": 10000,
+        "eligible": 1227,
+        "quintic": 60,
+        "quadratic": 609,
+        "joint": 60
+      },
+      {
+        "x": 100000,
+        "eligible": 9590,
+        "quintic": 450,
+        "quadratic": 4777,
+        "joint": 450
+      },
+      {
+        "x": 1000000,
+        "eligible": 78496,
+        "quintic": 3912,
+        "quadratic": 39210,
+        "joint": 3912
+      },
+      {
+        "x": 2000000,
+        "eligible": 148931,
+        "quintic": 7414,
+        "quadratic": 74408,
+        "joint": 7414
+      }
+    ]
+  },
+  "formulas": {
+    "split": {
+      "train_end": 200000,
+      "val_end": 1000000,
+      "test_end": 1999993
+    },
+    "settings": {
+      "targets": [
+        "quadratic_base2",
+        "quadratic_joint"
+      ],
+      "fold_mod8": true,
+      "split_at": [
+        200000,
+        1000000
+      ],
+      "seed_offsets": [
+        0,
+        1,
+        2
+      ],
+      "population": 144,
+      "generations": 70,
+      "initial_instructions": 8,
+      "max_instructions": 24,
+      "max_effective_instructions": 12,
+      "workers": 4
+    },
+    "guide": "GFSLPolicyGuide",
+    "fitness": "1/(1+NMSE) minus instruction parsimony",
+    "targets": {
+      "quadratic_base2": {
+        "baseline": {
+          "train_rows": 17981,
+          "val_rows": 60514,
+          "test_rows": 70435,
+          "test_positives": 35150,
+          "train_rate": 0.4992492074968022,
+          "test_rate": 0.4990416696244765,
+          "constant_mse": 0.24999912467485966,
+          "majority_accuracy": 0.5009583303755235
+        },
+        "selected_seed": 10,
+        "signature": "1814a99d342677752d3a414133ffe698",
+        "generation": 0,
+        "eval_size": 5000,
+        "train_fitness": 0.998,
+        "train_nmse": 0.0,
+        "val": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "test": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "effective_instructions": 1,
+        "expression": "([4] % [abs((p mod 8) \u2212 4)])",
+        "instructions": [
+          "\u2713 d$4 = MOD(d$3, d$0)"
+        ],
+        "program": {
+          "inputs": [
+            "abs((p mod 8) \u2212 4)",
+            "1",
+            "2",
+            "4"
+          ],
+          "slots": [
+            [
+              1,
+              131076,
+              41,
+              1,
+              131075,
+              1,
+              131072
+            ],
+            [
+              1,
+              131077,
+              31,
+              1,
+              131074,
+              3,
+              4
+            ],
+            [
+              1,
+              131073,
+              30,
+              1,
+              131073,
+              3,
+              6
+            ],
+            [
+              1,
+              131074,
+              41,
+              3,
+              5,
+              3,
+              3
+            ],
+            [
+              1,
+              131078,
+              33,
+              1,
+              131074,
+              3,
+              0
+            ],
+            [
+              1,
+              131073,
+              32,
+              3,
+              7,
+              1,
+              131077
+            ],
+            [
+              1,
+              131072,
+              36,
+              3,
+              5,
+              0,
+              0
+            ],
+            [
+              1,
+              131074,
+              36,
+              3,
+              3,
+              0,
+              0
+            ]
+          ],
+          "output_index": 4
+        },
+        "shuffled_test_mse": 0.5000301696599702,
+        "audit": {
+          "rows": 4,
+          "exact": 4,
+          "classification_correct": 4
+        },
+        "runs": [
+          {
+            "seed": 10,
+            "expression": "([4] % [abs((p mod 8) \u2212 4)])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 4,
+              "exact": 4,
+              "classification_correct": 4
+            },
+            "evaluations": 9156,
+            "final_N": 17981,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                5,
+                10000
+              ],
+              [
+                9,
+                15000
+              ],
+              [
+                11,
+                17981
+              ]
+            ],
+            "knowledge": "knowledge/prime_order_quadratic_base2_s10.pt"
+          },
+          {
+            "seed": 11,
+            "expression": "(1 % [abs((p mod 8) \u2212 4)])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 4,
+              "exact": 4,
+              "classification_correct": 4
+            },
+            "evaluations": 9156,
+            "final_N": 17981,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                5,
+                10000
+              ],
+              [
+                9,
+                15000
+              ],
+              [
+                13,
+                17981
+              ]
+            ],
+            "knowledge": "knowledge/prime_order_quadratic_base2_s11.pt"
+          },
+          {
+            "seed": 12,
+            "expression": "(10 % [abs((p mod 8) \u2212 4)])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 4,
+              "exact": 4,
+              "classification_correct": 4
+            },
+            "evaluations": 9142,
+            "final_N": 17981,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                10000
+              ],
+              [
+                4,
+                17981
+              ]
+            ],
+            "knowledge": "knowledge/prime_order_quadratic_base2_s12.pt"
+          }
+        ]
+      },
+      "quadratic_joint": {
+        "baseline": {
+          "train_rows": 17981,
+          "val_rows": 60514,
+          "test_rows": 70435,
+          "test_positives": 8750,
+          "train_rate": 0.12235137089149659,
+          "test_rate": 0.12422801164193938,
+          "constant_mse": 0.1087989345459358,
+          "majority_accuracy": 0.8757719883580606
+        },
+        "selected_seed": 11,
+        "signature": "cdd136522c29a941d9d89d189093c2c8",
+        "generation": 6,
+        "eval_size": 5000,
+        "train_fitness": 0.996,
+        "train_nmse": 0.0,
+        "val": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "test": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "effective_instructions": 2,
+        "expression": "(([2 divides I_2] * [2 divides I_5]) * [2 divides I_3])",
+        "instructions": [
+          "\u2713 d$4 = MUL(d$0, d$2)",
+          "\u2713 d$4 = MUL(d$4, d$1)"
+        ],
+        "program": {
+          "inputs": [
+            "2 divides I_2",
+            "2 divides I_3",
+            "2 divides I_5",
+            "p \u2261 1 mod 3"
+          ],
+          "slots": [
+            [
+              1,
+              131076,
+              32,
+              1,
+              131072,
+              1,
+              131074
+            ],
+            [
+              1,
+              131076,
+              32,
+              1,
+              131076,
+              1,
+              131073
+            ]
+          ],
+          "output_index": 4
+        },
+        "shuffled_test_mse": 0.2177734790942003,
+        "audit": {
+          "rows": 16,
+          "exact": 16,
+          "classification_correct": 16
+        },
+        "runs": [
+          {
+            "seed": 10,
+            "expression": "0",
+            "validation": {
+              "mse": 0.12474799220015204,
+              "nmse": 1.1617269005941995,
+              "nonfinite_rows": 0,
+              "accuracy": 0.875252007799848,
+              "f1": 0.0
+            },
+            "held_out": {
+              "mse": 0.12422801164193938,
+              "nmse": 1.156884534864638,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8757719883580606,
+              "f1": 0.0
+            },
+            "audit": {
+              "rows": 16,
+              "exact": 14,
+              "classification_correct": 14
+            },
+            "evaluations": 9156,
+            "final_N": 17981,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                10000
+              ],
+              [
+                3,
+                15000
+              ],
+              [
+                4,
+                17981
+              ]
+            ],
+            "knowledge": "knowledge/prime_order_quadratic_joint_s10.pt"
+          },
+          {
+            "seed": 11,
+            "expression": "(([2 divides I_2] * [2 divides I_5]) * [2 divides I_3])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 16,
+              "exact": 16,
+              "classification_correct": 16
+            },
+            "evaluations": 9156,
+            "final_N": 17981,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                10,
+                10000
+              ],
+              [
+                11,
+                15000
+              ],
+              [
+                12,
+                17981
+              ]
+            ],
+            "knowledge": "knowledge/prime_order_quadratic_joint_s11.pt"
+          },
+          {
+            "seed": 12,
+            "expression": "(([2 divides I_2] * [2 divides I_3]) * [2 divides I_5])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 16,
+              "exact": 16,
+              "classification_correct": 16
+            },
+            "evaluations": 9142,
+            "final_N": 15000,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                1,
+                10000
+              ],
+              [
+                2,
+                15000
+              ]
+            ],
+            "knowledge": "knowledge/prime_order_quadratic_joint_s12.pt"
+          }
+        ]
+      }
+    }
+  }
+}

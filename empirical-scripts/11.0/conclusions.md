@@ -1,14 +1,14 @@
 # Sieve Echo Conjecture — Conclusions of v11
 
-What version 11 of the empirical program ([`empirical-scripts/11.0/`](.)) established, after ROADMAP steps 0–16. Every number comes from a v11 run (seed 0, NDR definitions `ndr-v11.1`), named in parentheses; run summaries, manifests and figures are under [`results/<run-id>/`](results). Earlier script generations (v3.1–v10) are not sources here: v11 reproduces their stored statistics only to explain them. The detailed argument, with proofs (Propositions 1.4–1.8), is the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](../../studies/9/sieve-echo-conjecture-9.md); the step-by-step log is the [ROADMAP Results log](../../ROADMAP.md#results-log).
+What version 11 of the empirical program ([`empirical-scripts/11.0/`](.)) established, after ROADMAP steps 0–16. Empirical results cite v11 runs (seed 0, NDR definitions `ndr-v11.1`) or the deterministic decoder example; run summaries, manifests and figures are under [`results/<run-id>/`](results). Earlier script generations (v3.1–v10) are not sources here: v11 reproduces their stored statistics only to explain them. The detailed argument, with proofs (Propositions 1.4–1.8), is the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](../../studies/9/sieve-echo-conjecture-9.md); the step-by-step log is the [ROADMAP Results log](../../ROADMAP.md#results-log).
 
 ## The question
 
 The conjecture says that ω(n), the number of distinct prime factors of *n*, is encoded in the spectral entropy of the normalized repetend digits of 1/*n* across bases (NDR entropy). v11 asks this with what the earlier versions lacked: one canonical, tested definition; a train/validation/test split by *n*; baselines that already know *n* and the repetend lengths L = ord_n(b); permutation and shuffled-label nulls; bootstrap intervals; and evolutionary search through the Evolvo submodule scored only on held-out integers.
 
-## Answer in one paragraph
+## What v11 established
 
-**The sieve's echo in 1/*n* is exact — and the entropy cannot hear it.** The repetends of 1/*n* in 19 bases determine the factorization of *n* completely: splitting *n* by gcd(*n*, b^{L/q^i} − 1) over the primes q dividing each repetend length L gives the exact ω(*n*), and the prime factors, for **every integer below 3.7·10⁹** — exhaustively checked to 10⁸ (`decode-s0`; 99 999 990 of them from the lengths alone, all once the pre-periods of the non-coprime bases are used) and certified beyond by a characterization of the decoder's failures (`failures-s0`) — and for all 276 506 sampled integers up to 10¹², with no training. The remainders this needs are read from about log_b *n* digits of each repetend. This is the classical reduction of factoring to order finding — the one Shor's algorithm uses, whose period *is* the repetend length — so it locates the information rather than making factoring easy: computing the lengths classically costs as much as factoring. The conjecture's statistic, the spectral entropy of the digits, is almost a function of the length alone (H ≤ log L) and keeps none of this: once the orders in enough bases are known it adds −0.07 accuracy points, 95% CI [−0.33, +0.24], at 10⁵–10⁶ (`scale-s0-step7`). The digits' own traces of the factorization — Midy's symmetry and exact spectral zeros — are classical, contained in the orders, and Midy's symmetry turns out to be precisely the case in which Shor's half-period split fails.
+Repetend length explains most of the measured relationship between digit entropy and $\omega(n)$. The strongest baseline uses 98 orders and their Midy symmetry flags. Adding entropy changes held-out accuracy by −0.07 percentage points, with a 95% confidence interval of [−0.33, +0.24] at $10^5$–$10^6$ (`scale-s0-step7`). Exact structures remain in the periods and spectra, including Midy symmetry, order divisibility and character-induced spectral zeros. The fixed-base decoder demonstrates how much information the periods carry. Those same order observables give the next project question at prime denominators, where they define concrete prime counts.
 
 ## 1. The v8 paper's statistics: reproduced, then explained
 
@@ -73,7 +73,7 @@ All rows from `step11-s0` (up to 3 000 integers per class min(ω, 5) per decade;
 
 At a fixed base set the valuation profiles add +0.7 to +3.5 points, growing with *n*, while 300 extra bases alone add at most +0.95 (`step11-s0`): a model fed log-lengths does not extract the 2-adic reading by itself. The training-free estimators still trail the learned models by 15–24 points, mainly because about 10% of integers have no base of odd order among 498 bases and because composite bases' orders are tied to those of their factors.
 
-## 7. The echo is exact: decoding the factorization
+## 7. Separating prime factors with order tests
 
 Proposition 1.7 of `studies/9` (tested for every n < 30 000 in `tests/test_decode.py`): for a base b coprime to n with L = ord_n(b), a prime q | L with e = v_q(L), and i < e, a prime p | n divides gcd(b^{(L/q^e) q^i} − 1, n) iff v_q(ord_p b) ≤ i. Refining {n} by these gcds over all bases and reducing to a coprime base gives ω̂ ≤ ω, exact whenever the prime divisors of n have distinct order vectors (ord_p b)_b. Each remainder b^d mod n is the remainder after d digits of 1/n, read exactly from the ⌈log_b n⌉ digits that follow: b^d mod n = ⌊n·D/b^k⌋ + 1.
 
@@ -89,9 +89,9 @@ Proposition 1.7 of `studies/9` (tested for every n < 30 000 in `tests/test_decod
 | 600 integers of 10⁴–10⁶ decoded from their digits only | all exact; 4 001 remainder readings, 0 errors, mean 6.05 digits each |
 | Midy flag vs failure of Shor's split gcd(b^{L/2} − 1, n) = 1 (odd n, even L) | identical on 840 197 of 840 197 pairs |
 
-**Where it fails (Proposition 1.8, `failures-s0`).** With the pre-periods, the decoder fails on *n* only if two prime factors of *n* above 31 have the same orders in every base coprime to *n* (for squarefree *n*, exactly then). So failures can be found from the orders of the bases modulo single primes. Modulo all 5 761 444 primes below 10⁸, no two have the same orders in all 19 bases: **the decoder is exact for every n < 3 700 000 259**. With fewer bases the least failing *n* is predicted exactly and matches brute force for 1–14 bases: 30, 210, 2 310, 30 030 (primorials, which leave no base coprime to *n*), 214 935 = 3·5·7·23·89 and 2 794 155 = 3·5·7·13·23·89 — pairs like 23·89 = 2¹¹ − 1 that share the order of 2 once only powers of 2 and few other bases remain.
+**Where it fails (Proposition 1.8, `failures-s0`).** With the pre-periods, the decoder fails on *n* only if two prime factors of *n* above 31 have the same orders in every base coprime to *n* (for squarefree *n*, exactly then). So failures can be found from the orders of the bases modulo single primes. Modulo all 5 761 444 primes below 10⁸, no two have the same orders in all 19 bases: **the decoder recovers ω for every n < 3 700 000 259**. With fewer bases the least failing *n* is predicted exactly and matches brute force for 1–14 bases: 30, 210, 2 310, 30 030 (primorials, which leave no base coprime to *n*), 214 935 = 3·5·7·23·89 and 2 794 155 = 3·5·7·13·23·89 — pairs like 23·89 = 2¹¹ − 1 that share the order of 2 once only powers of 2 and few other bases remain.
 
-Few bases are needed: with the first five (2, 3, 4, 5, 6) the decoder is exact for 90.0% of the ω-balanced integers at 10⁴–10⁵ and 97.2% at 10¹¹–10¹², and it improves with *n* because two prime factors rarely share all their orders. On average 2.45 (10⁴–10⁵) to 1.78 (10¹¹–10¹²) bases suffice.
+Few bases are needed: with the first five (2, 3, 4, 5, 6) the decoder is exact for 90.0% of the ω-balanced integers at 10⁴–10⁵ and 97.2% at 10¹¹–10¹², for those samples. On average 2.45 (10⁴–10⁵) to 1.78 (10¹¹–10¹²) bases suffice.
 
 **The final algorithm.** It is this decoder, not an Evolvo formula. Evolvo's best ω formula, essentially log(n/λ(n)), reaches 65.5% (`full-s0-step4`). The decoder is the standalone, dependency-free [`sieve_echo_decoder.py`](sieve_echo_decoder.py), tested against SymPy for every n < 20 000. Its core:
 
@@ -125,7 +125,9 @@ def decode(n, lengths):                                  # lengths = {b: repeten
 - 1024 = 2¹⁰;
 - 214 935 = 3 · 5 · 7 · 23 · 89, the least failure of the first 9 bases.
 
-**What this means.** ω(*n*) is trivially a function of *n*; the content of the result is computational. Given the repetend lengths, the factorization follows in polynomial time; computing those lengths classically needs λ(n) — the factorization itself — or Θ(L) digits of the expansion. Shor's algorithm finds them with a quantum Fourier transform of the remainder sequence b^k mod n, which is the long division of 1 by *n*. So the repetend of 1/*n* is a complete certificate of the factorization of *n*, and finding its period by Fourier analysis of the remainder sequence is exactly the step Shor's algorithm performs. The conjecture looked at the right object with the wrong statistic: entropy keeps the spectrum's spread and discards the period's arithmetic.
+**What this means.** The order tests give a finite reconstruction result. Their gcd refinement is polynomial in the bit length of $n$ given the factored lengths. The standalone code uses long division to obtain the lengths and a separate routine to factor them. The classical reduction from the period of $1/n$ to factoring already appears in [Miller, Theorem 4](https://www.cs.cmu.edu/~glmiller/Publications/Papers/Mi76.pdf).
+
+**Verified counterexample.** At $n=357{,}522{,}227{,}790$, the two primes 1187 and 3559 share the same orders in the available bases and the decoder leaves them combined. [Reproduction](../../ROADMAP.md#all-19-base-counterexample)
 
 ## 8. Residue-class structure
 
@@ -152,12 +154,11 @@ Residue classes of *n* mod 12 and mod 210 leave a small excess in entropy after 
 | NDR entropy encodes ω beyond the repetend lengths | **not supported** (−0.07 points, CI [−0.33, +0.24], at 10⁵–10⁶) |
 | the "echo" grows with *n* | not supported; the step-5 drift disappears with 98 orders |
 | the digits carry factorization traces | yes: Midy's symmetry and exact spectral zeros — both classical, both redundant given the orders |
-| the repetend lengths encode ω | yes: statistically as the 2-rank of (ℤ/nℤ)*; **exactly**, with the prime factors, by Proposition 1.7 (every n < 3.7·10⁹, all sampled n ≤ 10¹²) |
-| the repetends of 1/n determine the factorization of n | **yes** — through lengths and remainders at fractions of the period, at the cost of computing the lengths |
+| the order tests recover ω | certified below 3 700 000 259 and observed on every sampled integer up to 10¹²; the explicit counterexample bounds the first failure from above |
 | residue-class structure of the entropy | group structure: ±q ∈ ⟨b⟩ and ord q \| ord b among the units, small-prime divisibility of *n* otherwise; nothing left (§8) |
 | law constants, universal base invariance, ζ/PNT links, prime-power dichotomy, three-feature sufficiency | not supported |
 
-The conjecture's intuition — that the sieve leaves an echo in 1/*n* — is right, and stronger than it claimed: the echo is exact and complete. It is carried by the multiplicative order and the remainders at fractions of the period, not by the entropy of the digits.
+The strongest evidence concerns the structure of multiplicative orders and specific symmetries of the digits. The entropy results delimit what the original statistic captures.
 
 ## 10. Limits of these conclusions
 
@@ -165,10 +166,9 @@ The conjecture's intuition — that the sieve leaves an echo in 1/*n* — is rig
 - **Samples, not all integers.** NDR data covers every n ≤ 150 000 (`full-s0`) and ω-balanced samples of 3 000 per class per decade to 10⁶ (`scale-s0`); orders-only results reach 10⁸ on the same kind of samples. Rare classes are over-represented relative to their natural frequency, and ω ≥ 5 is pooled.
 - **Bases.** Entropy and zeros are measured in 19 bases (v8, v10, primes < 32); orders in up to 498. A larger digit base set was not tried, since the orders that would be its baseline would then also be larger.
 - **Evolutionary search** found the known structure (Fermat's test, log(n/λ(n))) and no new formula; the differences between Evolvo guides, including the PyTorch policy guide, are not significant over 5 seeds (`full-s0-step4`).
-- **Exactness is certified only below 3.7·10⁹.** Above it the decoder must eventually fail (at the latest when no base is coprime: n ≥ 2·3·…·31·37·41 ≈ 3.0·10¹⁴); the samples to 10¹² and the 40 000 integers built from external primes up to 2.4·10⁴⁸ (`validate-s0`) had no failure, but the density of failures between 3.7·10⁹ and 3·10¹⁴ is unmeasured.
+- **Finite scope of the order tests.** The certificate concerns recovery of $\omega(n)$ below 3 700 000 259 (`failures-s0`). The first failure occurs at or before 357 522 227 790. The 40 000 full factorizations checked in `validate-s0` describe the constructed input families in that run.
 - **Owner review.** The revision-9 draft and the step 6–11 reports await the author's review.
 
-## 11. Open questions
+## 11. Prime-order follow-up
 
-1. ~~The rest of the residue-class excess~~ — accounted for in step 14 (§8). Left: why [ord q | ord b] is a better control than exact membership.
-2. ~~A closed-form ω estimator that approaches the learned models~~ — answered by the exact decoder (§7). Its failures are characterized and the range below 3.7·10⁹ certified (step 15). Left: the density of failures above that, and whether two primes can share their orders in all 19 bases at all.
+Steps 17–19 count primes satisfying joint divisibility conditions on the indices $(p-1)/\operatorname{ord}_p(b)$ and compare two independent arithmetic implementations. They recover and replay GFSL formulas for four exact rules. The cubic joint event gives both outcomes within every represented residue class modulo 120 on held-out primes. The finite benchmarks link the repetend indices to established prime-splitting counts and delineate what small congruences can predict. [Main run](results/prime-orders-s0/report.md) · [Fresh quadratic holdout](results/prime-orders-confirm-s10/report.md) · [Research roadmap](../../ROADMAP.md#next-research-joint-distribution-of-repetend-lengths)

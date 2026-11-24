@@ -1,0 +1,16 @@
+{
+  "seed": 0,
+  "prime_orders": {
+    "cutoffs": [10000, 100000, 1000000],
+    "search": {
+      "split_at": [100000, 200000],
+      "seed_offsets": [0, 1, 2],
+      "population": 80,
+      "generations": 28,
+      "initial_instructions": 4,
+      "max_instructions": 14,
+      "max_effective_instructions": 8,
+      "workers": 4
+    }
+  }
+}

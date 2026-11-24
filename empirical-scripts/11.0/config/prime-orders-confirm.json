@@ -1,0 +1,18 @@
+{
+  "seed": 10,
+  "prime_orders": {
+    "cutoffs": [10000, 100000, 1000000, 2000000],
+    "search": {
+      "targets": ["quadratic_base2", "quadratic_joint"],
+      "fold_mod8": true,
+      "split_at": [200000, 1000000],
+      "seed_offsets": [0, 1, 2],
+      "population": 144,
+      "generations": 70,
+      "initial_instructions": 8,
+      "max_instructions": 24,
+      "max_effective_instructions": 12,
+      "workers": 4
+    }
+  }
+}

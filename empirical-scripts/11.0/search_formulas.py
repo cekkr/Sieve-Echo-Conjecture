@@ -272,7 +272,7 @@ def run_one(spec: Dict[str, Any]) -> Dict[str, Any]:
     cfg = spec["cfg"]
     seed = int(spec["seed"])
     data = _DATA["targets"][spec["target"]]
-    names = _DATA["names"]
+    names = data.get("names", _DATA["names"])
     k = len(names)
     random.seed(seed)
     np.random.seed(seed % (2**32))
@@ -283,7 +283,7 @@ def run_one(spec: Dict[str, Any]) -> Dict[str, Any]:
     except ImportError:  # pragma: no cover
         pass
     runtime.bootstrap_evolvo()
-    from evolvo import DataType, GFSLEvolver, GFSLExecutor, InstructionProfile
+    from evolvo import Category, DataType, GFSLEvolver, GFSLExecutor, InstructionProfile, Operation
 
     ex = GFSLExecutor(compute_backend="cpu")
     Xp, yp, var = data["Xp"], data["yp"], data["var"]
@@ -316,6 +316,10 @@ def run_one(spec: Dict[str, Any]) -> Dict[str, Any]:
                      max_instruction_count=cfg["max_instructions"],
                      max_effective_instruction_count=cfg["max_effective_instructions"])
     profile = InstructionProfile.formula(allow_custom=False)
+    if "operations" in data:
+        profile = InstructionProfile.build(
+            [Category.VARIABLE], [Operation[name] for name in data["operations"]], allow_custom=False,
+        )
     with contextlib.redirect_stdout(io.StringIO()):
         ev.initialize_population("algorithm", cfg["initial_instructions"], inputs=k, outputs=[(DataType.DECIMAL, k)], profile=profile)
 
@@ -392,6 +396,23 @@ def run_one(spec: Dict[str, Any]) -> Dict[str, Any]:
         "top_val": [{"signature": c[2], "val_nmse": c[0], "size": c[1]} for c in cands[:10]],
         "seconds": round(time.time() - t0, 2),
     }
+    if spec.get("export_program"):
+        result["selected"]["program"] = {
+            "inputs": list(names),
+            "slots": [list(ins.slots) for ins in g.instructions],
+            "output_index": k,
+        }
+        rng = np.random.default_rng([seed, 133])
+        result["selected"]["shuffled_test_mse"] = float(np.mean([
+            np.mean((pt - rng.permutation(data["yt"])) ** 2) for _ in range(16)
+        ]))
+        if "audit" in data:
+            rows, expected = data["audit"]
+            values = predict(g, [rows[:, i] for i in range(k)])
+            result["selected"]["audit"] = {
+                "rows": len(expected), "exact": int(np.count_nonzero(values == expected)),
+                "classification_correct": int(np.count_nonzero(np.isfinite(values) & ((values > 0.5) == expected))),
+            }
     if guide is not None and hasattr(guide, "runtime_summary"):
         result["guide_summary"] = {k2: v for k2, v in guide.runtime_summary().items() if not isinstance(v, (list, dict))}
     if spec.get("knowledge_out") and spec["guide"] == "policy":

@@ -1,10 +1,62 @@
-# Sieve Echo Conjecture — v11 Roadmap
+# Sieve Echo Conjecture — Research roadmap
 
-Live plan for **version 11** (`empirical-scripts/11.0/`): a single reproducible script that tests every claim of [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) and uses the Evolvo submodule [`libs/evolvo`](libs/evolvo) for all evolutionary search. Rules and context are in [`AGENTS.md`](AGENTS.md).
+The current research phase studies the joint distribution of repetend lengths over primes. Steps 17–19 provide reproducible quadratic and cubic benchmarks and recover exact GFSL rules on four specified domains. The earlier v11 steps document how the project tested the [revision-8 entropy claims](studies/8/sieve-echo-conjecture-8.md) and isolated the arithmetic of multiplicative orders. The v11 program lives in [`empirical-scripts/11.0/`](empirical-scripts/11.0). Rules and context are in [`AGENTS.md`](AGENTS.md).
 
 Update this file while implementing (directive D4): change a step's status only after its "Done when" check passes, add discovered work under the right step or under [Discovered work](#discovered-work), and record results with the run id that produced them.
 
 Status labels: `TODO`, `IN PROGRESS`, `DONE (verified: …)`, `BLOCKED (reason)`.
+
+## Next research: joint distribution of repetend lengths
+
+For prime $p$ and $p\nmid b$, define the index $I_b(p)=(p-1)/\operatorname{ord}_p(b)$. For a fixed finite base set $B$ and an integer $m\ge 2$, let $A_{m,B}(p)$ indicate that $m\mid I_b(p)$ for every $b\in B$. Exclude primes dividing $m$ or any base. The condition is equivalent to $p\equiv 1\pmod m$ and $b^{(p-1)/m}\equiv1\pmod p$ for every base, by cyclicity of the multiplicative group modulo $p$.
+
+Equivalently, these primes split completely in $K=\mathbb Q(\zeta_m,\{b^{1/m}:b\in B\})$, where $\zeta_m$ is a primitive $m$th root of unity. Each polynomial $X^m-b$ has distinct roots at the eligible primes. When $p\equiv1\pmod m$, one root modulo $p$ gives all $m$ roots, so the simultaneous conditions are exactly complete splitting. Chebotarev gives the limiting proportion $1/[K:\mathbb Q]$ among primes for each fixed $K$. Quantitative error terms can depend on the zeros of the Dedekind zeta function of $K$. This makes it possible to study a specific relationship with L-functions and to name the assumptions behind each bound. Establishing a consequence for the ordinary Riemann hypothesis would require a separate implication about $\zeta(s)$. [Kurlberg and Pomerance on multiplicative orders](https://msp.org/ant/2013/7-4/ant-v7-n4-p.pdf) · [Grenié and Molteni on effective Chebotarev under GRH](https://arxiv.org/abs/1709.07609)
+
+### Step 17 — Quadratic residue benchmark
+
+**DONE** ([`prime-orders-s0`](empirical-scripts/11.0/results/prime-orders-s0/report.md)). The 32 reduced residue classes modulo 120 give four classes per pattern. Through $10^6$, the order and reciprocity checks agree on all 78,495 eligible primes. The all-positive pattern occurs 9,749 times, against 9,811.875 from the density baseline. The JSON contains all eight counts in every interval and their log-weighted discrepancies. The all-positive weighted discrepancy equals the sum of the seven centered character contributions, with higher prime powers recorded separately.
+
+- Use $m=2$, $B=\{2,3,5\}$, and all primes $p\nmid30$ up to the fixed cutoffs $10^4$, $10^5$, and $10^6$. Count all eight joint patterns of the three index-divisibility flags. Cross-check the flags per prime by exact orders from the factorization of $p-1$ and independently by quadratic reciprocity on reduced residue classes modulo 120.
+- Enumerate the residue classes for each pattern to fix its density before counting primes. Report counts and the cumulative and per-interval discrepancies from the predicted fractions of eligible primes. Include the log-weighted discrepancies to connect the experiment to character sums. For the all-positive pattern the identity $A_{2,B}(p)=\frac18\prod_{b\in B}(1+(b/p))$, with $(b/p)$ the Legendre symbol, gives an independent algebraic check. Its centered log-weighted prime count is a sum over the seven nonprincipal character products. Account for prime powers and excluded primes explicitly when comparing with von Mangoldt sums.
+- **Done when** both implementations agree prime by prime, the eight counts sum to the eligible prime total at each cutoff, and a reproducible run reports all discrepancies against the fixed densities. Agreement with the densities at any tolerance is a result to report, regardless of its size.
+
+### Step 18 — Cubic residue benchmark and dependence
+
+**DONE** ([`prime-orders-s0`](empirical-scripts/11.0/results/prime-orders-s0/report.md)). The cubic predicates agree on 78,496 eligible primes through $10^6$. There are 4,318 joint hits, 11.007% among primes congruent to 1 modulo 3. This is 15.04 below the joint count predicted by multiplying the observed conditional marginal rates. The joint count is 50.14 below the integral main term, against a GRH-conditional bound of 2,546.59. In the mixed check, all 3,912 quintic hits also meet the quadratic condition.
+
+- Use $m=3$, $B=\{2,3\}$ and the same cutoffs. Compute the field degrees for the two single-base events and their joint event. Compare the joint rate with its splitting density and with the product of the marginal rates **conditional on** $p\equiv1\pmod3$. Also report the unconditional rates so the shared congruence condition is visible.
+- Check one forced dependence on the same prime ranges. The event $5\mid I_2(p)$ implies $p\equiv1\pmod5$, which implies $2\mid I_5(p)$ by quadratic reciprocity at odd primes $p\ne5$. The joint count must equal the quintic event count. This checks that the analysis detects dependence induced by a shared congruence.
+- State a published error bound for the joint count along with its field, constants or parameter dependence, and hypotheses. Report the observed discrepancy alongside that bound. If the sources give both unconditional and GRH-conditional bounds, show both with their assumptions.
+- **Done when** exact orders and the modular-power test agree on every eligible prime, the three cubic densities have explicit field-degree derivations, the forced dependence check passes, and the finite comparison is recorded alongside its theorem and assumptions. Any later conjecture must specify its observable, quantifiers, comparison or bound, and what a finite calculation can decide.
+
+Over $F=\mathbb Q(\zeta_3)$, the valuations at primes above 2 and 3 show that 2 and 3 are independent in $F^*/(F^*)^3$. The ramification indices at 2 and 3 in $F$ are 1 and 2, so if $2^i3^j$ is a cube in $F$, both $i$ and $j$ are multiples of 3. Kummer theory gives degree 3 over $F$ for each single radical and degree 9 for their compositum, hence degrees 6, 6 and 18 over $\mathbb Q$. Over $F$, the corresponding splitting densities are $1/3$, $1/3$ and $1/9$. For rational primes this conditions on the congruence $p\equiv1\pmod3$. [Kurlberg and Pomerance on Kummer splitting fields](https://msp.org/ant/2013/7-4/ant-v7-n4-p.pdf)
+
+The discriminants of the power bases for $\zeta_3$, $\sqrt[3]2$ and $\sqrt[3]3$ have absolute values $3$, $108$ and $243$. Their tensor products form a full-rank integral basis of an order in the degree-18 field. Its discriminant is $3^9\cdot108^6\cdot243^6=2^{12}3^{57}$, an upper bound on the absolute field discriminant. The ramified rational primes are 2 and 3. The v11 calculation uses this bound in Grenié–Molteni Corollary 1.2 for the split class, comparing the count with $\frac1{18}\int_2^x dt/\log t$.
+
+The unconditional comparison is Thorner–Zaman Theorem 1.1. For $x\ge(D_L n_L^{n_L})^{c_2}$, the main term for the split class is $(\operatorname{Li}(x)-\theta\operatorname{Li}(x^{\beta_1}))/18$, with the second term absent unless there is an exceptional zero. The relative error is bounded up to an absolute constant by the sum of $\exp(-c_3\log x/\log(D_L n_L^{n_L}))$ and $\exp(-\sqrt{c_3\log x/n_L})$, for absolute effective constants $c_2,c_3$. The finite results use the explicit GRH-conditional envelope and report the unconditional theorem with its own range and dependence. [Thorner–Zaman, Theorem 1.1](https://doi.org/10.2140/ant.2019.13.1039)
+
+### Step 19 — Evolvo algorithms for the order benchmarks
+
+**DONE** ([`prime-orders-s0`](empirical-scripts/11.0/results/prime-orders-s0/report.md), [`prime-orders-confirm-s10`](empirical-scripts/11.0/results/prime-orders-confirm-s10/report.md)). The main run uses three policy seeds per target. It recovers the Boolean product for the joint cubic event and the quintic bit alone for the mixed event, with zero errors on 60,514 held-out primes and on the corresponding finite input tables.
+
+- Evolve a quadratic rule from $p\bmod 8$ and explicit constants. Evolve the joint quadratic and cubic rules and the mixed implication from marginal event bits, with a distractor congruence. These tasks test whether symbolic search can recover a compact arithmetic rule from the supplied inputs.
+- Fit the cubic joint event on primes $p\equiv1\pmod3$ using only small congruences that are functions of $p\bmod120$. Compare with a train-only residue lookup and count the held-out classes containing both labels. Mixed labels within a residue class give a direct obstruction to any exact classifier of those inputs on the observed domain.
+- Use fixed prime ranges for train, validation and test, adaptive fitness size and the persisted PyTorch policy guide. Select by validation error. Report held-out accuracy, F1 and error against a constant and shuffled-label null. For finite truth tables, report exact numerical agreement in addition to thresholded classification. Export GFSL instructions and independently replay the selected program.
+
+The first search gave approximate quadratic rules. The follow-up increased the search budget and added the distance from the midpoint of the modulo-8 interval as the base-2 input. It discovered `4 mod abs((p mod 8) − 4)` for the base-2 quadratic bit and the product of all three quadratic bits for the joint event. Both selected rules score zero errors on all 70,435 fresh held-out primes in $(10^6,2\cdot10^6]$ and match every row of their finite-domain audits. The base-2 rule follows for all odd primes because the absolute distance is either 1 or 3, and quadratic reciprocity gives a hit exactly at distance 3.
+
+The cubic congruence-only control finds both target values in all 16 observed residue classes modulo 120 on held-out primes. Every deterministic classifier of those residues must err on at least 3,342 of the 30,243 held-out primes in that control. The learned constant has F1 zero. This is a finite, representation-specific limit.
+
+The deliverables for this milestone are the checked counts, replayable formulas, and input limitations. The measured cubic discrepancy is much smaller than the published conditional envelope. The experiments reproduce consequences of established number theory, and their scope is finite.
+
+The [README formula table](README.md#best-evolvo-algorithms) and the [standalone Python recipe in the conclusion](conclusion.md#7-best-evolvo-algorithms) summarize the four selected programs, the congruence-only control, and the commands to reproduce both runs.
+
+Run both from the repository root:
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/prime-orders.json --run-id prime-orders-s0-repro --stages prime_orders,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/prime-orders-confirm.json --run-id prime-orders-confirm-s10-repro --stages prime_orders,report
+```
 
 ---
 
@@ -226,7 +278,7 @@ Theory (to be Proposition 1.6 of `studies/9`): let G = (ℤ/nℤ)* and let its S
 - **Done when:** every number in the file appears in a committed run summary or in the Results log (checked against `studies/9` and `results/step11-s0/tworank.json`). Owner review of the conclusions is part of step 6's review.
 - **Next:** step 13 takes the second open question (a closed-form ω estimator from the orders).
 
-## Step 13 — Exact decoding: the repetends determine the factorization — DONE (verified: run `decode-s0`, 66 v11 tests, 2026-11-24)
+## Step 13 — Exact order tests for separating prime factors — DONE (verified: run `decode-s0`, 66 v11 tests, 2026-11-24)
 
 Question: steps 10–11 left a gap of 15–24 points between training-free ω estimators and learned models. Is there an exact decoder? Probe (scratch, 6 000 ω-balanced integers to 10⁸): splitting *n* by gcd(n, b^{L/q^i} − 1) over the primes q | L of each of the 19 bases recovers ω for 100% of them.
 
@@ -256,7 +308,7 @@ Question (open question of `studies/9` §8 after step 13): beyond the exhaustive
 - [x] **15b — certificate** [`failures.py`](empirical-scripts/11.0/failures.py): orders of all bases modulo every prime up to X (10⁸), collisions of order vectors per pattern S by hashing, patterns pruned by ∏S; N*(B) exactly when found within X, else a certified lower bound; the colliding pairs of the full base set.
 - [x] **15c — validation**: for prefixes of the 19 bases whose N* is small, the brute-force decoder must fail first exactly at N*; the step-13 exhaustive run (no failure ≤ 10⁸ with pre-periods) must agree.
 - [x] Results into the Results log, `studies/9` (Proposition 1.8, Observation 6.13), `conclusions.md`, `README.md`, `AGENTS.md`.
-- **Result:** no two primes below 10⁸ (other than 2…31) have the same orders in all 19 bases, so the decoder with pre-periods is **exact for every n < 3 700 000 259**. For the first k = 1…14 bases the predicted least failure equals the brute-force one (30, 210, 2 310, 30 030, 214 935, 2 794 155); for k = 15–17 the predicted failures (up to 1 392 776 385) are confirmed by decoding them. Failures need n to remove almost every base: up to 8 bases the first failure is a primorial (no coprime base left), later ones pair primes with the same order of 2 (23·89 = 2¹¹ − 1; ord 2 = 36 mod 37 and mod 109) when the remaining coprime bases are powers of 2 and one or two others.
+- **Result:** the full order-vector search and the checks over coprimality patterns certify exact recovery of ω for every n < 3 700 000 259. For the first k = 1…14 bases the predicted least failure equals the brute-force one (30, 210, 2 310, 30 030, 214 935, 2 794 155); for k = 15–17 the predicted failures (up to 1 392 776 385) are confirmed by decoding them. In these examples, small prime divisors remove the bases that would distinguish the remaining pair. The [all-19-base counterexample](#all-19-base-counterexample) uses the same mechanism.
 
 ## Step 16 — External validation of the final decoder — DONE (verified: run `validate-s0`, 83 v11 tests, 2026-11-24)
 
@@ -294,6 +346,15 @@ Add items found during implementation here, with the step they affect.
 ## Results log
 
 Record verified results as `run-id — config — headline numbers — verdict`. All runs: seed 0, `ndr-v11.1`, root `641d9b1` + the then-uncommitted v11 sources (v11 code sha256 `37b9b17ceb6a`, committed as `b4c9080`), libs/evolvo `4ab85e5`. Numbers are from `full-s0-claims` (test split, 24 302 integers) unless marked quick; quick (`quick-s0`, 1 579 test integers) gives the same verdicts except where noted.
+
+### All-19-base counterexample
+
+**Standalone decoder, deterministic, default bases, no config or seed.** Run `.venv/bin/python empirical-scripts/11.0/sieve_echo_decoder.py 357522227790`. This is the 18-base counterexample from `failures-s0` multiplied by 31. The surviving bases are 11, 17, 19, 23 and 29. The primes 1187 and 3559 share the order vector (593, 1186, 1186, 593, 1186), so the decoder returns their product 4 224 533 as a single part and reports ω = 7 where ω = 8. This gives an upper bound of 357 522 227 790 on the first failure, paired with the lower bound 3 700 000 259 from `failures-s0` (`config/orders.json`, seed 0, version 11 `failures` stage). The collision follows from Proposition 1.8 of revision 9.
+
+### Prime-order benchmarks
+
+- [`prime-orders-s0`](empirical-scripts/11.0/results/prime-orders-s0/prime_orders.json) uses the v11 `prime_orders,report` stages and `config/prime-orders.json`, root seed 0, policy seeds 0–2. It records the fixed counts through $10^6$, the first quadratic searches, the exact cubic and mixed formulas, and the cubic congruence-only control.
+- [`prime-orders-confirm-s10`](empirical-scripts/11.0/results/prime-orders-confirm-s10/prime_orders.json) uses the same stages and `config/prime-orders-confirm.json`, root seed 10, policy seeds 10–12. It extends the exact counts to $2\cdot10^6$ and records the two exact quadratic formulas on a held-out interval beyond the first run's coverage. Both manifests record the executed v11 source hash and pinned Evolvo SHA.
 
 - `full-s0` — `config/full.json` — data stage only: 162 007 integers, 2 340 678 pairs, 1 225 s.
 - **C1** — `full-s0-claims` — v8.2 fit reproduced exactly (α -0.4681, β 1.9174, R² 0.2345 with log(ω+1); with the paper's log ω: α -0.305, R² 0.229). Test R² `H_paper`: law 0.364, log L + log n 0.959, full 0.959; ΔR² 0.0004 CI [0.000, 0.001]; partial r(H, log ω | log L, log n) -0.101. `H_nodc`: baseline 0.991, ΔR² 0.002. — **reproduced but explained by size/length.**

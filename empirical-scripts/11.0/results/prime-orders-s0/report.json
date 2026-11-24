@@ -1,0 +1,31 @@
+{
+  "run_id": "prime-orders-s0",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/prime-orders.json",
+  "git_root": {
+    "sha": "346dc45b7c00685c877e813315298dcfd4c671fa",
+    "dirty": true,
+    "changed_paths": [
+      "M AGENTS.md",
+      " M README.md",
+      " M ROADMAP.md",
+      " M conclusion.md",
+      " M empirical-scripts/11.0/conclusions.md",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/search_formulas.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      " M studies/9/sieve-echo-conjecture-9.md",
+      "?? empirical-scripts/11.0/config/prime-orders.json",
+      "?? empirical-scripts/11.0/prime_order_formulas.py",
+      "?? empirical-scripts/11.0/prime_orders.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "fe2d8ecc32d48832f2f5c82f03f6a473d4b3650acf1d14a772353674f1451dc1",
+  "ndr_version": "ndr-v11.1",
+  "verdicts": {}
+}

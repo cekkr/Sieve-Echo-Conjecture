@@ -1,15 +1,10 @@
-# Conclusion — the echo is exact
+# Conclusion — the arithmetic of repetends
 
-**The repetends of 1/*n* in 19 bases determine the factorization of *n*.** A short, training-free procedure reads ω(*n*) and the prime factors themselves off the repetend lengths and a few digits. It is
+Version 11 finds that the relationship between digit entropy and the number of distinct prime factors is largely explained by repetend length. Length and integer size account for 95.9% of held-out entropy variance (`full-s0-step4`). With a baseline of 98 repetend lengths and their Midy symmetry flags, entropy changes prediction accuracy by −0.07 percentage points (95% CI [−0.33, +0.24], `scale-s0-step7`).
 
-- correct for **every integer below 3 700 000 259**: exhaustively checked for every n ≤ 10⁸ and certified beyond by a proof of where it can fail;
-- correct for all 276 506 sampled integers up to 10¹²;
-- correct for all **40 000 integers built from one million externally downloaded primes** (t5k.org, ≈ 9.6–9.8·10⁸), up to n ≈ 2.4·10⁴⁸, including 20 000 products of two such primes (`validate-s0`);
-- correct where the best learned model of this project classified ω only at 94–99%.
+The repeating block of $1/n$ has length $\operatorname{ord}_n(b)$ in every base $b$ coprime to $n$. This identifies an exact object to study across bases. At composite denominators, comparing orders gives a finite reconstruction experiment. At prime denominators, divisibility conditions on the orders lead to counts of primes in residue classes and to splitting conditions in number fields.
 
-Every number here comes from a version-11 run (seed 0), named in parentheses; runs are under [`empirical-scripts/11.0/results/`](empirical-scripts/11.0/results). The full v11 conclusions, including what happened to every claim of the v8 paper, are in [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md). The proofs are Propositions 1.6–1.8 of the revision-9 draft [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md).
-
-**3.7·10⁹ is not where the decoder fails.** It is where the certificate stops, because the search for colliding primes went up to 10⁸. With all 19 bases no failing *n* is known at all; where the first one lies is open (§6).
+The v11 runs are in [`empirical-scripts/11.0/results/`](empirical-scripts/11.0/results). The [v11 conclusions](empirical-scripts/11.0/conclusions.md) give the full experimental record, and [revision 9](studies/9/sieve-echo-conjecture-9.md) gives the proofs. The prime-order milestone is complete. The [best Evolvo algorithms and reproduction commands](#7-best-evolvo-algorithms) are below.
 
 ## What "bases" means
 
@@ -17,7 +12,7 @@ A **base** is the number system 1/*n* is written in, as the conjecture prescribe
 - 1/7 is 0.142857 142857 … in base 10 and 0.001 001 … in base 2. The repeating block is the **repetend**, and its length is L = ord_n(b).
 - The decoder works with 19 such number systems: binary, ternary, …, decimal, …, base 31. The v8 paper used 13 bases and v10 used 16.
 
-One step of the decoder does behave like trial division. When a base shares a factor with *n*, for example base 10 and *n* = 35, the expansion has a non-repeating start (the pre-period), and the decoder takes gcd(b, n) from it. That step can only ever find the primes 2…31. **Every larger prime factor is found from the repetend lengths alone.**
+When a base shares a factor with *n*, as base 10 does at *n* = 35, the expansion has a non-repeating start (the pre-period). The decoder uses gcd(b, n) to isolate primes up through 31. For larger primes it uses the order tests.
 
 Step 16 tests exactly this point (`validate-s0`):
 - The integers are built from **one million primes downloaded from The Prime Pages** (t5k.org), about 9.6–9.8·10⁸. These are beyond every prime this project sieved.
@@ -28,9 +23,9 @@ Step 16 tests exactly this point (`validate-s0`):
 
 The conjecture said that ω(*n*) is encoded in the spectral entropy of the repetend digits. Version 11 tested that claim with held-out data, baselines and nulls. The decoder came out of following the information wherever it actually was, one step of the [ROADMAP](ROADMAP.md) at a time.
 
-1. **The entropy is a length statistic** (steps 2–4). log L and log n explain 95.9% of the held-out variance of the entropy, where L = ord_n(b) is the repetend length (`full-s0-step4`). Whatever the entropy knows about ω, it knows through L.
+1. **Length explains most of the entropy variance** (steps 2–4). log L and log n explain 95.9% of the held-out variance of the entropy, where L = ord_n(b) is the repetend length (`full-s0-step4`). Adding log ω to those controls changes held-out R² by 0.0004 in the same run.
 2. **The lengths know ω** (step 4). A gradient-boosting model on *n* and the per-base lengths, with their lcm arithmetic, classifies ω at 98.2% held-out. Evolvo's formula search rediscovered Fermat's little theorem in repetend form: the lcm of the lengths divides n − 1. It recognizes primes at 99.99% (`full-s0-step4`).
-3. **Nothing is left for the digits** (steps 7–8). Against the orders in 98 bases and their Midy flags, the entropy adds −0.07 points (CI [−0.33, +0.24]; `scale-s0-step7`). The two real digit traces both turn out to be functions of the orders:
+3. **The residual entropy gain is indistinguishable from zero** (steps 7–8). Against the orders in 98 bases and their Midy flags, the entropy adds −0.07 points (CI [−0.33, +0.24]; `scale-s0-step7`). Two exact digit patterns have arithmetic explanations:
    - Midy's symmetry, which holds when −1 ∈ ⟨b⟩ mod *n*;
    - exact spectral zeros at the Euler factors of the prime divisors of *n* (`scale-s0-step8`).
 4. **What in the lengths knows ω** (steps 10–11). ω(*n*) is the 2-rank of the unit group (ℤ/nℤ)*, up to a correction for the power of 2 in *n* (Proposition 1.6). The 2-adic valuations of the repetend lengths reveal that rank. Estimators built on this need no training, but are right for only 72–83% of integers (`step11-s0`), because they use the statistics of the valuations, not the valuations of each prime factor.
@@ -41,7 +36,7 @@ The conjecture said that ω(*n*) is encoded in the spectral entropy of the repet
 
 ## 2. The final algorithm
 
-**It is not an Evolvo formula.** It was derived from what the analyses showed, and it needs no training and no genome. Evolvo's best results are in §2.1 for comparison.
+The decoder uses modular arithmetic directly. Evolvo's fitted models are in §2.1.
 
 The complete algorithm is [`empirical-scripts/11.0/sieve_echo_decoder.py`](empirical-scripts/11.0/sieve_echo_decoder.py): pure Python, no dependencies. It is tested against SymPy in [`tests/test_sieve_echo_decoder.py`](empirical-scripts/11.0/tests/test_sieve_echo_decoder.py), and it is the same procedure as the `decode` stage that produced `decode-s0` and `failures-s0`.
 
@@ -95,7 +90,7 @@ The "check" is independent of the decoder: it multiplies the factors back and te
 
 For larger tests the test file checks every n < 20 000 against SymPy's factorization (`tests/test_sieve_echo_decoder.py`). The exhaustive and certified ranges are from the `decode` and `failures` stages.
 
-Pass other integers as arguments, but keep them small (up to about 10⁶). The long division takes L steps per base, and L can be close to *n*, so the lengths are the expensive part. The `decode` step itself is polynomial in log *n*. The `decode` step itself is polynomial in log *n*.
+Pass other integers as arguments, but keep them small (up to about 10⁶). The long division takes L steps per base, and L can be close to *n*, so the lengths are the expensive part. The gcd refinement is polynomial in log *n* once the prime divisors of each length are supplied. The implementation obtains those divisors with trial division and Pollard–Brent.
 
 ### 2.1 What Evolvo found (for comparison)
 
@@ -106,7 +101,7 @@ The Evolvo formula search of step 4 (`full-s0-step4`, inputs z-scored, selected 
 | is_prime | `[lcm divides n−1] ^ (2 % ([mean digit] / 10))` | **99.99%** — Fermat's little theorem in repetend form |
 | ω | `([log n − log lcm] · |lcm divides n−1|^(1/4)) + e` | 65.5% |
 
-For ω the best evolved formula is essentially log(n/λ(n)). Gradient boosting on the same inputs reaches 89.6%, the length-arithmetic model 98.2%, and the decoder above 100%. Evolvo found the right ingredients — the lcm of the lengths and its relation to *n* — but a formula over aggregate features cannot express "split *n* by gcds". That step had to be derived.
+For ω the best evolved formula is essentially log(n/λ(n)). Gradient boosting on the same inputs reaches 89.6%, the length-arithmetic model 98.2%, and the decoder recovers ω on every integer in the `decode-s0` exhaustive range when the pre-period checks are included. Evolvo found the right ingredients — the lcm of the lengths and its relation to *n* — but a formula over aggregate features cannot express "split *n* by gcds". That step had to be derived.
 
 **Worked example: n = 2047 = 23 · 89.**
 - Base 2 has L = 11. Both primes give 2 the order 11, so every base-2 test returns 1 or *n*, and base 2 alone cannot split 2047.
@@ -118,11 +113,11 @@ The decoder needs only a few remainders b^d mod n. Each is read from the ⌈log_
 
 | decoder, 19 bases, no training | result |
 | --- | --- |
-| every n in [2, 10⁸], lengths only | 99 999 990 of 99 999 999 exact (`decode-s0`) |
-| every n in [2, 10⁸], with pre-periods | **all exact** (`decode-s0`) |
-| every n < 3 700 000 259 | **all exact, certified** (`failures-s0`) |
-| ω-balanced samples, 8 decades 10⁴…10¹² (118 808 integers) | all exact (`decode-s0`) |
-| uniform samples, same decades (157 698 integers) | all exact (`decode-s0`) |
+| every n in [2, 10⁸], lengths only, comparing ω | 99 999 990 of 99 999 999 exact (`decode-s0`) |
+| every n in [2, 10⁸], with pre-periods, comparing ω | **all exact** (`decode-s0`) |
+| every n < 3 700 000 259 | **all ω exact, certified** (`failures-s0`) |
+| ω-balanced samples, 8 decades 10⁴…10¹² (118 808 integers), comparing ω | all exact (`decode-s0`) |
+| uniform samples, same decades (157 698 integers), comparing ω | all exact (`decode-s0`) |
 | **integers built from external primes (t5k.org list, 961 748 941 … 982 451 653)** | **40 000 / 40 000 exact** (`validate-s0`) |
 | — one list prime (n ≈ 9.7·10⁸) | 5 000 / 5 000 |
 | — two list primes (n ≈ 9.5·10¹⁷) | 20 000 / 20 000 |
@@ -135,13 +130,13 @@ The decoder needs only a few remainders b^d mod n. Each is read from the ⌈log_
 
 The 9 exceptions without pre-periods are 3 741 870 = 2·3·5·11·17·23·29 and its multiples. Their only coprime bases are 7, 13, 19 and 31, all ≡ 1 (mod 6), so nothing separates 2 from 3.
 
-**It gets easier as *n* grows.** With only the first five bases (2, 3, 4, 5, 6) the decoder is exact for 90.0% of integers at 10⁴–10⁵ and 97.2% at 10¹¹–10¹². On average 2.45 bases suffice at 10⁴–10⁵ and 1.78 at 10¹¹–10¹² (`decode-s0`).
+**Fewer bases suffice in the larger sampled decades.** With only the first five bases (2, 3, 4, 5, 6) the decoder is exact for 90.0% of integers at 10⁴–10⁵ and 97.2% at 10¹¹–10¹². On average 2.45 bases suffice at 10⁴–10⁵ and 1.78 at 10¹¹–10¹² (`decode-s0`).
 
-## 4. Why it works so well
+## 4. Why the order tests work
 
-**Each step is exact, not statistical.** For a prime p dividing n, p divides b^m − 1 exactly when ord_p(b) divides m (Lagrange). So gcd(b^m − 1, n) collects exactly the prime factors whose order divides m. Climbing the ladder m = (L/q^e)·q^i sorts the prime factors by the q-adic valuation of their order. Two primes therefore end up in different parts as soon as one base gives them different orders. This is also the only way they can stay together (Proposition 1.7).
+**Each gcd test implements an order-divisibility test.** For a prime p dividing n, p divides b^m − 1 exactly when ord_p(b) divides m (Lagrange). So gcd(b^m − 1, n) collects exactly the prime factors whose order divides m. Climbing the ladder m = (L/q^e)·q^i sorts the prime factors by the q-adic valuation of their order. Two primes therefore end up in different parts as soon as one base gives them different orders. This is also the only way they can stay together (Proposition 1.7).
 
-**Two primes almost never share all their orders.** The decoder fails on squarefree *n* only if two prime factors of *n* have equal orders in every base coprime to *n* (Proposition 1.8). Suppose p < p′ give b the same order d. Then:
+**Identical orders are the obstruction for squarefree integers.** The decoder fails on squarefree *n* only if two prime factors of *n* have equal orders in every base coprime to *n* (Proposition 1.8). Suppose p < p′ give b the same order d. Then:
 - both p and p′ divide b^d − 1, so for each p and each base there are only a handful of candidates p′;
 - d divides gcd(p − 1, p′ − 1), so a long run of shared orders needs p − 1 and p′ − 1 to share almost all of their size.
 
@@ -150,9 +145,9 @@ Every collision the search found has that shape, with p′ − 1 a small multipl
 - 109 − 1 = 3·(37 − 1);
 - 3559 − 1 = 3·(1187 − 1).
 
-A further base then has to land, modulo both primes, on the same order once more. The orders of 4, 9 and 16 follow from those of 2 and 3. Heuristically, the 11 prime bases 2…31 and the products among the bases each add a nearly independent condition. Modulo all 5 761 444 primes below 10⁸, not one pair satisfies all of them at once (`failures-s0`).
+A further base then has to land, modulo both primes, on the same order once more. The orders of 4, 9 and 16 follow from those of 2 and 3. Among the 5 761 444 primes below 10⁸ outside the base primes, `failures-s0` found zero pairs agreeing simultaneously in the full set of bases. A composite denominator can remove enough bases to expose a collision.
 
-**The failures that do exist are expensive.** A base that shares a factor with *n* is lost to the order tests, though its pre-period still isolates its own primes. To fail, an integer must therefore:
+**Small prime divisors restrict the available bases.** A base that shares a factor with *n* is lost to the order tests, though its pre-period still isolates its own primes. To fail, an integer must therefore:
 - carry enough small prime factors to remove most bases;
 - then contain a pair of primes that the few remaining bases cannot tell apart.
 
@@ -164,30 +159,49 @@ Every least failure found for a prefix of the bases has exactly this shape (`fai
 | first 9–15 | 214 935 = 3·5·7·23·89, then 2 794 155 and 47 500 635 | only 2, 4, 11 (and 16) remain; 23·89 = 2¹¹ − 1, so 23 and 89 agree on all of them |
 | first 16–17 | 60 555 495 = 3·5·7·11·13·37·109, then 1 392 776 385 | 2, 4, 16, 17, 19 remain; all give 37 and 109 the same orders |
 | first 18 | 11 532 975 090 = 2·3·5·7·13·1187·3559 (least found; exact below 3.1·10⁹) | 11, 17, 19, 23, 29 remain and agree on 1187 and 3559 |
-| all 19 | none known; exact below 3 700 000 259 | no two primes below 10⁸ agree on all 19 bases |
+| all 19 | failure at 357 522 227 790, exact ω certified below 3 700 000 259 | the factor 31 removes the last base that distinguishes 1187 from 3559 in the preceding example |
 
 The certified bound is the least integer a failure could still be: 37, the least prime outside {2…31}, times 100 000 007, the least prime above the search limit. Every pattern of small prime factors gave nothing smaller.
 
-**Why random integers up to 10¹² never fail.** A failure needs both many small prime factors and a colliding pair among the rest. These are rare separately and rarer together. Larger primes have larger p − 1, which leaves more room for their orders to differ.
+**A failure with all 19 bases.** Multiply the 18-base example by 31 to get $n=357{,}522{,}227{,}790$. In the remaining coprime bases 11, 17, 19, 23 and 29, the primes 1187 and 3559 share the order vector (593, 1186, 1186, 593, 1186). The decoder returns their product 4 224 533 in one part. The [deterministic reproduction command and provenance](ROADMAP.md#all-19-base-counterexample) show how this example bounds the first failure together with the earlier certificate.
 
-## 5. What it is, and what it is not
+## 5. What the validation establishes
 
-- **It is not a fast factoring method.** The decoder takes the repetend lengths as given. Computing a length classically needs λ(n), which needs the factorization, or about L digits of the expansion, and L can be as large as n − 1. Shor's algorithm finds that period quantumly, with a Fourier transform of the remainder sequence b^k mod n. That remainder sequence is the long division of 1 by *n*.
-- **What it shows is where the information is.** The repetend of 1/*n* is a complete certificate of the factorization of *n*: its length and a few digits at fractions of the period.
-- **The conjecture looked at the right object with the wrong statistic.** It looked at the digits and their Fourier spectrum, which was right. But the spectral entropy keeps the spread of the spectrum and discards the arithmetic of the period, so the echo it hoped to hear is there and is exact, but the entropy cannot hear it.
+The decoder applies the classical relation between periods and factorization. The exhaustive range in `decode-s0` checks the number of distinct prime factors, and the certificate in `failures-s0` checks the order-vector obstruction. The external validation in `validate-s0` compares the standalone decoder's prime-and-exponent output with the known factorization on 40 000 constructed integers. It generates the lengths from the known factors and checks their minimality directly modulo each test integer. The decoder itself receives $n$ and the lengths.
 
-**How the external validation keeps the decoder honest** (`validate-s0`, [`validate.py`](empirical-scripts/11.0/validate.py)):
-- The downloaded list is checked first: its SHA-256 is pinned, and it holds 1 000 000 sorted primes. SymPy confirms that 200 random neighbours are consecutive primes and that all 70 851 primes used are prime.
-- The repetend lengths of each test integer are produced from its known factors, which is only possible because this is a validation. Each length is then **verified from n alone**: b^L ≡ 1 (mod n), and b^(L/r) ≢ 1 for every prime r | L.
-- The decoder receives only *n* and the lengths. Its output is compared with the factors.
-- All 40 000 match, beyond the certified range, up to n ≈ 2.4·10⁴⁸.
+## 6. Prime counts and what Evolvo recovers
 
-This also shows the cost split of §5. Given the lengths, decoding a 27-digit product of three primes takes 21 ms. Obtaining those lengths without knowing the factors is the hard part.
+For prime $p$ and $p\nmid b$, the index $I_b(p)=(p-1)/\operatorname{ord}_p(b)$ measures the gap between the observed period and its maximal length. For odd $p$, the condition $2\mid I_b(p)$ says that $b$ is a square modulo $p$. Joint conditions across bases yield explicit unions of residue classes. Counting primes in those classes gives a concrete way to compare arithmetic data with the predictions of the corresponding Dirichlet characters.
 
-## 6. Open
+For higher divisors of the indices, the relevant counts come from splitting in number fields. The implemented benchmarks compare independently computed flags with fixed densities. The cubic joint count through $10^6$ is 4,318, about 50 below its integral main term and within the published GRH-conditional error bound. This measures an explicit prime-counting discrepancy. The finite counts give no implication for the location of the zeros of $\zeta(s)$. [Benchmark report](empirical-scripts/11.0/results/prime-orders-s0/report.md) · [Counting theorems](ROADMAP.md#step-18--cubic-residue-benchmark-and-dependence)
 
-- **Where the first failure lies for all 19 bases.** The certificate stops at 3.7·10⁹. Failures must exist by 3.0·10¹⁴, since 2·3·…·31·37·41 leaves no base coprime to *n*. How often the decoder fails between those two bounds is unmeasured.
-- **Whether two primes can share their orders in all 19 bases at all.** If they can, they would yield failures with no small prime factors.
-- **A decoder that uses only the bases a given *n* needs.** Two or three suffice on average.
+## 7. Best Evolvo algorithms
 
-The proofs, the run commands and the limits of each number are in [`studies/9`](studies/9/sieve-echo-conjecture-9.md) (§1, §6, §9) and [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md) (§10).
+These four formulas are the validation-selected exact rules from the two prime-order runs. In the code, `divides_index(p, m, b)` returns the bit for $m\mid I_b(p)$ using a modular power. The functions take primes $p>5$, the common eligible domain of the formula searches.
+
+```python
+def divides_index(p, m, b):
+    quotient, remainder = divmod(p - 1, m)
+    return int(remainder == 0 and pow(b, quotient, p) == 1)
+
+
+def order_events(p):
+    quadratic_base2 = 4 % abs((p % 8) - 4)
+    quadratic_joint = divides_index(p, 2, 2) * divides_index(p, 2, 5) * divides_index(p, 2, 3)
+    cubic_joint = divides_index(p, 3, 2) * divides_index(p, 3, 3)
+    mixed_joint = abs(divides_index(p, 5, 2))
+    return quadratic_base2, quadratic_joint, cubic_joint, mixed_joint
+```
+
+- **Quadratic rules.** `prime-orders-confirm-s10` checks the base-2 formula in all four odd residue classes and the joint rule on all 16 Boolean input rows, including the distractor bit used in the search. Both give zero errors on 70,435 test primes in $(10^6,2\cdot10^6]$. The base-2 formula uses the distance from 4 of the residue modulo 8. That distance is 1 or 3, and quadratic reciprocity selects exactly the distance-3 classes. [Quadratic report](empirical-scripts/11.0/results/prime-orders-confirm-s10/report.md) · [Saved programs](empirical-scripts/11.0/results/prime-orders-confirm-s10/prime_orders.json)
+- **Cubic and mixed rules.** `prime-orders-s0` checks the cubic formula on all eight Boolean input rows and the mixed formula on the six rows allowed by the mixed implication, in both cases including the distractor bit. Both give zero errors on 60,514 test primes in $(200{,}000,10^6]$. The mixed rule follows because $5\mid I_2(p)$ implies $p\equiv1\pmod5$, which implies $2\mid I_5(p)$. [Main report](empirical-scripts/11.0/results/prime-orders-s0/report.md) · [Saved programs](empirical-scripts/11.0/results/prime-orders-s0/prime_orders.json)
+- **Cubic control using congruences alone.** Evolvo selected $1/9$ and achieved F1 of zero. Each of the 16 observed classes modulo 120 contains both event outcomes. Any deterministic rule using those congruences makes at least 3,342 errors on the 30,243 primes in that held-out control. [Control results](empirical-scripts/11.0/results/prime-orders-s0/report.md#step-19--evolvo-formulas)
+
+Run both searches from the repository root with the [environment from the README](README.md#reproduce):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/prime-orders.json --run-id prime-orders-s0-repro --stages prime_orders,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/prime-orders-confirm.json --run-id prime-orders-confirm-s10-repro --stages prime_orders,report
+```
+
+The benchmark counts were cross-checked independently, the main run reproduced its program slots and metrics, and the selected programs were replayed. The four rules express established arithmetic. Together with the finite prime counts and the congruence-only limit, they complete steps 17–19. Ordinary RH remains open.
