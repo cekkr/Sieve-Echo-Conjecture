@@ -1,0 +1,32 @@
+[16:15:22] run scale-s0 seed=0 stages=['data', 'claims', 'scale', 'report'] dir=empirical-scripts/11.0/results/scale-s0
+[16:15:22] data: building dataset
+[16:15:22]   sieve to 1000000 (0.0s)
+[16:15:24]   41074 integers, labels done (2.4s)
+[16:17:13]   pairs: chunk 5/56 (108.2s)
+[16:19:22]   pairs: chunk 10/56 (237.6s)
+[16:21:20]   pairs: chunk 15/56 (355.8s)
+[16:21:46]   pairs: chunk 20/56 (382.0s)
+[16:24:01]   pairs: chunk 25/56 (516.4s)
+[16:26:08]   pairs: chunk 30/56 (643.2s)
+[16:26:44]   pairs: chunk 35/56 (679.6s)
+[16:29:13]   pairs: chunk 40/56 (828.9s)
+[16:31:39]   pairs: chunk 45/56 (974.6s)
+[16:33:30]   pairs: chunk 50/56 (1085.3s)
+[16:34:14]   pairs: chunk 55/56 (1129.2s)
+[16:34:14]   783040 coprime pairs (1131.9s)
+[16:34:20] data: done in 1138.1s
+[16:34:29]   C1: reproduced but explained by size/length (8.49s)
+[16:34:32]   C2: not supported (3.92s)
+[16:34:34]   C3: not reproduced (2.04s)
+[16:35:01]   C4: reproduced; invariance increases with n (26.14s)
+[16:35:02]   C5: reproduced but explained by size/length (1.55s)
+[16:35:03]   C6: reproduced but explained by size/length (1.11s)
+[16:35:05]   C7: supported (residue structure beyond per-base L and ω) (1.37s)
+[16:35:07]   C8: not supported (1.87s)
+[16:36:03]   C9: supported (56.03s)
+[16:36:03] claims: done in 102.5s
+[16:36:14]   scale bin [1000, 9999]: 7991 rows, C9 Δentropy -0.0016
+[16:36:31]   scale bin [10000, 99999]: 13783 rows, C9 Δentropy +0.0039
+[16:36:51]   scale bin [100000, 1000000]: 17260 rows, C9 Δentropy +0.0129
+[16:36:53] scale: done in 50.3s
+[16:36:53] report: done in 0.0s

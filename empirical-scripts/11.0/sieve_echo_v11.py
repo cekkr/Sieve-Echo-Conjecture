@@ -7,7 +7,7 @@ One command runs the whole pipeline from a config file and a seed and writes eve
     .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json
 
 Stages (ROADMAP.md): data (step 1) -> claims (step 2) -> formulas, nn (steps 3-4) -> report (steps 2/6).
-All five stages are implemented: `formulas` runs the Evolvo GFSL formula experiments (guides x
+All stages are implemented (`scale` is ROADMAP step 5): `formulas` runs the Evolvo GFSL formula experiments (guides x
 seeds, S1 adaptive evaluation size, S2 RL guide, warm starts); `nn` runs the held-out baselines,
 the §3.1 three-feature retest and the GFSL-NN architecture search.
 
@@ -19,6 +19,7 @@ Run directory:
     formulas.json      formula-search runs, guide/S1/S2 comparison; best_formulas.md
     baselines.json     held-out baselines and the three-feature retest
     nn.json            GFSL-NN search results; knowledge/ holds reusable guide and search knowledge
+    scale.json         per-n-range claim statistics, stability between the last two ranges, growth exponents
     report.md/.json    verdict table and per-claim summary
     log.txt            stage log
     cache/             disposable dataset cache (git-ignored)
@@ -38,10 +39,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import runtime  # noqa: E402
 
-STAGES = ("data", "claims", "formulas", "nn", "report")
-IMPLEMENTED = {"data", "claims", "formulas", "nn", "report"}
-ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "report": "step 6"}
-DEFAULT_STAGES = "data,claims,formulas,nn,report"
+STAGES = ("data", "claims", "formulas", "nn", "scale", "report")
+IMPLEMENTED = set(STAGES)
+ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "report": "step 6"}
+DEFAULT_STAGES = "data,claims,formulas,nn,scale,report"
 
 
 class Run:
@@ -228,6 +229,16 @@ def stage_nn(run: Run) -> dict:
     }
 
 
+def stage_scale(run: Run) -> dict:
+    import scale
+
+    table = load_table(run)
+    out = scale.run_stage(table, run.config.get("scale", {}), run.config["data"]["base_sets"], _formula_inputs(run), run.seed, log=run.log)
+    runtime.write_json(run.dir / "scale.json", out)
+    return {"scale_file": "scale.json", "stability": {k: v["stable"] for k, v in out["stability"].items()},
+            "growth_exponent": out["growth"]["balanced_all_bins"]}
+
+
 def stage_report(run: Run) -> dict:
     import report
 
@@ -236,7 +247,7 @@ def stage_report(run: Run) -> dict:
     return report.write_report(run.dir)
 
 
-STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "report": stage_report}
+STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "report": stage_report}
 
 
 # ---------------------------------------------------------------------------------------------

@@ -156,7 +156,47 @@ def step4_markdown(run_dir: Path) -> str:
         for name, v in tf["variants"].items():
             lines.append(f"| {name} | {v['train_accuracy']:.4f} | {v['test']['accuracy']:.4f} |")
         lines += [f"| majority class | – | {tf['majority_test_accuracy']:.4f} |", "", tf["note"], ""]
+    sc = run_dir / "scale.json"
+    if sc.is_file():
+        lines += scale_markdown(runtime.read_json(sc))
     return "\n".join(lines)
+
+
+def _ci(c) -> str:
+    return f"[{c[0]:+.3f}, {c[1]:+.3f}]" if c and all(x is not None for x in c) else "[n/a]"
+
+
+def scale_markdown(d: dict) -> list:
+    cfg = d["settings"]
+    lines = ["## Step 5 — Scale (per n-range, ω-balanced samples)", "",
+             f"Each range: at most {cfg['per_omega_cap']} integers per ω (ω strata with < {cfg['min_per_omega']} dropped); fits on the range's train rows, statistics on its test rows; {cfg['bootstrap']} bootstrap resamples. Entropy `{cfg['primary_set']}.{cfg['entropy']}`.", "",
+             "| n range | rows (test) | C1 ΔR² of log ω [CI] | C1 partial r | C2 Spearman(H, ω) | C3 partial r | C4 invariance H / Hn_nodc / log L | C9 acc base → +entropy → +all NDR |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    for b in d["bins"]:
+        if "skipped" in b:
+            lines.append(f"| {b['bin'][0]}–{b['bin'][1]} | {b['rows']} | skipped ({b['skipped']}) | | | | | |")
+            continue
+        c4 = b["C4"].get("v8", {}).get("invariance_rate", {})
+        lines.append(
+            f"| {b['bin'][0]}–{b['bin'][1]} | {b['rows']} ({b['test']}) | {b['C1']['delta_r2']:+.4f} {_ci(b['C1']['delta_r2_ci'])} | {b['C1']['partial_r']:+.3f} | "
+            f"{b['C2']['spearman_H_omega']:+.3f} | {b['C3']['partial_r']:+.3f} | {c4.get('H_paper', float('nan')):.3f} / {c4.get('Hn_nodc', float('nan')):.3f} / {c4.get('logL', float('nan')):.3f} | "
+            f"{b['C9']['accuracy_baseline']:.4f} → {b['C9']['accuracy_entropy']:.4f} → {b['C9']['accuracy_all']:.4f} (Δentropy {_ci(b['C9']['delta_entropy_ci'])}) |")
+    lines += ["", "**Stability between the last two ranges:**", ""]
+    for c, v in d["stability"].items():
+        lines.append(f"- {c}: {v['labels'][0]} → {v['labels'][1]} — **{'stable' if v['stable'] else 'drift'}**")
+    g = d["growth"]
+    lines += ["", "**Growth exponents** (paper: H ~ n^0.142, 'predicted' 0.743):", ""]
+    if "v8_style_H_v8_paper_range" in g:
+        v = g["v8_style_H_v8_paper_range"]
+        lines.append(f"- v8-style `H_v8` on all n in [2, 9999]: H ≈ {v['prefactor']:.3f}·n^{v['exponent']:.3f}")
+    ga = g["balanced_all_bins"]
+    lines.append(f"- ω-balanced ranges, `{cfg['entropy']}`: a = {ga['H ~ n^a']:.3f}; with ω fixed effects {ga['H ~ n^a, omega fixed effects']:.3f}; adding log(log L) as control: a = {ga['H ~ n^a · (log L)^b, omega fixed effects']['a']:.3f}, b = {ga['H ~ n^a · (log L)^b, omega fixed effects']['b']:.3f}")
+    lines.append("- per-ω exponent: " + ", ".join(f"ω={w}: {a:.3f}" for w, a in g["per_omega_exponent"].items()))
+    if d.get("T_x"):
+        t = d["T_x"]
+        lines.append(f"- T(x) = Σ_p Σ_n log ord_n(p) for x = {t['x']}: exponent {t['exponent']:.3f} (local {', '.join(f'{v:.2f}' for v in t['local_exponents'])}); the term count alone grows like x²/log x.")
+    lines.append("")
+    return lines
 
 
 def write_report(run_dir: Path) -> dict:
@@ -165,7 +205,7 @@ def write_report(run_dir: Path) -> dict:
     md = build_markdown(manifest, claims_out)
     extra = step4_markdown(run_dir)
     if extra:
-        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json` in this run directory.")
+        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json` in this run directory.")
     (run_dir / "report.md").write_text(md)
     runtime.write_json(
         run_dir / "report.json",

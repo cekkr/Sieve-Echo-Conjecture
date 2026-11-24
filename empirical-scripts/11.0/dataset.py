@@ -77,27 +77,42 @@ def dataset_key(data_cfg: dict[str, Any], seed: int) -> str:
 # ---------------------------------------------------------------------------------------------
 
 
+def _stratified_ranges(data_cfg: dict[str, Any]) -> list[dict[str, Any]]:
+    strat = data_cfg.get("stratified") or {}
+    ranges = strat if isinstance(strat, list) else [strat]
+    return [r for r in ranges if r and r.get("enabled", True) and (isinstance(strat, list) or strat.get("enabled"))]
+
+
 def sample_integers(data_cfg: dict[str, Any], seed: int, spf: np.ndarray) -> tuple[np.ndarray, np.ndarray, dict]:
-    """All n in [n_min, n_max], plus a stratified-by-omega sample from (n_max, strat.n_hi]."""
+    """All n in [n_min, n_max], plus a stratified-by-omega sample from each configured range.
+
+    ``stratified`` is one range ``{"enabled", "n_lo", "n_hi", "per_omega"}`` or a list of them
+    (one per scale decade, ROADMAP step 5). Ranges are clipped above ``n_max``; integers drawn by
+    several ranges are kept once. Range 0 uses the RNG stream ``[seed, 1]`` (so single-range
+    configs give the same sample as before), range ``i > 0`` uses ``[seed, 1, i]``.
+    """
     n_min, n_max = int(data_cfg["n_min"]), int(data_cfg["n_max"])
     full = np.arange(n_min, n_max + 1, dtype=np.int64)
     scheme: dict[str, Any] = {"full_range": [n_min, n_max], "full_count": int(full.size)}
-    strat = data_cfg.get("stratified") or {}
-    extra = np.zeros(0, dtype=np.int64)
-    if strat.get("enabled"):
+    single = isinstance(data_cfg.get("stratified"), dict)
+    picks_all, schemes = [], []
+    for i, strat in enumerate(_stratified_ranges(data_cfg)):
         lo, hi = max(int(strat["n_lo"]), n_max + 1), int(strat["n_hi"])
         per = int(strat["per_omega"])
         pool = np.arange(lo, hi + 1, dtype=np.int64)
         omega = ndr.arithmetic_labels(pool, spf)["omega"]
-        rng = np.random.default_rng([seed, 1])
-        picks, counts = [], {}
+        rng = np.random.default_rng([seed, 1] if i == 0 else [seed, 1, i])
+        counts = {}
         for w in sorted(set(omega.tolist())):
             cand = pool[omega == w]
             take = cand if cand.size <= per else rng.choice(cand, size=per, replace=False)
-            picks.append(take)
+            picks_all.append(take)
             counts[int(w)] = {"available": int(cand.size), "taken": int(take.size)}
-        extra = np.sort(np.concatenate(picks)) if picks else extra
-        scheme["stratified"] = {"range": [lo, hi], "per_omega": per, "by_omega": counts}
+        schemes.append({"range": [lo, hi], "per_omega": per, "by_omega": counts})
+    if schemes:
+        scheme["stratified"] = schemes[0] if single else schemes
+    extra = np.unique(np.concatenate(picks_all)) if picks_all else np.zeros(0, dtype=np.int64)
+    extra = extra[(extra < n_min) | (extra > n_max)]
     n_values = np.concatenate([full, extra])
     source = np.concatenate([np.zeros(full.size, np.int8), np.ones(extra.size, np.int8)])
     order = np.argsort(n_values, kind="stable")
@@ -286,8 +301,7 @@ def allowed_input_columns(table: dict[str, np.ndarray]) -> list[str]:
 def build_dataset(data_cfg: dict[str, Any], split_cfg: dict[str, Any], seed: int, log=print) -> tuple[dict, dict]:
     t0 = time.time()
     base_sets = normalize_base_sets(data_cfg["base_sets"])
-    strat = data_cfg.get("stratified") or {}
-    n_cap = max(int(data_cfg["n_max"]), int(strat.get("n_hi", 0)) if strat.get("enabled") else 0)
+    n_cap = max([int(data_cfg["n_max"])] + [int(r["n_hi"]) for r in _stratified_ranges(data_cfg)])
     spf = ndr.spf_sieve(n_cap)
     log(f"  sieve to {n_cap} ({time.time() - t0:.1f}s)")
 
