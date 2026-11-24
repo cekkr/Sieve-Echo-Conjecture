@@ -219,6 +219,13 @@ Theory (to be Proposition 1.6 of `studies/9`): let G = (ℤ/nℤ)* and let its S
 - [x] **11c — DC term of the residues.** For −1 ∉ ⟨b⟩ the mean digit (the DC bin of `H_paper`) differs from (b − 1)/2 by a class-number-type sum over odd characters trivial on ⟨b⟩. C7 excess after C7 + Midy + zeros + membership, then + the per-base mean digit (an NDR feature) — for `H_paper` (has the DC bin) and `H_nodc` (does not).
 - [x] Results into the Results log, `studies/9`, `AGENTS.md`, `README.md`.
 - **Result:** at a fixed base set the ℓ-adic profiles add +0.6…+3.5 points, growing with n, while 300 extra bases add ≤ 0.95 — the step-10 gain is the 2-adic reading. The MLE beats the ratio estimator everywhere (+1…+5 points). The mean digit does not explain the remaining residue structure.
+## Step 12 — Conclusions of v11 — DONE (2026-11-24; no new run)
+
+- [x] [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md): the conclusions of v11 from steps 0–11 only, every number with its run — the question, a one-paragraph answer, the v8 statistics reproduced and explained, entropy as a length statistic, ω from the orders, the vanished residual signal, Midy and spectral zeros, the 2-rank (Proposition 1.6) with the estimator table from `step11-s0`, residue structure, a verdict table, limits (one seed, samples, 19 digit bases), open questions.
+- [x] [`README.md`](README.md): a Conclusions (v11) section linking the file; item 8 states both training-free estimators.
+- **Done when:** every number in the file appears in a committed run summary or in the Results log (checked against `studies/9` and `results/step11-s0/tworank.json`). Owner review of the conclusions is part of step 6's review.
+- **Next (planned, not started):** the two open questions — the remaining C7 residue excess, and a closed-form ω estimator from the orders that approaches the learned models.
+
 ---
 
 ## Discovered work

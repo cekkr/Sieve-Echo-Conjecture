@@ -105,6 +105,10 @@ Verified against `libs/evolvo` after ROADMAP step 3 (the commit the root repo po
 
 ## Linked Source Tree and File Reference
 
+### [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md)
+
+Conclusions of v11 (ROADMAP step 12): what steps 0–11 established, from v11 runs only, each number with its run id; verdict table, limits and open questions. The README's Conclusions section summarizes it. Change it only together with the run or Results-log entry behind the changed number, and keep it consistent with `studies/9`.
+
 ### [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md)
 
 Revision 9 draft (step 6, awaiting owner review): the v11 findings with every number tied to a run (`full-s0-step4`, `scale-s0`, `quick-s0-step4`, `quick-s0-step6`), the v8 reproduction table, Observations 4.1–6.2, Theorem 1.3 (λ(n) ≤ φ(n)/2^{ω−1} for odd n), the reformulated open conjecture, reproduction commands, embedded figures from the run directories. Byline intentionally empty (no personal data in new files). Change numbers here only together with the run that produced them.
@@ -493,7 +497,7 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
 - Evolvo submodule at [`libs/evolvo`](libs/evolvo) with the step-3 features (see [Standing Evolvo Facts](#standing-evolvo-facts-relevant-to-v11)).
 
-- v11 steps 0–5 and 7–11 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), step-8 exact spectral zeros (`zeros`) and SinWhisky spectra (`whisky`, submodule `libs/sinwhisky`), step-9 small-prime membership (`euler`) and order-only ω to 10⁸ (`orders`), step-10/11 2-rank estimators (ratio and maximum likelihood) and ℓ-adic profiles (`tworank`), Markdown/JSON report with figures, 58 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
+- v11 steps 0–5 and 7–12 ([`ROADMAP.md`](ROADMAP.md); conclusions in [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), step-8 exact spectral zeros (`zeros`) and SinWhisky spectra (`whisky`, submodule `libs/sinwhisky`), step-9 small-prime membership (`euler`) and order-only ω to 10⁸ (`orders`), step-10/11 2-rank estimators (ratio and maximum likelihood) and ℓ-adic profiles (`tworank`), Markdown/JSON report with figures, 58 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
 
 ### Experimental / Scaffold
 
@@ -506,7 +510,7 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Near-Term Priorities
 
-1. Owner review of the step-6…11 reports and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) steps 6–11).
+1. Owner review of the step-6…11 reports, the `studies/9` draft and the v11 conclusions ([`ROADMAP.md`](ROADMAP.md) steps 6–11).
 2. Remaining open questions of `studies/9` §8: the rest of the C7 residue structure (exact membership for non-cyclic groups, larger q, the class-number term of the mean digit) and a closed-form ω estimator from the orders that approaches the learned models (the MLE 2-rank trails by 15–24 points).
 
 ## Task Start and Handoff Checklist
