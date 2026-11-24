@@ -2,7 +2,30 @@
 
 An empirical study of the **Sieve Echo Conjecture**: the idea that the prime-factorization complexity of an integer *n* — chiefly ω(n), the number of distinct prime factors — is encoded in the spectral entropy of the repeating digits of 1/*n* written in several bases (normalized digit representation, NDR). The project grew out of questions about the Riemann zeta function and the distribution of primes.
 
-The repository holds numbered script generations (`empirical-scripts/3.1` … `11.0`) and the papers in `studies/`. Version 11 ([`empirical-scripts/11.0/`](empirical-scripts/11.0)) is the current, reproducible, leakage-free implementation: one entry point, held-out evaluation, controls for repetend length and size, permutation nulls, and evolutionary search through the [Evolvo](libs/evolvo) submodule. Its conclusions are in [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md); the working paper is [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md) (draft for the author's review); the plan and the full results log are in [`ROADMAP.md`](ROADMAP.md); orientation for contributors and AI agents is in [`AGENTS.md`](AGENTS.md).
+The repository holds numbered script generations (`empirical-scripts/3.1` … `11.0`) and the papers in `studies/`. Version 11 ([`empirical-scripts/11.0/`](empirical-scripts/11.0)) is the current, reproducible, leakage-free implementation: one entry point, held-out evaluation, controls for repetend length and size, permutation nulls, and evolutionary search through the [Evolvo](libs/evolvo) submodule. The main result — an exact decoder of the factorization from the repetends, how it was found and why it works — is in [`conclusion.md`](conclusion.md); the full v11 conclusions are in [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md); the working paper is [`studies/9/sieve-echo-conjecture-9.md`](studies/9/sieve-echo-conjecture-9.md) (draft for the author's review); the plan and the full results log are in [`ROADMAP.md`](ROADMAP.md); orientation for contributors and AI agents is in [`AGENTS.md`](AGENTS.md).
+
+## Main result: the echo is exact
+
+The repetends of 1/*n* in 19 bases (2–7, 9–17, 19, 23, 29, 31) determine the factorization of *n*. A training-free decoder reads ω(*n*) and the prime factors from the repetend lengths and a few digits. It is correct for **every integer below 3 700 000 259** — exhaustively to 10⁸ (`decode-s0`) and certified beyond by a proof of where it can fail (`failures-s0`) — and for all 276 506 sampled integers up to 10¹². On the same integers the best learned model of this project reached 94–99%. 3.7·10⁹ is where the certificate stops, not a failure: with all 19 bases no failing *n* is known. The full account is in [`conclusion.md`](conclusion.md).
+
+**How it was found.** Each ROADMAP step followed the information to where it actually was:
+
+1. The digits' spectral entropy turned out to be a function of the repetend length L = ord_n(b).
+2. The lengths carry ω. As Proposition 1.6 shows, ω is the 2-rank of (ℤ/nℤ)*, which the 2-adic valuations of the lengths reveal.
+3. Reading those valuations prime by prime, rather than statistically, is the reduction of factoring to order finding used by Miller and Shor. The data confirmed the link: Shor's half-period split fails exactly on Midy's pairs.
+
+**How it works.** For each base *b* coprime to *n* and each prime q | L:
+
+1. Compute gcd(b^{(L/q^e)·q^i} − 1, n) for i < e = v_q(L). Each remainder b^d mod n is read from about log_b *n* repetend digits.
+2. Refine *n* by these gcds, and by gcd(b, n) for the bases that share a factor with *n*.
+3. The coprime parts that remain are the prime-power factors.
+
+**Why it works so well.**
+- **Every test is exact.** p | b^m − 1 exactly when ord_p(b) | m, so two prime factors are separated as soon as one base gives them different orders.
+- **The decoder fails only in a narrow case.** It fails only if two prime factors share their orders in every base coprime to *n* (Proposition 1.8). Modulo the 5 761 444 primes below 10⁸, no two primes do so in all 19 bases.
+- **The known failures need a lot.** With fewer bases, each failure needs small prime factors that remove most bases, plus a coincidence among the rest, such as 23·89 = 2¹¹ − 1. With five bases the decoder is already exact for 90–97% of integers, more as *n* grows.
+
+**It is not a fast factoring method.** Computing the lengths classically costs as much as factoring; Shor's algorithm computes them quantumly. So the result shows where the information is, not a shortcut to it.
 
 ## Final results (v11, seed 0)
 
@@ -47,4 +70,4 @@ The full and scale configurations and their run times are described in [`AGENTS.
 
 The Sieve Echo Conjecture, the earlier script generations and the papers are the work of the repository author. [Evolvo](libs/evolvo) and [SinWhisky](libs/sinwhisky) are separate projects included as git submodules.
 
-Version 11 — the reproducible pipeline, the claim-by-claim re-verification, the Evolvo and SinWhisky extensions it needed, the analyses of ROADMAP steps 0–15, the revision-9 draft and the v11 conclusions — was developed in collaboration with **Claude (Anthropic)**, an AI assistant, working with the author.
+Version 11 — the reproducible pipeline, the claim-by-claim re-verification, the Evolvo and SinWhisky extensions it needed, the analyses of ROADMAP steps 0–15, the revision-9 draft, the v11 conclusions and the exact decoder of [`conclusion.md`](conclusion.md) — was developed in collaboration with **Claude (Anthropic)**, an AI assistant, working with the author.

@@ -105,6 +105,10 @@ Verified against `libs/evolvo` after ROADMAP step 3 (the commit the root repo po
 
 ## Linked Source Tree and File Reference
 
+### [`conclusion.md`](conclusion.md)
+
+Root summary of the main v11 result: the exact decoder of the factorization from the repetends (steps 13 and 15) — how the ROADMAP steps led to it, the algorithm with a worked example, results, why it works (exact gcd tests, rarity of shared order vectors, the shape of every known failure), what it is not (not a fast factoring method), open questions. Numbers name their runs (`decode-s0`, `failures-s0`, `step11-s0`, …); keep it consistent with `empirical-scripts/11.0/conclusions.md` and `studies/9`. The README's "Main result" section summarizes it.
+
 ### [`empirical-scripts/11.0/conclusions.md`](empirical-scripts/11.0/conclusions.md)
 
 Conclusions of v11 (ROADMAP step 12): what steps 0–11 established, from v11 runs only, each number with its run id; verdict table, limits and open questions. The README's Conclusions section summarizes it. Change it only together with the run or Results-log entry behind the changed number, and keep it consistent with `studies/9`.
