@@ -1,0 +1,112 @@
+{
+  "run_id": "artin-s0",
+  "created": "2026-11-25T00:38:58+01:00",
+  "config_path": "empirical-scripts/11.0/config/artin.json",
+  "config_sha256": "4af31adaff12bc6a3c2713cb34f26130c6fe7e8788e50615d7b10bf03a8e1458",
+  "config": {
+    "seed": 0,
+    "artin": {
+      "prime_limit": 100000000,
+      "cutoffs": [
+        10000,
+        100000,
+        1000000,
+        10000000,
+        100000000
+      ],
+      "index_max": 12,
+      "local_q_max": 401,
+      "sympy_order_limit": 30000,
+      "sympy_sample": 4000,
+      "workers": 7,
+      "search": {
+        "split_at": [
+          1000000,
+          2000000
+        ],
+        "domain_limit": 10000000,
+        "kummer_check_max": 100000,
+        "seed_offsets": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "population": 160,
+        "generations": 100,
+        "initial_instructions": 8,
+        "max_instructions": 24,
+        "max_effective_instructions": 12,
+        "workers": 6
+      }
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "artin": {
+      "status": "done",
+      "finished": "2026-11-25T00:42:41+01:00",
+      "seconds": 219.12,
+      "artin_file": "artin.json",
+      "primes": 5761444
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/artin.json",
+    "--run-id",
+    "artin-s0",
+    "--stages",
+    "artin"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "e68d4397ffafeaa8bb3b3efa5f2316cfe797e2ac",
+      "dirty": true,
+      "changed_paths": [
+        "M AGENTS.md",
+        " M empirical-scripts/11.0/prime_order_formulas.py",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/search_formulas.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        "?? empirical-scripts/11.0/artin.py",
+        "?? empirical-scripts/11.0/artin_formulas.py",
+        "?? empirical-scripts/11.0/config/artin.json",
+        "?? empirical-scripts/11.0/config/explicit.json",
+        "?? empirical-scripts/11.0/explicit.py",
+        "?? empirical-scripts/11.0/tests/test_artin.py",
+        "?? empirical-scripts/11.0/tests/test_explicit.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "fae15e3c1b1e85c391b9b34a0665ec2ec94b668578fecea9bf7faa8b7c5ad0df"
+  },
+  "ndr_version": "ndr-v11.1"
+}

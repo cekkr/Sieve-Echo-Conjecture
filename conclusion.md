@@ -4,7 +4,13 @@ Version 11 finds that the relationship between digit entropy and the number of d
 
 The repeating block of $1/n$ has length $\operatorname{ord}_n(b)$ in every base $b$ coprime to $n$. This identifies an exact object to study across bases. At composite denominators, comparing orders gives a finite reconstruction experiment. At prime denominators, divisibility conditions on the orders lead to counts of primes in residue classes and to splitting conditions in number fields.
 
-The v11 runs are in [`empirical-scripts/11.0/results/`](empirical-scripts/11.0/results). The [v11 conclusions](empirical-scripts/11.0/conclusions.md) give the full experimental record, and [revision 9](studies/9/sieve-echo-conjecture-9.md) gives the proofs. The prime-order milestone is complete. The [best Evolvo algorithms and reproduction commands](#7-best-evolvo-algorithms) are below.
+The work ends at two classical problems.
+- **Full-period repetends** ($1/p$ repeats with the maximal length $p-1$) are Artin's primitive-root problem. Through $10^8$, the counts for all 19 bases match Hooley's densities, which assume GRH. That includes the Lehmer–Heilbronn correction: base 5 is 98 standard deviations from Artin's original constant and 0.65 from the corrected value (`artin-s0`, §8).
+- **Halved repetends** (length dividing $(p-1)/2$) form a quadratic character. Their log-weighted count is a sum over the zeros of a Dirichlet L-function. After smoothing, the prime data through $10^8$ and the zeros up to height 150 agree to $10^{-13}$ (`explicit-s0`, §9).
+
+§10 says exactly what this does and does not mean for the Riemann hypothesis. In short, these are verified consequences of known theorems and hypotheses. They are not a step toward a proof.
+
+The v11 runs are in [`empirical-scripts/11.0/results/`](empirical-scripts/11.0/results). The [v11 conclusions](empirical-scripts/11.0/conclusions.md) give the full experimental record, and [revision 9](studies/9/sieve-echo-conjecture-9.md) gives the proofs. The [best Evolvo algorithms and reproduction commands](#7-best-evolvo-algorithms) are below.
 
 ## What "bases" means
 
@@ -177,7 +183,7 @@ For higher divisors of the indices, the relevant counts come from splitting in n
 
 ## 7. Best Evolvo algorithms
 
-These four formulas are the validation-selected exact rules from the two prime-order runs. In the code, `divides_index(p, m, b)` returns the bit for $m\mid I_b(p)$ using a modular power. The functions take primes $p>5$, the common eligible domain of the formula searches.
+The first four formulas are the validation-selected exact rules from the two prime-order runs. The step-20 rules follow below. In the code, `divides_index(p, m, b)` returns the bit for $m\mid I_b(p)$ using a modular power. The functions take primes $p>5$, the common eligible domain of the formula searches.
 
 ```python
 def divides_index(p, m, b):
@@ -204,4 +210,143 @@ Run both searches from the repository root with the [environment from the README
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/prime-orders-confirm.json --run-id prime-orders-confirm-s10-repro --stages prime_orders,report
 ```
 
-The benchmark counts were cross-checked independently, the main run reproduced its program slots and metrics, and the selected programs were replayed. The four rules express established arithmetic. Together with the finite prime counts and the congruence-only limit, they complete steps 17–19. Ordinary RH remains open.
+The benchmark counts were cross-checked independently, the main run reproduced its program slots and metrics, and the selected programs were replayed. The four rules express established arithmetic. Together with the finite prime counts and the congruence-only limit, they complete steps 17–19.
+
+**Step-20 rules** (`artin-s0`, `config/artin.json`, policy seeds 0–3). The code below writes them with the `divides_index` helper above. It agrees with SymPy's `is_primitive_root` on every prime in $(31, 2\cdot10^5)$.
+
+```python
+def prime_factors(n):
+    q, out = 2, []
+    while q * q <= n:
+        if n % q == 0:
+            out.append(q)
+            while n % q == 0:
+                n //= q
+        q += 1
+    return out + ([n] if n > 1 else [])
+
+
+def full_period_events(p):
+    """For a prime p > 31: the base-10 full-period bit and the base-5 nesting bit, as Evolvo wrote them."""
+    not_local = [1 - divides_index(p, q, 10) for q in (2, 3, 5, 7)]
+    no_large = int(not any(divides_index(p, q, 10) for q in prime_factors(p - 1) if q >= 11))
+    artin_criterion = not_local[2] * ((not_local[0] * no_large) * not_local[3]) * not_local[1]
+    lehmer_nesting = abs(divides_index(p, 5, 5))  # equals divides_index(p, 10, 5)
+    return artin_criterion, lehmer_nesting
+
+
+def kummer_local_factor(q):
+    return q / (q - 1)  # q² · P(q | I_b(p)), so [Q(ζ_q, b^(1/q)) : Q] = q(q − 1)
+```
+
+- **Artin's criterion.** All four seeds found the product of the five local bits. It has zero errors on 515 646 held-out primes in $(2\cdot10^6,10^7]$ and matches all 64 Boolean rows.
+- **The nesting behind 20/19.** All four seeds found $[10\mid I_5(p)]=[5\mid I_5(p)]$, with zero held-out errors and 6/6 consistent rows. Because $5\mid I_5(p)$ forces $p\equiv1\pmod5$ and so $(5/p)=1$, the local factors at 2 and 5 are not $\tfrac12\cdot\tfrac{19}{20}$ but $\tfrac12$. That ratio is the Lehmer–Heilbronn factor $\tfrac{20}{19}$.
+- **The Kummer degree.** Regressing $q^2$ times the measured share of $q\mid I_b(p)$ over the 79 primes $q\le401$ gave $q/(q-1)$ on three of four seeds. The held-out mean squared standardized residual is 1.21, consistent with counting noise. The implied degree is $q(q-1)$ to machine precision, and $\prod_q(1-1/(q(q-1)))$ is Artin's constant.
+- **Congruences are not enough.** From $[(10/p)=-1]$, $[p\equiv1\bmod3]$, $[p\equiv1\bmod5]$, $[p\equiv1\bmod7]$ and $p\bmod840$, the best evolved formula reaches accuracy 0.825. The train-only lookup reaches 0.875. Any rule of $p\bmod840$ must miss at least 64 411 of the 515 646 held-out primes, because 96 of the 192 classes contain both outcomes. [Step-20 report](empirical-scripts/11.0/results/artin-s0/report.md)
+
+Run the step-20 and step-21 analyses with:
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/artin.json --run-id artin-s0-repro --stages artin,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/explicit.json --run-id explicit-s0-repro --stages explicit,report
+```
+
+## 8. Full-period repetends and Artin's conjecture
+
+The repetend of $1/p$ in base $b$ has the maximal length $p-1$ exactly when $b$ is a primitive root modulo $p$. Gauss tabulated these primes for base 10, and Artin conjectured in 1927 that they have a positive density. Artin's criterion is exact: $b$ is a primitive root iff for no prime $q\mid p-1$ is $b$ a $q$th power modulo $p$, that is, iff $p$ splits completely in none of the fields $K_q=\mathbb Q(\zeta_q,b^{1/q})$. Inclusion–exclusion over the squarefree $n$ then gives the candidate density $\sum_n\mu(n)/[K_n:\mathbb Q]$.
+
+Hooley (1967) proved that this is the density, **assuming GRH** for the Dedekind zeta functions of the fields $K_n$. For a base that is not a perfect power, with $\Delta$ the discriminant of $\mathbb Q(\sqrt b)$, the density is Artin's constant $A=\prod_q\bigl(1-\tfrac1{q(q-1)}\bigr)=0.373955813619\ldots$ when $\Delta\not\equiv1\pmod4$, and
+
+$$\delta(b)=A\Bigl(1-\mu(|\Delta|)\prod_{q\mid\Delta}\frac1{q^2-q-1}\Bigr)\qquad(\Delta\equiv1\bmod4).$$
+
+The correction comes from $\sqrt\Delta\in\mathbb Q(\zeta_\Delta)$. When the Lehmers' counts in 1957 disagreed with Artin's original constant for some bases, this correction resolved the discrepancy. [Moree's survey](https://arxiv.org/abs/math/0412262)
+
+**Results through $10^8$** (`artin-s0`, 5 761 444 primes $>31$):
+
+| base | discriminant | full-period primes | rate / A | GRH density / A |
+| --- | --- | --- | --- | --- |
+| 2 | 8 | 2 154 727 | 1.00009 | 1 |
+| 10 | 40 | 2 155 283 | 1.00035 | 1 |
+| 5 | 5 | 2 268 685 | **1.05299** | 20/19 = 1.05263 |
+| 13 | 13 | 2 168 390 | 1.00644 | 156/155 = 1.00645 |
+| 17 | 17 | 2 162 256 | 1.00359 | 272/271 = 1.00369 |
+| 29 | 29 | 2 157 549 | 1.00140 | 812/811 = 1.00123 |
+| 4, 9, 16 | squares | 0 | 0 | 0 |
+
+- All 15 bases with density $A$ are within 1.26 binomial standard deviations of it.
+- The four corrected bases sit 98.3, 11.9, 6.7 and 2.6 standard deviations from $A$, and within 0.65 of the corrected densities.
+- The full index law $\#\{p:I_b(p)=t\}$, computed from the Kummer degrees $[\mathbb Q(\zeta_m,b^{1/m}):\mathbb Q]=m\varphi(m)/\varepsilon(m)$, agrees for $t\le12$ and all 16 non-square bases (largest $|z|$ 2.14).
+- It predicts a density of zero for $I_5(p)=5$, and no prime has that index.
+- Both 2 and 3 are primitive roots for 0.147315 of the primes, against the Kummer-degree product 0.147349.
+
+These numbers measure how close finite frequencies are to conditional densities. Hooley's error term has no explicit constant, so they cannot test his theorem. Unconditionally, no single integer is known to be a primitive root for infinitely many primes. Heath-Brown (1986) proved that at least one of 2, 3, 5 is; here at least one of them is primitive for 73.96% of the primes.
+
+The congruence control explains why GRH for **Dedekind** zeta functions is needed rather than for Dirichlet L-functions. Full period is a splitting condition in non-abelian fields. Every residue class contains primes with $q\mid I_{10}(p)$ for every $q$ outside the modulus. No congruence rule is exact, and the best rule of $p\bmod840$ errs on at least 12.5% of held-out primes. [Step-20 report](empirical-scripts/11.0/results/artin-s0/report.md)
+
+## 9. Zeros behind the halved-repetend counts
+
+For a non-square base $b$, let $\Delta$ be the discriminant of $\mathbb Q(\sqrt b)$ and $\chi_\Delta$ the Kronecker symbol. Euler's criterion gives, for every prime $p\nmid\Delta$,
+
+$$2\mid I_b(p)\iff b^{(p-1)/2}\equiv1\pmod p\iff\chi_\Delta(p)=1.$$
+
+So $\psi(x,\chi_\Delta)=\sum_{n\le x}\Lambda(n)\chi_\Delta(n)$ counts halved repetends minus unhalved ones, weighted by $\log p$ and including prime powers. The explicit formula of analytic number theory expresses it through the zeros $\rho$ of $L(s,\chi_\Delta)$:
+
+$$\psi(x,\chi_\Delta)=-\sum_\rho\frac{x^\rho}\rho-\log x-b(\chi_\Delta)-\tfrac12\log(1-x^{-2}).$$
+
+For $\zeta(s)$ the left side is $\psi(x)$. By Lehmer's theorem, the primes are exactly the $n$ for which $1/n$ has a full-period repetend in some base.
+
+Gaussian smoothing in $\log x$ (width 0.05) makes the zero sum converge absolutely. Step 21 computes both sides independently, from the repetend parities of all primes through $10^8$ and from zeros located on the critical line up to height 150 (`explicit-s0`):
+
+| L-function | base | zeros found ≤ 150 | first zero | largest residual | signal rms |
+| --- | --- | --- | --- | --- | --- |
+| $L(s,\chi_8)$ | 2 | 102 | 4.899974 | $1.2\cdot10^{-13}$ | 0.40 |
+| $L(s,\chi_{12})$ | 3 | 111 | 3.804628 | $9.1\cdot10^{-14}$ | 0.51 |
+| $L(s,\chi_5)$ | 5 | 90 | 6.648453 | $2.9\cdot10^{-13}$ | 0.32 |
+| $L(s,\chi_{40})$ | 10 | 140 | 2.488210 | $1.0\cdot10^{-13}$ | 0.76 |
+| $\zeta(s)$ | full periods | 52 | 14.134725 | $6.9\cdot10^{-10}$ | 0.11 |
+
+- Without the zeros the residuals are 0.22–1.60. The fluctuations of the halved-repetend counts are the zeros, to 13 digits.
+- The zero counts match the Riemann–von Mangoldt main term (for example 140 against 139.81), and for $\zeta$ the list equals `mpmath.zetazero`.
+- A skipped zero up to height about 110–137 would have shown in the residual.
+- The constants check out: $L'(0,\chi_\Delta)$ equals $h\log\varepsilon$, which reproduces the fundamental units $1+\sqrt2$, $2+\sqrt3$ and $(1+\sqrt5)/2$, and twice $\log(3+\sqrt{10})$ for class number 2.
+
+**Chebyshev's bias in repetends.** Rubinstein and Sarnak (1994) assume GRH and the linear independence of the zeros (LI). Under those hypotheses, the share of $x$ (in logarithmic measure) with more unhalved than halved repetends is $\delta=\tfrac12+\tfrac1\pi\int_0^\infty\frac{\sin t}t\prod_{\gamma>0}J_0\bigl(\tfrac{2t}{|\rho|}\bigr)dt$. Computed from the zeros above:
+
+| base | δ (GRH + LI) | measured share on $[2,10^8]$ | first prime where halved repetends lead |
+| --- | --- | --- | --- |
+| 5 | 0.9954 | 1.0000 | none below $10^8$ |
+| 2 | 0.9822 | 0.9748 | 11 100 143 |
+| 3 | 0.9602 | 0.9215 | 61 463 |
+| 10 | 0.8778 | 0.8107 | 3 |
+
+So unhalved periods lead most of the time. In base 5, halved periods never lead below $10^8$. The bias is weaker for larger conductors, whose low zeros add variance. The measured shares cover about 18 units of $\log x$ and are finite-range descriptions, not limits. [Step-21 report](empirical-scripts/11.0/results/explicit-s0/report.md)
+
+## 10. What this means for the Riemann hypothesis
+
+The repository now connects repetend digits to the zeros of $\zeta(s)$ and of Dirichlet L-functions through checked steps. These steps are of different logical kinds, and only the first is unconditional.
+
+1. **Exact identities, checked numerically:**
+   - Euler's criterion turns repetend parity into a quadratic character.
+   - Lehmer's criterion turns full periods into primality.
+   - Artin's criterion turns full periods into non-splitting in Kummer fields.
+   - The explicit formula turns the resulting counts into sums over zeros. Here it holds to $10^{-13}$.
+2. **Conditional theorems the data agree with:**
+   - Hooley's densities for full-period repetends assume GRH for Dedekind zeta functions of Kummer fields.
+   - The Rubinstein–Sarnak bias assumes GRH and LI.
+   - The finite data agree with both. Agreement of this kind is expected whether or not the hypotheses hold far beyond the range, because both are statements about limits.
+3. **Equivalent forms of RH and GRH in repetend language.** These are reformulations of RH, not new evidence for it.
+   - RH is equivalent to $\theta(x)-x=O(x^{1/2+\varepsilon})$, where $\theta$ sums $\log n$ over the $n\le x$ with a full-period repetend. Schoenfeld showed that RH gives the explicit bound $|\theta(x)-x|<\sqrt x\log^2x/(8\pi)$ for $x\ge599$. On $[599,10^8]$ the largest ratio to that bound is 0.9836, at $x\approx797$.
+   - GRH for $L(s,\chi_\Delta)$ is equivalent to the halved-repetend imbalance $\psi(x,\chi_\Delta)$ being $O(x^{1/2+\varepsilon})$. On this range $|\psi(x,\chi_\Delta)|\le2.45\sqrt x$.
+4. **Why this is not progress toward a proof.**
+   - A finite range can only find a counterexample.
+   - The ranges checked here are tiny next to existing rigorous verifications. Platt and Trudgian checked the zeros of $\zeta$ to height $3\cdot10^{12}$, and Platt checked GRH for every Dirichlet L-function of conductor up to 400 000. [Platt–Trudgian](https://arxiv.org/abs/2004.09765) · [Platt](https://doi.org/10.1090/mcom/3077)
+   - The repetend observables are exact reformulations of prime counts in residue classes and splitting fields. A bound on them is therefore exactly as hard as the corresponding RH or GRH statement.
+   - A proof needs an argument valid for all $x$ or all heights, and nothing computed here supplies one.
+
+What the work does contribute:
+- **A tested route** from digit spectra to the zeros of L-functions, with every link stated as a theorem, a hypothesis or a finite check.
+- **A benchmark:** counts, densities, zeros and residuals with independent cross-checks and one command per step.
+- **Worked examples** of how entropy-style claims fail once length and size are controlled.
+- **Exact formulas** that the Evolvo searches recover when the inputs carry the arithmetic, and their stated limits when the inputs do not.
+
+That is a finished, reproducible piece of experimental number theory. It is not, and cannot become through more computation, a proof of RH.

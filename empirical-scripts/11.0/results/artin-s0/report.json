@@ -1,0 +1,31 @@
+{
+  "run_id": "artin-s0",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/artin.json",
+  "git_root": {
+    "sha": "e68d4397ffafeaa8bb3b3efa5f2316cfe797e2ac",
+    "dirty": true,
+    "changed_paths": [
+      "M AGENTS.md",
+      " M empirical-scripts/11.0/prime_order_formulas.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/search_formulas.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/artin.py",
+      "?? empirical-scripts/11.0/artin_formulas.py",
+      "?? empirical-scripts/11.0/config/artin.json",
+      "?? empirical-scripts/11.0/config/explicit.json",
+      "?? empirical-scripts/11.0/explicit.py",
+      "?? empirical-scripts/11.0/tests/test_artin.py",
+      "?? empirical-scripts/11.0/tests/test_explicit.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "fae15e3c1b1e85c391b9b34a0665ec2ec94b668578fecea9bf7faa8b7c5ad0df",
+  "ndr_version": null,
+  "verdicts": {}
+}

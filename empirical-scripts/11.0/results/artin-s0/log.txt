@@ -1,0 +1,19 @@
+[00:39:02] run artin-s0 seed=0 stages=['artin'] dir=empirical-scripts/11.0/results/artin-s0
+[00:39:02]   20: 5,761,444 primes in (31, 100,000,000]; orders of 19 bases
+[00:40:17]   20: order matrix in 74s
+[00:40:21]   20: index parity = reciprocity on all primes; SymPy agrees on 3,234 primes and 4,000 sampled primes
+[00:40:22]   20: x = 10,000: base 10 full-period 462 (0.37931; δ = 0.37396), base 5 ratio to A 1.0714 (Hooley 20/19 = 1.0526)
+[00:40:22]   20: x = 100,000: base 10 full-period 3,612 (0.37700; δ = 0.37396), base 5 ratio to A 1.0575 (Hooley 20/19 = 1.0526)
+[00:40:22]   20: x = 1,000,000: base 10 full-period 29,495 (0.37579; δ = 0.37396), base 5 ratio to A 1.0521 (Hooley 20/19 = 1.0526)
+[00:40:22]   20: x = 10,000,000: base 10 full-period 248,876 (0.37449; δ = 0.37396), base 5 ratio to A 1.0534 (Hooley 20/19 = 1.0526)
+[00:40:22]   20: x = 100,000,000: base 10 full-period 2,155,283 (0.37409; δ = 0.37396), base 5 ratio to A 1.0530 (Hooley 20/19 = 1.0526)
+[00:40:40]   evolving 16 formulas with the PyTorch policy guide
+[00:41:27]     2/16 runs done
+[00:41:27]     4/16 runs done
+[00:41:27]     6/16 runs done
+[00:41:58]     8/16 runs done
+[00:42:20]     10/16 runs done
+[00:42:25]     12/16 runs done
+[00:42:26]     14/16 runs done
+[00:42:40]     16/16 runs done
+[00:42:41] artin: done in 219.1s

@@ -1,0 +1,10 @@
+[00:35:22] run explicit-s0 seed=0 stages=['explicit'] dir=empirical-scripts/11.0/results/explicit-s0
+[00:35:22]   21: zeros up to height 150.0 for ζ and L(s, χ_Δ), Δ = [8, 12, 5, 40]
+[00:38:18]   21: ζ: 52 zeros (= mpmath.zetazero); L: [102, 111, 90, 140]
+[00:38:41]   21: index parity = Kronecker symbol on 5,761,455 primes (22s)
+[00:38:42]   21: zeta: 52 zeros; smoothed explicit formula residual 6.91e-10 (signal rms 0.105, without zeros 0.224)
+[00:38:44]   21: chi_8: 102 zeros; smoothed explicit formula residual 1.17e-13 (signal rms 0.399, without zeros 0.914); bias δ = 0.9822, measured log share 0.9748
+[00:38:46]   21: chi_12: 111 zeros; smoothed explicit formula residual 9.09e-14 (signal rms 0.506, without zeros 1.291); bias δ = 0.9602, measured log share 0.9215
+[00:38:47]   21: chi_5: 90 zeros; smoothed explicit formula residual 2.95e-13 (signal rms 0.325, without zeros 0.669); bias δ = 0.9954, measured log share 1.0000
+[00:38:50]   21: chi_40: 140 zeros; smoothed explicit formula residual 1.04e-13 (signal rms 0.758, without zeros 1.602); bias δ = 0.8778, measured log share 0.8107
+[00:38:50] explicit: done in 208.2s

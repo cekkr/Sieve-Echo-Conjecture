@@ -1,0 +1,38 @@
+{
+  "seed": 0,
+  "artin": {
+    "prime_limit": 100000000,
+    "cutoffs": [
+      10000,
+      100000,
+      1000000,
+      10000000,
+      100000000
+    ],
+    "index_max": 12,
+    "local_q_max": 401,
+    "sympy_order_limit": 30000,
+    "sympy_sample": 4000,
+    "workers": 7,
+    "search": {
+      "split_at": [
+        1000000,
+        2000000
+      ],
+      "domain_limit": 10000000,
+      "kummer_check_max": 100000,
+      "seed_offsets": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "population": 160,
+      "generations": 100,
+      "initial_instructions": 8,
+      "max_instructions": 24,
+      "max_effective_instructions": 12,
+      "workers": 6
+    }
+  }
+}

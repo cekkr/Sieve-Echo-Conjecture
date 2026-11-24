@@ -259,11 +259,14 @@ def metrics(target: str, pred: np.ndarray, y: np.ndarray, var: float, max_class:
         true = np.minimum(y, max_class).astype(int)
         out["accuracy"] = float((cls == true).mean())
         out["macro_f1"] = float(f1_score(true, cls, average="macro"))
-    else:
+    elif np.isin(y, (0, 1)).all():
         cls = (p > 0.5).astype(int)
         true = y.astype(int)
         out["accuracy"] = float((cls == true).mean())
         out["f1"] = float(f1_score(true, cls, zero_division=0))
+    else:  # regression target (step 20 Kummer degrees): relative errors instead of class metrics
+        out["max_relative_error"] = float(np.max(np.abs(p / y - 1))) if finite.all() else float("inf")
+        out["median_relative_error"] = float(np.median(np.abs(p / y - 1))) if finite.all() else float("inf")
     return out
 
 

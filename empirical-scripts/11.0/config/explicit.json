@@ -1,0 +1,15 @@
+{
+  "seed": 0,
+  "explicit": {
+    "bases": [2, 3, 5, 10],
+    "prime_limit": 100000000,
+    "height": 150.0,
+    "step": 0.05,
+    "dps": 25,
+    "sigma": 0.05,
+    "u_points": 400,
+    "bias_t_max": 80.0,
+    "bias_dt": 0.002,
+    "workers": 7
+  }
+}

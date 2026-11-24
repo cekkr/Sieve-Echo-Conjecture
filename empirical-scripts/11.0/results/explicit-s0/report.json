@@ -1,0 +1,31 @@
+{
+  "run_id": "explicit-s0",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/explicit.json",
+  "git_root": {
+    "sha": "e68d4397ffafeaa8bb3b3efa5f2316cfe797e2ac",
+    "dirty": true,
+    "changed_paths": [
+      "M AGENTS.md",
+      " M empirical-scripts/11.0/prime_order_formulas.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/search_formulas.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/artin.py",
+      "?? empirical-scripts/11.0/artin_formulas.py",
+      "?? empirical-scripts/11.0/config/artin.json",
+      "?? empirical-scripts/11.0/config/explicit.json",
+      "?? empirical-scripts/11.0/explicit.py",
+      "?? empirical-scripts/11.0/tests/test_artin.py",
+      "?? empirical-scripts/11.0/tests/test_explicit.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "3087954aa1d6e53ae5aef42e5342ea208bbc86213a94e1a8cf2f52f17bc90fe6",
+  "ndr_version": null,
+  "verdicts": {}
+}

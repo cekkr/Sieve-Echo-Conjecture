@@ -62,13 +62,20 @@ def cases(primes: np.ndarray, quadratic: np.ndarray, cubic: np.ndarray, quintic:
 
 
 def prepare(case: dict, train_end: int, val_end: int, seed: int) -> tuple[dict, dict]:
+    """Split one case by its size coordinate ``p``; a case may carry its own ``split_at`` or ``split_labels``.
+
+    Regression cases (``regression: True``) skip the two-class check."""
+    train_end, val_end = case.get("split_at", (train_end, val_end))
     p, X, y = case["p"], case["X"].astype(float), case["y"].astype(float)
-    tr = np.flatnonzero(p <= train_end)
-    va = np.flatnonzero((p > train_end) & (p <= val_end))
-    te = np.flatnonzero(p > val_end)
+    if "split_labels" in case:  # explicit 0/1/2 = train/validation/test labels
+        tr, va, te = (np.flatnonzero(case["split_labels"] == k) for k in range(3))
+    else:
+        tr = np.flatnonzero(p <= train_end)
+        va = np.flatnonzero((p > train_end) & (p <= val_end))
+        te = np.flatnonzero(p > val_end)
     if not all(group.size > 0 for group in (tr, va, te)):
         raise ValueError("prime order formula search requires nonempty train, validation, and test ranges")
-    if not 0 < y[tr].mean() < 1:
+    if not case.get("regression") and not 0 < y[tr].mean() < 1:
         raise ValueError("prime order formula search requires both classes in the train range")
     perm = np.random.default_rng([seed, 17]).permutation(tr)
     rate = float(y[tr].mean())
@@ -88,17 +95,19 @@ def prepare(case: dict, train_end: int, val_end: int, seed: int) -> tuple[dict, 
     return target, baseline
 
 
-def residue_baseline(data: dict) -> dict:
-    """Train lookup and a descriptive accuracy ceiling for any rule of the same residue."""
+def residue_baseline(data: dict, modulus: int = 120) -> dict:
+    """Train lookup and a descriptive accuracy ceiling for any rule of the same residue.
+
+    The residue is the last input column, taken modulo ``modulus``."""
     train_residues = data["Xp"][:, -1].astype(int)
     test_residues = data["Xt"][:, -1].astype(int)
-    counts = np.bincount(train_residues, minlength=120)
-    positive = np.bincount(train_residues, weights=data["yp"], minlength=120)
-    rate = np.full(120, data["yp"].mean())
+    counts = np.bincount(train_residues, minlength=modulus)
+    positive = np.bincount(train_residues, weights=data["yp"], minlength=modulus)
+    rate = np.full(modulus, data["yp"].mean())
     np.divide(positive, counts, out=rate, where=counts > 0)
     pred = rate[test_residues]
-    n = np.bincount(test_residues, minlength=120)
-    pos = np.bincount(test_residues, weights=data["yt"], minlength=120)
+    n = np.bincount(test_residues, minlength=modulus)
+    pos = np.bincount(test_residues, weights=data["yt"], minlength=modulus)
     return {
         "test_mse": float(np.mean((pred - data["yt"]) ** 2)),
         "test_accuracy": float(np.mean((pred > 0.5) == data["yt"])),
@@ -126,6 +135,15 @@ def replay(program: dict, X: np.ndarray) -> np.ndarray:
 
 def run_stage(cfg: dict, seed: int, run_dir: Path, primes, quadratic, cubic, fifth, log=print) -> dict:
     tasks = cases(primes, quadratic, cubic, fifth, fold_mod8=cfg.get("fold_mod8", False))
+    lookups = {"cubic_congruence_only": ("mod_120_lookup", 120)}
+    return run_cases(tasks, cfg, seed, run_dir, log, int(primes[-1]), lookups=lookups)
+
+
+def run_cases(tasks: dict, cfg: dict, seed: int, run_dir: Path, log, test_end: int, *,
+              lookups: dict | None = None, knowledge_prefix: str = "prime_order") -> dict:
+    """Evolve, select on validation and replay one GFSL program per case (steps 19–20).
+
+    ``lookups`` maps a case name to (baseline key, modulus) for the residue-lookup control."""
     names = cfg.get("targets", list(tasks))
     if not names or len(set(names)) != len(names) or any(name not in tasks for name in names):
         raise ValueError("prime order formula targets must be a nonempty list of distinct known targets")
@@ -139,15 +157,16 @@ def run_stage(cfg: dict, seed: int, run_dir: Path, primes, quadratic, cubic, fif
     targets, baselines = {}, {}
     for name in names:
         targets[name], baselines[name] = prepare(tasks[name], train_end, val_end, seed)
-    if "cubic_congruence_only" in names:
-        baselines["cubic_congruence_only"]["mod_120_lookup"] = residue_baseline(targets["cubic_congruence_only"])
+    for name, (key, modulus) in (lookups or {}).items():
+        if name in names:
+            baselines[name][key] = residue_baseline(targets[name], modulus)
 
     knowledge = run_dir / "knowledge"
     knowledge.mkdir(exist_ok=True)
     specs = [{
         "target": name, "guide": "policy", "variant": "adaptive", "seed": seed + offset,
         "cfg": eval_cfg, "export_program": True,
-        "knowledge_out": str(knowledge / f"prime_order_{name}_s{seed + offset}.pt"),
+        "knowledge_out": str(knowledge / f"{knowledge_prefix}_{name}_s{seed + offset}.pt"),
     } for name in targets for offset in offsets]
     log(f"  evolving {len(specs)} formulas with the PyTorch policy guide")
     results = search_formulas._run_specs(specs, {"names": [], "targets": targets}, cfg["workers"], log)
@@ -173,7 +192,7 @@ def run_stage(cfg: dict, seed: int, run_dir: Path, primes, quadratic, cubic, fif
             } for r in group],
         }
     return {
-        "split": {"train_end": train_end, "val_end": val_end, "test_end": int(primes[-1])},
+        "split": {"train_end": train_end, "val_end": val_end, "test_end": test_end},
         "settings": cfg, "guide": "GFSLPolicyGuide", "fitness": "1/(1+NMSE) minus instruction parsimony",
         "targets": summary,
     }

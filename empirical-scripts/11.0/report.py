@@ -199,7 +199,96 @@ def step4_markdown(run_dir: Path) -> str:
     pf = run_dir / "prime_orders.json"
     if pf.is_file():
         lines += prime_orders_markdown(runtime.read_json(pf))
+    af = run_dir / "artin.json"
+    if af.is_file():
+        lines += artin_markdown(runtime.read_json(af))
+    ef = run_dir / "explicit.json"
+    if ef.is_file():
+        lines += explicit_markdown(runtime.read_json(ef))
     return "\n".join(lines)
+
+
+def artin_markdown(d: dict) -> list[str]:
+    dom = d["domain"]
+    last = d["rows"][-1]
+    A = d["artin_constant"]
+    lines = [
+        "## Step 20 — Full-period repetends (Artin's conjecture)", "",
+        f"Primes {dom['primes_from']:,}…{dom['primes_to']:,} ({dom['primes']:,}; primes up to 31 excluded). "
+        f"Artin's constant A = {A:.12f}. Index parity equals quadratic reciprocity for every prime and base; "
+        f"SymPy agrees on the orders through {d['checks']['sympy']['orders_all_primes_through']:,} and on "
+        f"{d['checks']['sympy']['primitive_root_sample']:,} sampled primes.", "",
+        "The density column is Hooley's, which assumes GRH for the Kummer fields Q(ζ_n, b^{1/n}).", "",
+        "| Base | Δ | Full-period primes | Rate / A | GRH density / A | Binomial-scale z |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for b, v in last["bases"].items():
+        dn = d["densities"][b]
+        z = "–" if v["binomial_z"] is None else f"{v['binomial_z']:+.2f}"
+        lines.append(f"| {b} | {dn['discriminant']} | {v['count']:,} | {v['ratio_to_A']:.5f} | {dn['ratio_to_A']:.5f} | {z} |")
+    lines += ["", "Bases whose discriminant is 1 mod 4 (the Lehmer–Heilbronn correction):", "",
+              "| Base | Rate / A | Corrected density / A | z against A | z against the corrected density |",
+              "| --- | --- | --- | --- | --- |"]
+    for b, v in d["hooley_corrections"].items():
+        lines.append(f"| {b} | {v['ratio_to_A']:.5f} | {v['hooley_ratio']:.5f} | {v['z_against_A']:+.1f} | {v['z_against_hooley']:+.2f} |")
+    zmax = max(v["max_abs_binomial_z"] for v in d["index_law"].values() if "max_abs_binomial_z" in v)
+    pair = last["both_2_and_3"] / last["eligible"]
+    lines += ["", f"Index law I_b(p) = t, t ≤ {d['settings']['index_max']}, for the {sum('t' in v for v in d['index_law'].values())} "
+              f"non-square bases: largest binomial-scale |z| = {zmax:.2f}. Base 5 has density 0 at t = 5, and no prime has I_5(p) = 5. "
+              f"Both 2 and 3 primitive: rate {pair:.6f} against {d['pair_2_3_density']:.6f}. "
+              f"At least one of 2, 3, 5 primitive: {last['any_of_2_3_5'] / last['eligible']:.4f} of the primes (Heath-Brown: infinitely many, unconditionally).", ""]
+    if "formulas" in d:
+        lines += ["### Evolvo formulas", "", "| Target | Selected formula | Test MSE | Test F1 | Exact domain values |", "| --- | --- | --- | --- | --- |"]
+        for t, row in d["formulas"]["targets"].items():
+            audit = row.get("audit")
+            exact = f"{audit['exact']}/{audit['rows']}" if audit else "–"
+            f1 = f"{row['test']['f1']:.3f}" if "f1" in row["test"] else f"– (median relative error {row['test']['median_relative_error']:.4f})"
+            lines.append(f"| {t} | `{row['expression']}` | {row['test']['mse']:.4g} | {f1} | {exact} |")
+        tg = d["formulas"]["targets"]
+        if "artin_congruence_only" in tg:
+            lk = tg["artin_congruence_only"]["baseline"]["mod_840_lookup"]
+            lines += ["", f"Congruence-only control: both labels occur in {lk['test_classes_with_both_labels']} of "
+                      f"{lk['test_residue_classes']} held-out classes modulo 840; any rule of p mod 840 errs on at least "
+                      f"{lk['test_errors_unavoidable_by_residue']:,} held-out primes (train lookup accuracy {lk['test_accuracy']:.4f})."]
+        if "kummer_degree" in tg and "kummer_check" in tg["kummer_degree"]:
+            kc = tg["kummer_degree"]["kummer_check"]
+            lines += ["", f"Kummer degree: the degree q²/y from the selected formula vs q(q − 1) on {kc['primes_checked']:,} primes: "
+                      f"max relative difference {kc['max_relative_difference_of_degree_from_q(q-1)']}; held-out mean squared standardized residual "
+                      f"{kc['test']['mean_squared_standardized_residual']:.3f} (q/(q − 1): {kc['test']['q_over_q_minus_1_mean_squared_standardized_residual']:.3f}); "
+                      f"implied Artin product {kc['implied_artin_product']}."]
+        lines.append("")
+    return lines
+
+
+def explicit_markdown(d: dict) -> list[str]:
+    cfg = d["settings"]
+    lines = [
+        "## Step 21 — Zeros behind the halved-repetend counts", "",
+        f"Primes up to {cfg['prime_limit']:,}. Zeros on the critical line up to height {cfg['height']} by sign changes of Z(t). "
+        f"Smoothed explicit formula with a Gaussian of width σ = {cfg['sigma']} in log x.", "",
+        "| L-function | Base | Zeros ≤ T | Smooth count | Mean S(γ) | First zero | Max residual | Signal rms | Residual without zeros | Missing zero detectable up to height |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for name, r in d["results"].items():
+        z, ef = r["zeros"], r["explicit_formula"]
+        lines.append(f"| {name} | {r.get('base', '–')} | {z['count']} | {z['smooth_count_at_T']:.2f} | {z['S_at_zeros']['mean']:+.3f} | "
+                     f"{z['zeros'][0]:.6f} | {ef['max_abs_residual']:.2e} | {ef['rms_measured']:.3f} | "
+                     f"{ef['max_abs_residual_without_zeros']:.3f} | {ef['detectable_missing_zero_height']:.0f} |")
+    lines += ["", "Chebyshev bias between unhalved and halved repetends. δ assumes GRH and the linear independence of the zeros "
+              "(Rubinstein–Sarnak); the measured share is the logarithmic measure of x in [2, X] with more unhalved primes.", "",
+              "| Base | Δ | δ (GRH + LI) | Measured share | Lead changes | Last halved lead | Log-mean of E(x) from 10³ | 1 + 2/log x |",
+              "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    for name, r in d["results"].items():
+        if "bias" not in r:
+            continue
+        rc = r["race"]
+        last = rc["last_halved_lead_at"]
+        lines.append(f"| {r['base']} | {r['discriminant']} | {r['bias']['delta']:.4f} | {rc['log_share_unhalved_ahead']:.4f} | "
+                     f"{rc['lead_changes']} | {last if last else 'never'} | {rc['log_mean_E_from_1000']:.3f} | {rc['leading_order_mean_1_plus_2_over_log_x']:.3f} |")
+    sch = d["results"]["zeta"]["schoenfeld"]
+    lines += ["", f"Schoenfeld's RH-conditional bound |θ(x) − x| < √x log² x/(8π) on [599, {sch['range'][1]:,}]: "
+              f"largest ratio {sch['max_ratio_to_schoenfeld_bound']:.4f} (at {sch['at_prime']:,}). A finite range cannot prove the bound.", ""]
+    return lines
 
 
 def prime_orders_markdown(data: dict) -> list[str]:
@@ -654,7 +743,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "prime_orders.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "prime_orders.json", "artin.json", "explicit.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:

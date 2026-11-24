@@ -1,0 +1,93 @@
+{
+  "run_id": "explicit-s0",
+  "created": "2026-11-25T00:35:18+01:00",
+  "config_path": "empirical-scripts/11.0/config/explicit.json",
+  "config_sha256": "321e3871e7559fe7d6679f4e30372a466139efed95b7e993a1ee4b1ccffcc226",
+  "config": {
+    "seed": 0,
+    "explicit": {
+      "bases": [
+        2,
+        3,
+        5,
+        10
+      ],
+      "prime_limit": 100000000,
+      "height": 150.0,
+      "step": 0.05,
+      "dps": 25,
+      "sigma": 0.05,
+      "u_points": 400,
+      "bias_t_max": 80.0,
+      "bias_dt": 0.002,
+      "workers": 7
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "explicit": {
+      "status": "done",
+      "finished": "2026-11-25T00:38:50+01:00",
+      "seconds": 208.2,
+      "explicit_file": "explicit.json"
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/explicit.json",
+    "--run-id",
+    "explicit-s0",
+    "--stages",
+    "explicit"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "e68d4397ffafeaa8bb3b3efa5f2316cfe797e2ac",
+      "dirty": true,
+      "changed_paths": [
+        "M AGENTS.md",
+        " M empirical-scripts/11.0/prime_order_formulas.py",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/search_formulas.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        "?? empirical-scripts/11.0/artin.py",
+        "?? empirical-scripts/11.0/artin_formulas.py",
+        "?? empirical-scripts/11.0/config/artin.json",
+        "?? empirical-scripts/11.0/config/explicit.json",
+        "?? empirical-scripts/11.0/explicit.py",
+        "?? empirical-scripts/11.0/tests/test_artin.py",
+        "?? empirical-scripts/11.0/tests/test_explicit.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "3087954aa1d6e53ae5aef42e5342ea208bbc86213a94e1a8cf2f52f17bc90fe6"
+  },
+  "ndr_version": "ndr-v11.1"
+}

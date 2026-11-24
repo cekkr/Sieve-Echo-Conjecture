@@ -1,0 +1,3911 @@
+{
+  "settings": {
+    "bases": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "prime_limit": 100000000,
+    "cutoffs": [
+      10000,
+      100000,
+      1000000,
+      10000000,
+      100000000
+    ],
+    "index_max": 12,
+    "local_q_max": 401,
+    "sympy_order_limit": 30000,
+    "sympy_sample": 4000,
+    "workers": 7,
+    "search": {
+      "split_at": [
+        1000000,
+        2000000
+      ],
+      "domain_limit": 10000000,
+      "kummer_check_max": 100000,
+      "seed_offsets": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "population": 160,
+      "generations": 100,
+      "initial_instructions": 8,
+      "max_instructions": 24,
+      "max_effective_instructions": 12,
+      "workers": 6
+    }
+  },
+  "domain": {
+    "primes_from": 37,
+    "primes_to": 99999989,
+    "primes": 5761444,
+    "excluded_primes": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13,
+      17,
+      19,
+      23,
+      29,
+      31
+    ]
+  },
+  "checks": {
+    "parity_vs_reciprocity": {
+      "primes": 5761444,
+      "bases": 19,
+      "agree": true
+    },
+    "sympy": {
+      "orders_all_primes_through": 30000,
+      "order_primes": 3234,
+      "primitive_root_sample": 4000,
+      "sample_max_prime": 99970853
+    }
+  },
+  "artin_constant": 0.3739558136191996,
+  "densities": {
+    "2": {
+      "h": 1,
+      "discriminant": 8,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "3": {
+      "h": 1,
+      "discriminant": 12,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "4": {
+      "h": 2,
+      "discriminant": 1,
+      "density": 0.0,
+      "ratio_to_A": 0.0
+    },
+    "5": {
+      "h": 1,
+      "discriminant": 5,
+      "density": 0.39363769854652586,
+      "ratio_to_A": 1.0526315789473684,
+      "density_from_kummer_degrees": 0.3936376985465259
+    },
+    "6": {
+      "h": 1,
+      "discriminant": 24,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "7": {
+      "h": 1,
+      "discriminant": 28,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "9": {
+      "h": 2,
+      "discriminant": 1,
+      "density": 0.0,
+      "ratio_to_A": 0.0
+    },
+    "10": {
+      "h": 1,
+      "discriminant": 40,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "11": {
+      "h": 1,
+      "discriminant": 44,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "12": {
+      "h": 1,
+      "discriminant": 12,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "13": {
+      "h": 1,
+      "discriminant": 13,
+      "density": 0.3763684317715815,
+      "ratio_to_A": 1.0064516129032257,
+      "density_from_kummer_degrees": 0.3763684317715815
+    },
+    "14": {
+      "h": 1,
+      "discriminant": 56,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "15": {
+      "h": 1,
+      "discriminant": 60,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "16": {
+      "h": 4,
+      "discriminant": 1,
+      "density": 0.0,
+      "ratio_to_A": 0.0
+    },
+    "17": {
+      "h": 1,
+      "discriminant": 17,
+      "density": 0.37533572437056195,
+      "ratio_to_A": 1.003690036900369,
+      "density_from_kummer_degrees": 0.37533572437056195
+    },
+    "19": {
+      "h": 1,
+      "discriminant": 76,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "23": {
+      "h": 1,
+      "discriminant": 92,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    },
+    "29": {
+      "h": 1,
+      "discriminant": 29,
+      "density": 0.3744169181982615,
+      "ratio_to_A": 1.0012330456226881,
+      "density_from_kummer_degrees": 0.3744169181982615
+    },
+    "31": {
+      "h": 1,
+      "discriminant": 124,
+      "density": 0.3739558136191996,
+      "ratio_to_A": 1.0,
+      "density_from_kummer_degrees": 0.3739558136191996
+    }
+  },
+  "pair_2_3_density": 0.14734940000199934,
+  "rows": [
+    {
+      "x": 10000,
+      "eligible": 1218,
+      "li_main": 1231.1195294520444,
+      "bases": {
+        "2": {
+          "count": 464,
+          "rate": 0.38095238095238093,
+          "expected": 455.4781809881851,
+          "discrepancy": 8.521819011814898,
+          "discrepancy_vs_li": 3.615694701274549,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": 0.5046566774622457,
+          "ratio_to_A": 1.018709609740968
+        },
+        "3": {
+          "count": 470,
+          "rate": 0.38587848932676516,
+          "expected": 455.4781809881851,
+          "discrepancy": 14.521819011814898,
+          "discrepancy_vs_li": 9.615694701274549,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": 0.8599728441838635,
+          "ratio_to_A": 1.031882578832446
+        },
+        "4": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "5": {
+          "count": 488,
+          "rate": 0.4006568144499179,
+          "expected": 479.4507168296685,
+          "discrepancy": 8.549283170331478,
+          "discrepancy_vs_li": 3.3849417908153896,
+          "binomial_scale": 17.050537824079207,
+          "binomial_z": 0.5014084164698875,
+          "ratio_to_A": 1.0714014861068801
+        },
+        "6": {
+          "count": 467,
+          "rate": 0.38341543513957305,
+          "expected": 455.4781809881851,
+          "discrepancy": 11.521819011814898,
+          "discrepancy_vs_li": 6.615694701274549,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": 0.6823147608230546,
+          "ratio_to_A": 1.0252960942867069
+        },
+        "7": {
+          "count": 460,
+          "rate": 0.37766830870279144,
+          "expected": 455.4781809881851,
+          "discrepancy": 4.521819011814898,
+          "discrepancy_vs_li": -0.38430529872545094,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": 0.26777923298116724,
+          "ratio_to_A": 1.0099276303466493
+        },
+        "9": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "10": {
+          "count": 462,
+          "rate": 0.3793103448275862,
+          "expected": 455.4781809881851,
+          "discrepancy": 6.521819011814898,
+          "discrepancy_vs_li": 1.615694701274549,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": 0.38621795522170654,
+          "ratio_to_A": 1.0143186200438086
+        },
+        "11": {
+          "count": 437,
+          "rate": 0.3587848932676519,
+          "expected": 455.4781809881851,
+          "discrepancy": -18.478180988185102,
+          "discrepancy_vs_li": -23.38430529872545,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": -1.0942660727850344,
+          "ratio_to_A": 0.9594312488293167
+        },
+        "12": {
+          "count": 455,
+          "rate": 0.3735632183908046,
+          "expected": 455.4781809881851,
+          "discrepancy": -0.4781809881851018,
+          "discrepancy_vs_li": -5.384305298725451,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": -0.02831757262018093,
+          "ratio_to_A": 0.9989501561037508
+        },
+        "13": {
+          "count": 453,
+          "rate": 0.37192118226600984,
+          "expected": 458.4167498977863,
+          "discrepancy": -5.416749897786303,
+          "discrepancy_vs_li": -10.354526623233312,
+          "binomial_scale": 16.908079626052483,
+          "binomial_z": -0.32036458412698804,
+          "ratio_to_A": 0.9945591664065915
+        },
+        "14": {
+          "count": 454,
+          "rate": 0.3727422003284072,
+          "expected": 455.4781809881851,
+          "discrepancy": -1.4781809881851018,
+          "discrepancy_vs_li": -6.384305298725451,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": -0.08753693374045057,
+          "ratio_to_A": 0.9967546612551712
+        },
+        "15": {
+          "count": 449,
+          "rate": 0.36863711001642036,
+          "expected": 455.4781809881851,
+          "discrepancy": -6.478180988185102,
+          "discrepancy_vs_li": -11.384305298725451,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": -0.38363373934179873,
+          "ratio_to_A": 0.9857771870122728
+        },
+        "16": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "17": {
+          "count": 444,
+          "rate": 0.3645320197044335,
+          "expected": 457.1589122833445,
+          "discrepancy": -13.158912283344478,
+          "discrepancy_vs_li": -18.083140373628453,
+          "binomial_scale": 16.89884140374769,
+          "binomial_z": -0.7786872465958643,
+          "ratio_to_A": 0.9747997127693745
+        },
+        "19": {
+          "count": 467,
+          "rate": 0.38341543513957305,
+          "expected": 455.4781809881851,
+          "discrepancy": 11.521819011814898,
+          "discrepancy_vs_li": 6.615694701274549,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": 0.6823147608230546,
+          "ratio_to_A": 1.0252960942867069
+        },
+        "23": {
+          "count": 455,
+          "rate": 0.3735632183908046,
+          "expected": 455.4781809881851,
+          "discrepancy": -0.4781809881851018,
+          "discrepancy_vs_li": -5.384305298725451,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": -0.02831757262018093,
+          "ratio_to_A": 0.9989501561037508
+        },
+        "29": {
+          "count": 460,
+          "rate": 0.37766830870279144,
+          "expected": 456.0398063654825,
+          "discrepancy": 3.960193634517509,
+          "discrepancy_vs_li": -0.9519801511282822,
+          "binomial_scale": 16.890553202615557,
+          "binomial_z": 0.2344620443754477,
+          "ratio_to_A": 1.0099276303466493
+        },
+        "31": {
+          "count": 465,
+          "rate": 0.3817733990147783,
+          "expected": 455.4781809881851,
+          "discrepancy": 9.521819011814898,
+          "discrepancy_vs_li": 4.615694701274549,
+          "binomial_scale": 16.886369273202433,
+          "binomial_z": 0.5638760385825154,
+          "ratio_to_A": 1.0209051045895476
+        }
+      },
+      "both_2_and_3": 181,
+      "any_of_2_3_5": 923
+    },
+    {
+      "x": 100000,
+      "eligible": 9581,
+      "li_main": 9614.791314603453,
+      "bases": {
+        "2": {
+          "count": 3597,
+          "rate": 0.37543053960964407,
+          "expected": 3582.8706502855516,
+          "discrepancy": 14.12934971444838,
+          "discrepancy_vs_li": 1.4928911686520223,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.29833493780069315,
+          "ratio_to_A": 1.0039435835377764
+        },
+        "3": {
+          "count": 3622,
+          "rate": 0.378039870577184,
+          "expected": 3582.8706502855516,
+          "discrepancy": 39.12934971444838,
+          "discrepancy_vs_li": 26.492891168652022,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.8261988236659109,
+          "ratio_to_A": 1.010921228683299
+        },
+        "4": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "5": {
+          "count": 3789,
+          "rate": 0.3954702014403507,
+          "expected": 3771.4427897742644,
+          "discrepancy": 17.557210225735616,
+          "discrepancy_vs_li": 4.255674914370502,
+          "binomial_scale": 47.82113266964339,
+          "binomial_z": 0.36714333696409585,
+          "ratio_to_A": 1.0575318982553892
+        },
+        "6": {
+          "count": 3582,
+          "rate": 0.37386494102912016,
+          "expected": 3582.8706502855516,
+          "discrepancy": -0.8706502855516192,
+          "discrepancy_vs_li": -13.507108831347978,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": -0.018383393718437568,
+          "ratio_to_A": 0.9997569964504629
+        },
+        "7": {
+          "count": 3604,
+          "rate": 0.37616115228055524,
+          "expected": 3582.8706502855516,
+          "discrepancy": 21.12934971444838,
+          "discrepancy_vs_li": 8.492891168652022,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.4461368258429541,
+          "ratio_to_A": 1.0058973241785227
+        },
+        "9": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "10": {
+          "count": 3612,
+          "rate": 0.37699613819016803,
+          "expected": 3582.8706502855516,
+          "discrepancy": 29.12934971444838,
+          "discrepancy_vs_li": 16.492891168652022,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.6150532693198238,
+          "ratio_to_A": 1.0081301706250898
+        },
+        "11": {
+          "count": 3631,
+          "rate": 0.37897922972549836,
+          "expected": 3582.8706502855516,
+          "discrepancy": 48.12934971444838,
+          "discrepancy_vs_li": 35.49289116865202,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 1.0162298225773894,
+          "ratio_to_A": 1.013433180935687
+        },
+        "12": {
+          "count": 3634,
+          "rate": 0.37929234944160317,
+          "expected": 3582.8706502855516,
+          "discrepancy": 51.12934971444838,
+          "discrepancy_vs_li": 38.49289116865202,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 1.0795734888812154,
+          "ratio_to_A": 1.0142704983531496
+        },
+        "13": {
+          "count": 3634,
+          "rate": 0.37929234944160317,
+          "expected": 3605.9859448035227,
+          "discrepancy": 28.01405519647733,
+          "discrepancy_vs_li": 15.296071111675701,
+          "binomial_scale": 47.42158442911261,
+          "binomial_z": 0.5907448166004172,
+          "ratio_to_A": 1.0142704983531496
+        },
+        "14": {
+          "count": 3595,
+          "rate": 0.3752217931322409,
+          "expected": 3582.8706502855516,
+          "discrepancy": 12.12934971444838,
+          "discrepancy_vs_li": -0.5071088313479777,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.2561058269314757,
+          "ratio_to_A": 1.0033853719261345
+        },
+        "15": {
+          "count": 3605,
+          "rate": 0.37626552551925685,
+          "expected": 3582.8706502855516,
+          "discrepancy": 22.12934971444838,
+          "discrepancy_vs_li": 9.492891168652022,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.4672513812775628,
+          "ratio_to_A": 1.0061764299843436
+        },
+        "16": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "17": {
+          "count": 3611,
+          "rate": 0.3768917649514664,
+          "expected": 3596.091575194354,
+          "discrepancy": 14.908424805646064,
+          "discrepancy_vs_li": 2.2253372615250555,
+          "binomial_scale": 47.395674263754344,
+          "binomial_z": 0.31455243621351375,
+          "ratio_to_A": 1.0078510648192691
+        },
+        "19": {
+          "count": 3602,
+          "rate": 0.3759524058031521,
+          "expected": 3582.8706502855516,
+          "discrepancy": 19.12934971444838,
+          "discrepancy_vs_li": 6.492891168652022,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.4039077149737367,
+          "ratio_to_A": 1.005339112566881
+        },
+        "23": {
+          "count": 3623,
+          "rate": 0.37814424381588563,
+          "expected": 3582.8706502855516,
+          "discrepancy": 40.12934971444838,
+          "discrepancy_vs_li": 27.492891168652022,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.8473133791005196,
+          "ratio_to_A": 1.0112003344891198
+        },
+        "29": {
+          "count": 3602,
+          "rate": 0.3759524058031521,
+          "expected": 3587.2884932575435,
+          "discrepancy": 14.71150674245655,
+          "discrepancy_vs_li": 2.0594668667636142,
+          "binomial_scale": 47.37242859432023,
+          "binomial_z": 0.3105499797876185,
+          "ratio_to_A": 1.005339112566881
+        },
+        "31": {
+          "count": 3614,
+          "rate": 0.37720488466757124,
+          "expected": 3582.8706502855516,
+          "discrepancy": 31.12934971444838,
+          "discrepancy_vs_li": 18.492891168652022,
+          "binomial_scale": 47.36069405282895,
+          "binomial_z": 0.6572823801890413,
+          "ratio_to_A": 1.0086883822367316
+        }
+      },
+      "both_2_and_3": 1413,
+      "any_of_2_3_5": 7171
+    },
+    {
+      "x": 1000000,
+      "eligible": 78487,
+      "li_main": 78612.53147301481,
+      "bases": {
+        "2": {
+          "count": 29335,
+          "rate": 0.3737561634410794,
+          "expected": 29350.66994353012,
+          "discrepancy": -15.669943530119781,
+          "discrepancy_vs_li": -62.613167656189034,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": -0.11559949280108579,
+          "ratio_to_A": 0.9994661129180265
+        },
+        "3": {
+          "count": 29386,
+          "rate": 0.37440595257813397,
+          "expected": 29350.66994353012,
+          "discrepancy": 35.33005646988022,
+          "discrepancy_vs_li": -11.613167656189034,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 0.2606350559401572,
+          "ratio_to_A": 1.0012037223183612
+        },
+        "4": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "5": {
+          "count": 30880,
+          "rate": 0.3934409520047906,
+          "expected": 30895.442045821175,
+          "discrepancy": -15.44204582117527,
+          "discrepancy_vs_li": -64.85596595388051,
+          "binomial_scale": 136.87158705635935,
+          "binomial_z": -0.11282141278026336,
+          "ratio_to_A": 1.052105456516402
+        },
+        "6": {
+          "count": 29345,
+          "rate": 0.373883573075796,
+          "expected": 29350.66994353012,
+          "discrepancy": -5.669943530119781,
+          "discrepancy_vs_li": -52.613167656189034,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": -0.04182801265574404,
+          "ratio_to_A": 0.9998068206435823
+        },
+        "7": {
+          "count": 29428,
+          "rate": 0.3749410730439436,
+          "expected": 29350.66994353012,
+          "discrepancy": 77.33005646988022,
+          "discrepancy_vs_li": 30.386832343810966,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 0.5704752725505926,
+          "ratio_to_A": 1.0026346947656957
+        },
+        "9": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "10": {
+          "count": 29495,
+          "rate": 0.37579471759654465,
+          "expected": 29350.66994353012,
+          "discrepancy": 144.33005646988022,
+          "discrepancy_vs_li": 97.38683234381097,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 1.0647441895243823,
+          "ratio_to_A": 1.0049174365269198
+        },
+        "11": {
+          "count": 29426,
+          "rate": 0.3749155911170003,
+          "expected": 29350.66994353012,
+          "discrepancy": 75.33005646988022,
+          "discrepancy_vs_li": 28.386832343810966,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 0.5557209765215242,
+          "ratio_to_A": 1.0025665532205845
+        },
+        "12": {
+          "count": 29497,
+          "rate": 0.37582019952348794,
+          "expected": 29350.66994353012,
+          "discrepancy": 146.33005646988022,
+          "discrepancy_vs_li": 99.38683234381097,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 1.0794984855534506,
+          "ratio_to_A": 1.004985578072031
+        },
+        "13": {
+          "count": 29568,
+          "rate": 0.37672480792997565,
+          "expected": 29540.02910445612,
+          "discrepancy": 27.970895543880033,
+          "discrepancy_vs_li": -19.275188092680764,
+          "binomial_scale": 135.7280172842921,
+          "binomial_z": 0.20608048436523596,
+          "ratio_to_A": 1.0074046029234773
+        },
+        "14": {
+          "count": 29350,
+          "rate": 0.3739472778931543,
+          "expected": 29350.66994353012,
+          "discrepancy": -0.6699435301197809,
+          "discrepancy_vs_li": -47.613167656189034,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": -0.0049422725830731585,
+          "ratio_to_A": 0.9999771745063603
+        },
+        "15": {
+          "count": 29384,
+          "rate": 0.3743804706511906,
+          "expected": 29350.66994353012,
+          "discrepancy": 33.33005646988022,
+          "discrepancy_vs_li": -13.613167656189034,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 0.24588075991108882,
+          "ratio_to_A": 1.00113558077325
+        },
+        "16": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "17": {
+          "count": 29536,
+          "rate": 0.3763170970988826,
+          "expected": 29458.974998672296,
+          "discrepancy": 77.02500132770365,
+          "discrepancy_vs_li": 29.9085549723859,
+          "binomial_scale": 135.6538583245289,
+          "binomial_z": 0.5678054592699779,
+          "ratio_to_A": 1.0063143382016986
+        },
+        "19": {
+          "count": 29485,
+          "rate": 0.37566730796182807,
+          "expected": 29350.66994353012,
+          "discrepancy": 134.33005646988022,
+          "discrepancy_vs_li": 87.38683234381097,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 0.9909727093790406,
+          "ratio_to_A": 1.0045767288013638
+        },
+        "23": {
+          "count": 29346,
+          "rate": 0.37389631403926765,
+          "expected": 29350.66994353012,
+          "discrepancy": -4.669943530119781,
+          "discrepancy_vs_li": -51.613167656189034,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": -0.03445086464120986,
+          "ratio_to_A": 0.9998408914161379
+        },
+        "29": {
+          "count": 29324,
+          "rate": 0.3736160128428912,
+          "expected": 29386.860658626952,
+          "discrepancy": -62.8606586269525,
+          "discrepancy_vs_li": -109.8617658900439,
+          "binomial_scale": 135.58732557028372,
+          "binomial_z": -0.4636175126440394,
+          "ratio_to_A": 0.999091334419915
+        },
+        "31": {
+          "count": 29406,
+          "rate": 0.37466077184756713,
+          "expected": 29350.66994353012,
+          "discrepancy": 55.33005646988022,
+          "discrepancy_vs_li": 8.386832343810966,
+          "binomial_scale": 135.55373947084132,
+          "binomial_z": 0.4081780162308407,
+          "ratio_to_A": 1.0018851377694729
+        }
+      },
+      "both_2_and_3": 11575,
+      "any_of_2_3_5": 58027
+    },
+    {
+      "x": 10000000,
+      "eligible": 664568,
+      "li_main": 664903.3873621216,
+      "bases": {
+        "2": {
+          "count": 248485,
+          "rate": 0.3739045515282108,
+          "expected": 248519.06714528424,
+          "discrepancy": -34.067145284236176,
+          "discrepancy_vs_li": -159.4871991640248,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": -0.08636810518538722,
+          "ratio_to_A": 0.9998629193901476
+        },
+        "3": {
+          "count": 248620,
+          "rate": 0.3741076910113036,
+          "expected": 248519.06714528424,
+          "discrepancy": 100.93285471576382,
+          "discrepancy_vs_li": -24.487199164024787,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.25588816849841167,
+          "ratio_to_A": 1.0004061372669517
+        },
+        "4": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "5": {
+          "count": 261797,
+          "rate": 0.3939356092980703,
+          "expected": 261599.0180476676,
+          "discrepancy": 197.98195233239676,
+          "discrepancy_vs_li": 65.96084298525238,
+          "binomial_scale": 398.2760131383167,
+          "binomial_z": 0.497097354099605,
+          "ratio_to_A": 1.0534282258791576
+        },
+        "6": {
+          "count": 248492,
+          "rate": 0.3739150846865934,
+          "expected": 248519.06714528424,
+          "discrepancy": -27.067145284236176,
+          "discrepancy_vs_li": -152.4871991640248,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": -0.06862148358696803,
+          "ratio_to_A": 0.9998910862430189
+        },
+        "7": {
+          "count": 248725,
+          "rate": 0.3742656883870424,
+          "expected": 248519.06714528424,
+          "discrepancy": 205.93285471576382,
+          "discrepancy_vs_li": 80.51280083597521,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.5220874924746997,
+          "ratio_to_A": 1.0008286400600215
+        },
+        "9": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "10": {
+          "count": 248876,
+          "rate": 0.37449290366072396,
+          "expected": 248519.06714528424,
+          "discrepancy": 356.9328547157638,
+          "discrepancy_vs_li": 231.5128008359752,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.904907472669171,
+          "ratio_to_A": 1.0014362393148173
+        },
+        "11": {
+          "count": 248722,
+          "rate": 0.374261174176307,
+          "expected": 248519.06714528424,
+          "discrepancy": 202.93285471576382,
+          "discrepancy_vs_li": 77.51280083597521,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.5144817975039486,
+          "ratio_to_A": 1.0008165685516481
+        },
+        "12": {
+          "count": 248561,
+          "rate": 0.37401891153350747,
+          "expected": 248519.06714528424,
+          "discrepancy": 41.932854715763824,
+          "discrepancy_vs_li": -83.48719916402479,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.10630950074030697,
+          "ratio_to_A": 1.0001687309356075
+        },
+        "13": {
+          "count": 250190,
+          "rate": 0.376470127962827,
+          "expected": 250122.4159655764,
+          "discrepancy": 67.58403442360577,
+          "discrepancy_vs_li": -58.64518109409255,
+          "binomial_scale": 394.94839475264763,
+          "binomial_z": 0.17112117765647078,
+          "ratio_to_A": 1.0067235599823772
+        },
+        "14": {
+          "count": 248477,
+          "rate": 0.3738925136329164,
+          "expected": 248519.06714528424,
+          "discrepancy": -42.067145284236176,
+          "discrepancy_vs_li": -167.4871991640248,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": -0.10664995844072346,
+          "ratio_to_A": 0.9998307287011517
+        },
+        "15": {
+          "count": 248802,
+          "rate": 0.37438155312925087,
+          "expected": 248519.06714528424,
+          "discrepancy": 282.9328547157638,
+          "discrepancy_vs_li": 157.5128008359752,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.7173003300573109,
+          "ratio_to_A": 1.0011384754416062
+        },
+        "16": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "17": {
+          "count": 249468,
+          "rate": 0.3753837079125086,
+          "expected": 249436.11167349562,
+          "discrepancy": 31.888326504384167,
+          "discrepancy_vs_li": -93.99453200225253,
+          "binomial_scale": 394.7326031813787,
+          "binomial_z": 0.08078462799215892,
+          "ratio_to_A": 1.0038183503005065
+        },
+        "19": {
+          "count": 248774,
+          "rate": 0.37433942049572055,
+          "expected": 248519.06714528424,
+          "discrepancy": 254.93285471576382,
+          "discrepancy_vs_li": 129.5128008359752,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.6463138436636341,
+          "ratio_to_A": 1.0010258080301209
+        },
+        "23": {
+          "count": 248747,
+          "rate": 0.374298792599102,
+          "expected": 248519.06714528424,
+          "discrepancy": 227.93285471576382,
+          "discrepancy_vs_li": 102.51280083597521,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.5778625889268744,
+          "ratio_to_A": 1.00091716445476
+        },
+        "29": {
+          "count": 248915,
+          "rate": 0.3745515884002841,
+          "expected": 248825.50249318226,
+          "discrepancy": 89.49750681774458,
+          "discrepancy_vs_li": -36.07719571047346,
+          "binomial_scale": 394.53900273680307,
+          "binomial_z": 0.22684070826186065,
+          "ratio_to_A": 1.0015931689236717
+        },
+        "31": {
+          "count": 248660,
+          "rate": 0.3741678804877755,
+          "expected": 248519.06714528424,
+          "discrepancy": 140.93285471576382,
+          "discrepancy_vs_li": 15.512800835975213,
+          "binomial_scale": 394.4412721699961,
+          "binomial_z": 0.3572974347750928,
+          "ratio_to_A": 1.0005670907119306
+        }
+      },
+      "both_2_and_3": 97910,
+      "any_of_2_3_5": 491730
+    },
+    {
+      "x": 100000000,
+      "eligible": 5761444,
+      "li_main": 5762194.357761591,
+      "bases": {
+        "2": {
+          "count": 2154727,
+          "rate": 0.3739907911974845,
+          "expected": 2154525.478641456,
+          "discrepancy": 201.52135854400694,
+          "discrepancy_vs_li": -79.07928869687021,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": 0.17351729617105488,
+          "ratio_to_A": 1.0000935339872012
+        },
+        "3": {
+          "count": 2154027,
+          "rate": 0.37386929387840967,
+          "expected": 2154525.478641456,
+          "discrepancy": -498.47864145599306,
+          "discrepancy_vs_li": -779.0792886968702,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": -0.42920843075587184,
+          "ratio_to_A": 0.9997686364601405
+        },
+        "4": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "5": {
+          "count": 2268685,
+          "rate": 0.3937702076076761,
+          "expected": 2267921.5564646902,
+          "discrepancy": 763.4435353097506,
+          "discrepancy_vs_li": 468.07443295093253,
+          "binomial_scale": 1172.6815997933431,
+          "binomial_z": 0.6510237181552854,
+          "ratio_to_A": 1.0529859231140435
+        },
+        "6": {
+          "count": 2154460,
+          "rate": 0.3739444486486374,
+          "expected": 2154525.478641456,
+          "discrepancy": -65.47864145599306,
+          "discrepancy_vs_li": -346.0792886968702,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": -0.05637951681393002,
+          "ratio_to_A": 0.9999696087875938
+        },
+        "7": {
+          "count": 2155993,
+          "rate": 0.3742105277774114,
+          "expected": 2154525.478641456,
+          "discrepancy": 1467.521358544007,
+          "discrepancy_vs_li": 1186.9207113031298,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": 1.2635898251560396,
+          "ratio_to_A": 1.000681134371857
+        },
+        "9": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "10": {
+          "count": 2155283,
+          "rate": 0.3740872947823497,
+          "expected": 2154525.478641456,
+          "discrepancy": 757.521358544007,
+          "discrepancy_vs_li": 476.9207113031298,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": 0.6522537307015852,
+          "ratio_to_A": 1.0003515954515523
+        },
+        "11": {
+          "count": 2155229,
+          "rate": 0.37407792213202107,
+          "expected": 2154525.478641456,
+          "discrepancy": 703.521358544007,
+          "discrepancy_vs_li": 422.9207113031298,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": 0.6057577460529366,
+          "ratio_to_A": 1.0003265319280363
+        },
+        "12": {
+          "count": 2154290,
+          "rate": 0.37391494215686205,
+          "expected": 2154525.478641456,
+          "discrepancy": -235.47864145599306,
+          "discrepancy_vs_li": -516.0792886968702,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": -0.20275576478189794,
+          "ratio_to_A": 0.9998907051024505
+        },
+        "13": {
+          "count": 2168390,
+          "rate": 0.3763622452982273,
+          "expected": 2168425.643019788,
+          "discrepancy": -35.643019787967205,
+          "discrepancy_vs_li": -318.0539937852882,
+          "binomial_scale": 1162.883779379155,
+          "binomial_z": -0.030650543433494656,
+          "ratio_to_A": 1.0064350695761028
+        },
+        "14": {
+          "count": 2154482,
+          "rate": 0.3739482671358083,
+          "expected": 2154525.478641456,
+          "discrepancy": -43.478641455993056,
+          "discrepancy_vs_li": -324.0792886968702,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": -0.03743670825336946,
+          "ratio_to_A": 0.99997981985273
+        },
+        "15": {
+          "count": 2154711,
+          "rate": 0.37398801411590565,
+          "expected": 2154525.478641456,
+          "discrepancy": 185.52135854400694,
+          "discrepancy_vs_li": -95.07928869687021,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": 0.15974070812701086,
+          "ratio_to_A": 1.0000861077580112
+        },
+        "16": {
+          "count": 0,
+          "rate": 0.0,
+          "expected": 0.0,
+          "discrepancy": 0.0,
+          "discrepancy_vs_li": 0.0,
+          "binomial_scale": 0.0,
+          "binomial_z": null,
+          "ratio_to_A": 0.0
+        },
+        "17": {
+          "count": 2162256,
+          "rate": 0.3752975816479341,
+          "expected": 2162475.757160428,
+          "discrepancy": -219.75716042798012,
+          "discrepancy_vs_li": -501.3932344117202,
+          "binomial_scale": 1162.248403919248,
+          "binomial_z": -0.18907933939675142,
+          "ratio_to_A": 1.003588038960402
+        },
+        "19": {
+          "count": 2154280,
+          "rate": 0.3739132064808753,
+          "expected": 2154525.478641456,
+          "discrepancy": -245.47864145599306,
+          "discrepancy_vs_li": -526.0792886968702,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": -0.21136613230942547,
+          "ratio_to_A": 0.9998860637092067
+        },
+        "23": {
+          "count": 2155668,
+          "rate": 0.3741541183078409,
+          "expected": 2154525.478641456,
+          "discrepancy": 1142.521358544007,
+          "discrepancy_vs_li": 861.9207113031298,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": 0.983752880511395,
+          "ratio_to_A": 1.0005302890914358
+        },
+        "29": {
+          "count": 2157549,
+          "rate": 0.3744805989609549,
+          "expected": 2157182.1068518646,
+          "discrepancy": 366.89314813539386,
+          "discrepancy_vs_li": 85.94650749443099,
+          "binomial_scale": 1161.6783678849995,
+          "binomial_z": 0.3158302317390785,
+          "ratio_to_A": 1.0014033351605804
+        },
+        "31": {
+          "count": 2155257,
+          "rate": 0.37408278202478407,
+          "expected": 2154525.478641456,
+          "discrepancy": 731.521358544007,
+          "discrepancy_vs_li": 450.9207113031298,
+          "binomial_scale": 1161.3906105668302,
+          "binomial_z": 0.6298667751300137,
+          "ratio_to_A": 1.0003395278291187
+        }
+      },
+      "both_2_and_3": 848750,
+      "any_of_2_3_5": 4261384
+    }
+  ],
+  "hooley_corrections": {
+    "5": {
+      "count": 2268685,
+      "ratio_to_A": 1.0529859231140435,
+      "hooley_ratio": 1.0526315789473684,
+      "z_against_A": 98.29554356636922,
+      "z_against_hooley": 0.6510237181552854
+    },
+    "13": {
+      "count": 2168390,
+      "ratio_to_A": 1.0064350695761028,
+      "hooley_ratio": 1.0064516129032257,
+      "z_against_A": 11.937862449031911,
+      "z_against_hooley": -0.030650543433494656
+    },
+    "17": {
+      "count": 2162256,
+      "ratio_to_A": 1.003588038960402,
+      "hooley_ratio": 1.003690036900369,
+      "z_against_A": 6.656263007646528,
+      "z_against_hooley": -0.18907933939675142
+    },
+    "29": {
+      "count": 2157549,
+      "ratio_to_A": 1.0014033351605804,
+      "hooley_ratio": 1.0012330456226881,
+      "z_against_A": 2.6033630124393223,
+      "z_against_hooley": 0.3158302317390785
+    }
+  },
+  "index_law": {
+    "2": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2154727,
+        1615894,
+        382930,
+        269034,
+        109132,
+        287199,
+        51242,
+        202656,
+        42638,
+        81675,
+        19493,
+        47889
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2804668602143997,
+        0.06648103353230214,
+        0.04674447670239995,
+        0.018894609530233246,
+        0.049860775149226606,
+        0.00893473322733777,
+        0.03505835752679996,
+        0.007386781503589126,
+        0.014170957147674934,
+        0.003402433667018269,
+        0.008310129191537768
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        0.17351729617105488,
+        -0.00010106931117156308,
+        -0.16180157336665021,
+        -0.5559400609844609,
+        0.8315751887282358,
+        -0.13602218061695773,
+        -1.0402694545632918,
+        1.515889552633846,
+        0.3866615282347611,
+        0.10512338697002636,
+        -0.7865021326747484,
+        0.04890327488622234
+      ],
+      "max_abs_binomial_z": 1.515889552633846,
+      "density_sum_t_le_20000": 0.9999437555159993
+    },
+    "3": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2154027,
+        1723745,
+        383477,
+        323312,
+        109234,
+        191266,
+        51571,
+        80667,
+        42541,
+        87137,
+        19673,
+        143412
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2991646508953597,
+        0.06648103353230214,
+        0.05609337204287994,
+        0.018894609530233246,
+        0.03324051676615107,
+        0.00893473322733777,
+        0.014023343010719985,
+        0.007386781503589126,
+        0.015115687624186597,
+        0.003402433667018269,
+        0.024930387574613303
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        -0.42920843075587184,
+        0.11338321948313555,
+        0.7529669230526388,
+        0.2411277471925014,
+        1.1436852059623088,
+        -0.5749082944732814,
+        0.41632382717573196,
+        -0.452464656788327,
+        -0.08528023205819914,
+        0.16666961337231492,
+        0.5013087415160584,
+        -0.5959625968219203
+      ],
+      "max_abs_binomial_z": 1.1436852059623088,
+      "density_sum_t_le_20000": 0.999945835314068
+    },
+    "4": {
+      "note": "perfect square: ord_p(b) divides (p \u2212 1)/2, so the index is always even",
+      "full_period_count": 0,
+      "index_always_even": true
+    },
+    "5": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2268685,
+        1530577,
+        403014,
+        382908,
+        0,
+        272495,
+        54132,
+        95834,
+        44769,
+        164020,
+        20661,
+        68323
+      ],
+      "densities": [
+        0.3936376985465259,
+        0.265705446518905,
+        0.06998003529716015,
+        0.06642636162972625,
+        0.0,
+        0.0472365238255831,
+        0.009404982344566075,
+        0.01660659040743156,
+        0.007775559477462239,
+        0.02834191429534987,
+        0.0035815091231771253,
+        0.011809130956395774
+      ],
+      "zero_density_t": [
+        5
+      ],
+      "binomial_z": [
+        0.6510237181552854,
+        -0.25470889640850997,
+        -0.28097462810244905,
+        0.32830044224344823,
+        null,
+        0.6763673436018127,
+        -0.23428252564325702,
+        0.5087684833340632,
+        -0.13968706340455092,
+        1.83179285293284,
+        0.1836648803477571,
+        1.1004944290675651
+      ],
+      "max_abs_binomial_z": 1.83179285293284,
+      "density_sum_t_le_20000": 0.9999450033606471
+    },
+    "6": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2154460,
+        1616227,
+        382982,
+        430852,
+        109077,
+        287410,
+        51336,
+        80467,
+        42825,
+        81835,
+        19759,
+        47645
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2804668602143997,
+        0.06648103353230214,
+        0.07479116272383993,
+        0.018894609530233246,
+        0.049860775149226606,
+        0.00893473322733777,
+        0.014023343010719985,
+        0.007386781503589126,
+        0.014170957147674934,
+        0.003402433667018269,
+        0.008310129191537768
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        -0.05637951681393002,
+        0.30872388375260207,
+        -0.07484003440174523,
+        -0.0840908768497653,
+        0.6632805715922159,
+        0.26784972734257556,
+        -0.6240999454949993,
+        -1.1610713139638242,
+        1.2964873960160348,
+        0.6690906741619965,
+        1.1165961591849995,
+        -1.0708757478469897
+      ],
+      "max_abs_binomial_z": 1.2964873960160348,
+      "density_sum_t_le_20000": 0.9999479203624884
+    },
+    "7": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2155993,
+        1628554,
+        382502,
+        393990,
+        108676,
+        289175,
+        51169,
+        98353,
+        42787,
+        82247,
+        19508,
+        70023
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.28274707859012654,
+        0.06648103353230214,
+        0.06840655127180481,
+        0.018894609530233246,
+        0.05026614730491138,
+        0.00893473322733777,
+        0.017101637817951203,
+        0.007386781503589126,
+        0.014286168181395869,
+        0.003402433667018269,
+        0.012161164670543075
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        1.2635898251560396,
+        -0.44170834521488583,
+        -0.8775619325393297,
+        -0.2153925362009748,
+        -0.5637401824358561,
+        -0.8210362363185927,
+        -1.3634649243716466,
+        -0.5691802875508825,
+        1.1116029950765247,
+        -0.2175194390564788,
+        -0.6791845598255145,
+        -0.16294810655163486
+      ],
+      "max_abs_binomial_z": 1.3634649243716466,
+      "density_sum_t_le_20000": 0.9999482184030898
+    },
+    "9": {
+      "note": "perfect square: ord_p(b) divides (p \u2212 1)/2, so the index is always even",
+      "full_period_count": 0,
+      "index_always_even": true
+    },
+    "10": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2155283,
+        1614834,
+        383186,
+        411358,
+        108664,
+        287597,
+        51138,
+        95559,
+        42430,
+        81826,
+        19895,
+        73177
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2804668602143997,
+        0.06648103353230214,
+        0.07134683286155782,
+        0.018894609530233246,
+        0.049860775149226606,
+        0.00893473322733777,
+        0.01660659040743156,
+        0.007386781503589126,
+        0.014170957147674934,
+        0.003402433667018269,
+        0.012683881397610277
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        0.6522537307015852,
+        -0.9831474664511116,
+        0.2663167723067282,
+        0.4810554659444074,
+        -0.6004590079928058,
+        0.6257835983778017,
+        -1.500712315660126,
+        -0.3877580297469658,
+        -0.6253372979604526,
+        0.6373675142574482,
+        2.0896088196847202,
+        0.3705303345266831
+      ],
+      "max_abs_binomial_z": 2.0896088196847202,
+      "density_sum_t_le_20000": 0.9999487541568887
+    },
+    "11": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2155229,
+        1620755,
+        382735,
+        400395,
+        108803,
+        288024,
+        51045,
+        99894,
+        42998,
+        82022,
+        19553,
+        71121
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2813245570346272,
+        0.06648103353230214,
+        0.06947344243842929,
+        0.018894609530233246,
+        0.05001325458393372,
+        0.00893473322733777,
+        0.017368360609607322,
+        0.007386781503589126,
+        0.014214293408065378,
+        0.003402433667018269,
+        0.012350834211276316
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        0.6057577460529366,
+        -0.07475432826424973,
+        -0.4879073444850439,
+        0.20916442832465726,
+        -0.17513261195813754,
+        -0.23808439002855802,
+        -1.9124544895255644,
+        -0.5511836441406259,
+        2.1381979581880155,
+        0.4474846181589676,
+        -0.3572318412778128,
+        -0.14198110129906932
+      ],
+      "max_abs_binomial_z": 2.1381979581880155,
+      "density_sum_t_le_20000": 0.9999488643078529
+    },
+    "12": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2154290,
+        1723618,
+        383260,
+        323615,
+        108934,
+        191793,
+        51699,
+        80773,
+        42842,
+        87212,
+        19691,
+        143728
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2991646508953597,
+        0.06648103353230214,
+        0.05609337204287994,
+        0.018894609530233246,
+        0.03324051676615107,
+        0.00893473322733777,
+        0.014023343010719985,
+        0.007386781503589126,
+        0.015115687624186597,
+        0.003402433667018269,
+        0.024930387574613303
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        -0.20275576478189794,
+        -0.0021681004847307387,
+        0.3900697316029391,
+        0.789728834492867,
+        0.2257145670385643,
+        0.64985408784809,
+        0.9830227331410665,
+        -0.07690312848531335,
+        1.3791988385416052,
+        0.4227574944887002,
+        0.6300898289351391,
+        0.24841963115932192
+      ],
+      "max_abs_binomial_z": 1.3791988385416052,
+      "density_sum_t_le_20000": 0.999945835314068
+    },
+    "13": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2168390,
+        1605136,
+        386128,
+        401492,
+        109857,
+        285471,
+        52001,
+        100602,
+        42722,
+        81064,
+        19700,
+        71477
+      ],
+      "densities": [
+        0.3763684317715815,
+        0.27865739660011324,
+        0.06690994342605892,
+        0.06966434915002831,
+        0.019016510236879912,
+        0.049539092728909016,
+        0.008992376667514143,
+        0.017416087287507077,
+        0.007434438158450992,
+        0.014079531617689935,
+        0.003424384851966774,
+        0.012384773182227254
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        -0.030650543433494656,
+        -0.309423880357831,
+        1.050611488004337,
+        0.20415602716253306,
+        0.898124697112592,
+        0.10423761531066202,
+        0.8470148928393626,
+        0.8286328127510656,
+        -0.5388169805583319,
+        -0.19247806590765545,
+        -0.2096806120996489,
+        0.46267454743539527
+      ],
+      "max_abs_binomial_z": 1.050611488004337,
+      "density_sum_t_le_20000": 0.9999480805107211
+    },
+    "14": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2154482,
+        1617143,
+        382964,
+        407354,
+        109029,
+        286960,
+        51296,
+        98238,
+        42529,
+        81381,
+        19771,
+        72264
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2804668602143997,
+        0.06648103353230214,
+        0.07068676964753164,
+        0.018894609530233246,
+        0.049860775149226606,
+        0.00893473322733777,
+        0.017101637817951203,
+        0.007386781503589126,
+        0.014170957147674934,
+        0.003402433667018269,
+        0.012566536826227845
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        -0.03743670825336946,
+        1.1582243552433427,
+        -0.10494210558190466,
+        0.1562666635877279,
+        0.5164052693644168,
+        -0.5934884649881826,
+        -0.8011933536091663,
+        -0.9387182074334703,
+        -0.1436647797233076,
+        -0.9311665032452189,
+        1.2024502174643867,
+        -0.5138704454951942
+      ],
+      "max_abs_binomial_z": 1.2024502174643867,
+      "density_sum_t_le_20000": 0.9999491124271799
+    },
+    "15": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2154711,
+        1610794,
+        382642,
+        408091,
+        108871,
+        292522,
+        51322,
+        102070,
+        42662,
+        87153,
+        19488,
+        67952
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2794827659680334,
+        0.06648103353230214,
+        0.07085478573837466,
+        0.018894609530233246,
+        0.05073552559044111,
+        0.00893473322733777,
+        0.017713696434593664,
+        0.007386781503589126,
+        0.015115687624186597,
+        0.003402433667018269,
+        0.011809130956395774
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        0.15974070812701086,
+        0.5289041368074804,
+        -0.6434347122492009,
+        -0.21900600344694032,
+        0.032940732864577923,
+        0.40266770508864425,
+        -0.6860826383349578,
+        0.0427323884655714,
+        0.503430623564978,
+        0.22130169467714378,
+        -0.8222746569578264,
+        -0.3303053006514069
+      ],
+      "max_abs_binomial_z": 0.8222746569578264,
+      "density_sum_t_le_20000": 0.9999491709692975
+    },
+    "16": {
+      "note": "perfect square: ord_p(b) divides (p \u2212 1)/2, so the index is always even",
+      "full_period_count": 0,
+      "index_always_even": true
+    },
+    "17": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2162256,
+        1610131,
+        384326,
+        402185,
+        109359,
+        286314,
+        51778,
+        100467,
+        42961,
+        81263,
+        19678,
+        71396
+      ],
+      "densities": [
+        0.37533572437056195,
+        0.27943192715087795,
+        0.06672635099921101,
+        0.06985798178771949,
+        0.01896433133661787,
+        0.049676787049044956,
+        0.0089677027226416,
+        0.01746449544692987,
+        0.007414038999912334,
+        0.014118665792886466,
+        0.003414988772800624,
+        0.012419196762261239
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        -0.18907933939675142,
+        0.18531865687331747,
+        -0.19054540617933616,
+        -0.48679859522882285,
+        0.29647958790099244,
+        0.1993626548356289,
+        0.4909047626338511,
+        -0.48886774252872167,
+        1.191926764710973,
+        -0.2856841556327287,
+        0.019520442355837823,
+        -0.5887543202420836
+      ],
+      "max_abs_binomial_z": 1.191926764710973,
+      "density_sum_t_le_20000": 0.9999485343268792
+    },
+    "19": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2154280,
+        1617327,
+        383353,
+        403111,
+        108758,
+        287124,
+        51820,
+        100737,
+        42455,
+        81940,
+        19773,
+        71629
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.2807410213680795,
+        0.06648103353230214,
+        0.0699110941883401,
+        0.018894609530233246,
+        0.049909514909880784,
+        0.00893473322733777,
+        0.017477773547085025,
+        0.007386781503589126,
+        0.014184809500702965,
+        0.003402433667018269,
+        0.012428638966816017
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        -0.21136613230942547,
+        -0.13598445317385627,
+        0.5455970993670961,
+        0.5263220848269328,
+        -0.31282820779669923,
+        -0.8166972890978179,
+        1.5187302926864217,
+        0.1264897757113471,
+        -0.5037028236581432,
+        0.757517010358021,
+        1.2167592271776178,
+        0.08307781345658115
+      ],
+      "max_abs_binomial_z": 1.5187302926864217,
+      "density_sum_t_le_20000": 0.9999493450538837
+    },
+    "23": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2155668,
+        1618042,
+        382564,
+        402802,
+        108659,
+        287473,
+        51160,
+        100774,
+        42457,
+        81354,
+        19752,
+        71825
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.28065198685480525,
+        0.06648103353230214,
+        0.06997787007329577,
+        0.018894609530233246,
+        0.04989368655196537,
+        0.00893473322733777,
+        0.017494467518323942,
+        0.007386781503589126,
+        0.01418031091476911,
+        0.003402433667018269,
+        0.01244051023525258
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        0.983752880511395,
+        1.0025929240795175,
+        -0.7738770206965584,
+        -0.6068191349003198,
+        -0.615758518641535,
+        0.02548568476834056,
+        -1.4033109411973341,
+        -0.061631732824964244,
+        -0.49397206571395846,
+        -1.2158960139677266,
+        1.0665146251886903,
+        0.5626606509739865
+      ],
+      "max_abs_binomial_z": 1.4033109411973341,
+      "density_sum_t_le_20000": 0.9999494607286296
+    },
+    "29": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2157549,
+        1614115,
+        383783,
+        403083,
+        109207,
+        286685,
+        51454,
+        101223,
+        42647,
+        81466,
+        19742,
+        71470
+      ],
+      "densities": [
+        0.3744169181982615,
+        0.2801210317801033,
+        0.06656300767969092,
+        0.07003025794502582,
+        0.0189179074458069,
+        0.04979929453868502,
+        0.008945750161033625,
+        0.017507564486256455,
+        0.00739588974218788,
+        0.014153483710994693,
+        0.003406629022957872,
+        0.012449823634671255
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        0.3158302317390785,
+        0.19794710723956752,
+        0.4746031968198529,
+        -0.6406141382896148,
+        0.6499454387668405,
+        -0.4421185876422384,
+        -0.3824590208757289,
+        1.1249706698902857,
+        0.17502429086681262,
+        -0.2768781670784063,
+        0.8215312275088223,
+        -0.9729906077288107
+      ],
+      "max_abs_binomial_z": 1.1249706698902857,
+      "density_sum_t_le_20000": 0.999949138529609
+    },
+    "31": {
+      "t": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "counts": [
+        2155257,
+        1616679,
+        383348,
+        404409,
+        108662,
+        287143,
+        51527,
+        100261,
+        42379,
+        81994,
+        19476,
+        71618
+      ],
+      "densities": [
+        0.3739558136191996,
+        0.28056749417931337,
+        0.06648103353230214,
+        0.07004123957991468,
+        0.018894609530233246,
+        0.04987866563187793,
+        0.00893473322733777,
+        0.01751030989497867,
+        0.007386781503589126,
+        0.014176041811165309,
+        0.003402433667018269,
+        0.012451775925318162
+      ],
+      "zero_density_t": [],
+      "binomial_z": [
+        0.6298667751300137,
+        0.19018388586732693,
+        0.5372354129281629,
+        1.420707813302058,
+        -0.6065788122522975,
+        -0.44043039747910784,
+        0.22152107825014825,
+        -1.9809712959408616,
+        -0.8734716255371636,
+        1.1260751662046924,
+        -0.9081287152372135,
+        -0.4591400535870914
+      ],
+      "max_abs_binomial_z": 1.9809712959408616,
+      "density_sum_t_le_20000": 0.9999496000712402
+    }
+  },
+  "local_rates": {
+    "bases": [
+      2,
+      3,
+      5,
+      6,
+      7,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      17,
+      19,
+      23,
+      29,
+      31
+    ],
+    "q": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13,
+      17,
+      19,
+      23,
+      29,
+      31,
+      37,
+      41,
+      43,
+      47,
+      53,
+      59,
+      61,
+      67,
+      71,
+      73,
+      79,
+      83,
+      89,
+      97,
+      101,
+      103,
+      107,
+      109,
+      113,
+      127,
+      131,
+      137,
+      139,
+      149,
+      151,
+      157,
+      163,
+      167,
+      173,
+      179,
+      181,
+      191,
+      193,
+      197,
+      199,
+      211,
+      223,
+      227,
+      229,
+      233,
+      239,
+      241,
+      251,
+      257,
+      263,
+      269,
+      271,
+      277,
+      281,
+      283,
+      293,
+      307,
+      311,
+      313,
+      317,
+      331,
+      337,
+      347,
+      349,
+      353,
+      359,
+      367,
+      373,
+      379,
+      383,
+      389,
+      397,
+      401
+    ],
+    "rates": [
+      0.4999391537086883,
+      0.16659717815533745,
+      0.049964383928751195,
+      0.023776298528632753,
+      0.009090158213808899,
+      0.006403440266016644,
+      0.0036809673928966417,
+      0.002922661402245687,
+      0.0019795710068517547,
+      0.00123064851450435,
+      0.0010760540239564942,
+      0.0007536630573863081,
+      0.000610827771648913,
+      0.0005538759033325673,
+      0.00046362075201980616,
+      0.0003612375647493927,
+      0.0002926132754219255,
+      0.0002711993729349795,
+      0.000224715800413924,
+      0.00020054651229795863,
+      0.0001916728688155261,
+      0.00016358746175437964,
+      0.00014662122898356731,
+      0.00012881970214411527,
+      0.00010738410370733448,
+      9.968204151598107e-05,
+      9.386752696025511e-05,
+      8.812894822895093e-05,
+      8.522169095108796e-05,
+      7.874544992540064e-05,
+      6.378609251430717e-05,
+      5.82210813816814e-05,
+      5.376256369063034e-05,
+      5.110480983586754e-05,
+      4.6874099618081856e-05,
+      4.5876085925681134e-05,
+      4.1341632410208276e-05,
+      3.8260807533666905e-05,
+      3.70241383930834e-05,
+      3.2207637529758164e-05,
+      3.1686934733723e-05,
+      3.055874534231349e-05,
+      2.7597248189863515e-05,
+      2.7195873117919744e-05,
+      2.604598777667543e-05,
+      2.5601220805062064e-05,
+      2.2834987201125275e-05,
+      1.9526354851318525e-05,
+      1.9743314349666506e-05,
+      1.8973108130531167e-05,
+      1.8734452682348384e-05,
+      1.796424646321304e-05,
+      1.760626329093887e-05,
+      1.562108388105482e-05,
+      1.559938793122002e-05,
+      1.3831168019683954e-05,
+      1.3429792947740185e-05,
+      1.3842015994601354e-05,
+      1.2952482051374621e-05,
+      1.244262723025686e-05,
+      1.175920481046071e-05,
+      1.0772039092977385e-05,
+      1.0999846566242769e-05,
+      1.0424903895620611e-05,
+      1.0761191118059986e-05,
+      1.0544231619712003e-05,
+      8.949579306854323e-06,
+      8.819403607845533e-06,
+      7.745454091023014e-06,
+      8.374636636232167e-06,
+      8.190221062636381e-06,
+      7.604430417096825e-06,
+      7.387470918748841e-06,
+      7.843085865279607e-06,
+      6.975247871887673e-06,
+      6.8667681227136806e-06,
+      6.769136348457088e-06,
+      6.411153176182915e-06,
+      6.194193677834932e-06
+    ],
+    "pairs": 92183104
+  },
+  "references": {
+    "hooley": "C. Hooley, On Artin's conjecture, J. reine angew. Math. 225 (1967) 209\u2013220 (assumes GRH for Q(\u03b6_n, b^{1/n}))",
+    "survey": "P. Moree, Artin's primitive root conjecture \u2013 a survey, Integers 12A (2012), arXiv:math/0412262",
+    "heath_brown": "D. R. Heath-Brown, Artin's conjecture for primitive roots, Quart. J. Math. Oxford 37 (1986) 27\u201338"
+  },
+  "formulas": {
+    "split": {
+      "train_end": 1000000,
+      "val_end": 2000000,
+      "test_end": 9999991
+    },
+    "settings": {
+      "split_at": [
+        1000000,
+        2000000
+      ],
+      "domain_limit": 10000000,
+      "kummer_check_max": 100000,
+      "seed_offsets": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "population": 160,
+      "generations": 100,
+      "initial_instructions": 8,
+      "max_instructions": 24,
+      "max_effective_instructions": 12,
+      "workers": 6
+    },
+    "guide": "GFSLPolicyGuide",
+    "fitness": "1/(1+NMSE) minus instruction parsimony",
+    "targets": {
+      "artin_criterion": {
+        "baseline": {
+          "train_rows": 78487,
+          "val_rows": 70435,
+          "test_rows": 515646,
+          "test_positives": 193031,
+          "train_rate": 0.37579471759654465,
+          "test_rate": 0.3743479053459156,
+          "constant_mse": 0.2342136443747296,
+          "majority_accuracy": 0.6256520946540844
+        },
+        "selected_seed": 0,
+        "signature": "786695051ba023097463e01c376aecfa",
+        "generation": 85,
+        "eval_size": 78487,
+        "train_fitness": 0.992,
+        "train_nmse": 0.0,
+        "val": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "test": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "effective_instructions": 4,
+        "expression": "([5 \u2224 I_10] * ((([2 \u2224 I_10] * [no prime q \u2265 11 divides I_10]) * [7 \u2224 I_10]) * [3 \u2224 I_10]))",
+        "instructions": [
+          "\u2713 d$0 = MUL(d$0, d$4)",
+          "\u2713 d$0 = MUL(d$0, d$3)",
+          "\u2713 d$0 = MUL(d$0, d$1)",
+          "\u2713 d$6 = MUL(d$2, d$0)"
+        ],
+        "program": {
+          "inputs": [
+            "2 \u2224 I_10",
+            "3 \u2224 I_10",
+            "5 \u2224 I_10",
+            "7 \u2224 I_10",
+            "no prime q \u2265 11 divides I_10",
+            "p \u2261 1 mod 4"
+          ],
+          "slots": [
+            [
+              1,
+              131072,
+              32,
+              1,
+              131072,
+              1,
+              131076
+            ],
+            [
+              1,
+              131072,
+              32,
+              1,
+              131072,
+              1,
+              131075
+            ],
+            [
+              1,
+              131072,
+              32,
+              1,
+              131072,
+              1,
+              131073
+            ],
+            [
+              1,
+              131078,
+              31,
+              1,
+              131073,
+              3,
+              1
+            ],
+            [
+              1,
+              131078,
+              32,
+              1,
+              131074,
+              1,
+              131072
+            ],
+            [
+              1,
+              131077,
+              30,
+              3,
+              2,
+              3,
+              7
+            ],
+            [
+              1,
+              131078,
+              32,
+              1,
+              131074,
+              1,
+              131072
+            ],
+            [
+              1,
+              131075,
+              32,
+              3,
+              6,
+              3,
+              0
+            ],
+            [
+              1,
+              131074,
+              30,
+              1,
+              131073,
+              1,
+              131076
+            ],
+            [
+              1,
+              131077,
+              30,
+              1,
+              131076,
+              3,
+              2
+            ],
+            [
+              1,
+              131077,
+              30,
+              1,
+              131075,
+              1,
+              131073
+            ]
+          ],
+          "output_index": 6
+        },
+        "shuffled_test_mse": 0.46855231108163353,
+        "audit": {
+          "rows": 64,
+          "exact": 64,
+          "classification_correct": 64
+        },
+        "runs": [
+          {
+            "seed": 0,
+            "expression": "([5 \u2224 I_10] * ((([2 \u2224 I_10] * [no prime q \u2265 11 divides I_10]) * [7 \u2224 I_10]) * [3 \u2224 I_10]))",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 64,
+              "exact": 64,
+              "classification_correct": 64
+            },
+            "evaluations": 14592,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                20000
+              ],
+              [
+                3,
+                25000
+              ],
+              [
+                4,
+                30000
+              ],
+              [
+                5,
+                40000
+              ],
+              [
+                6,
+                50000
+              ],
+              [
+                7,
+                55000
+              ],
+              [
+                10,
+                60000
+              ],
+              [
+                20,
+                65000
+              ],
+              [
+                21,
+                70000
+              ],
+              [
+                22,
+                75000
+              ],
+              [
+                23,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_criterion_s0.pt"
+          },
+          {
+            "seed": 1,
+            "expression": "(([7 \u2224 I_10] - 0) * (([3 \u2224 I_10] + 0) * ([no prime q \u2265 11 divides I_10] * ([5 \u2224 I_10] * [2 \u2224 I_10]))))",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 64,
+              "exact": 64,
+              "classification_correct": 64
+            },
+            "evaluations": 14560,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                10000
+              ],
+              [
+                3,
+                20000
+              ],
+              [
+                4,
+                35000
+              ],
+              [
+                5,
+                55000
+              ],
+              [
+                6,
+                60000
+              ],
+              [
+                8,
+                65000
+              ],
+              [
+                11,
+                70000
+              ],
+              [
+                12,
+                75000
+              ],
+              [
+                13,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_criterion_s1.pt"
+          },
+          {
+            "seed": 2,
+            "expression": "([3 \u2224 I_10] * (([7 \u2224 I_10] * [5 \u2224 I_10]) * ([no prime q \u2265 11 divides I_10] * [2 \u2224 I_10])))",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 64,
+              "exact": 64,
+              "classification_correct": 64
+            },
+            "evaluations": 14592,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                10000
+              ],
+              [
+                3,
+                25000
+              ],
+              [
+                4,
+                30000
+              ],
+              [
+                7,
+                35000
+              ],
+              [
+                8,
+                40000
+              ],
+              [
+                9,
+                50000
+              ],
+              [
+                10,
+                55000
+              ],
+              [
+                11,
+                65000
+              ],
+              [
+                14,
+                70000
+              ],
+              [
+                23,
+                75000
+              ],
+              [
+                28,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_criterion_s2.pt"
+          },
+          {
+            "seed": 3,
+            "expression": "((([5 \u2224 I_10] * [no prime q \u2265 11 divides I_10]) * [3 \u2224 I_10]) * ([2 \u2224 I_10] * [7 \u2224 I_10]))",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 64,
+              "exact": 64,
+              "classification_correct": 64
+            },
+            "evaluations": 14592,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                20000
+              ],
+              [
+                3,
+                30000
+              ],
+              [
+                4,
+                35000
+              ],
+              [
+                5,
+                40000
+              ],
+              [
+                6,
+                45000
+              ],
+              [
+                7,
+                55000
+              ],
+              [
+                8,
+                60000
+              ],
+              [
+                9,
+                65000
+              ],
+              [
+                11,
+                70000
+              ],
+              [
+                25,
+                75000
+              ],
+              [
+                26,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_criterion_s3.pt"
+          }
+        ]
+      },
+      "lehmer_nesting": {
+        "baseline": {
+          "train_rows": 78487,
+          "val_rows": 70435,
+          "test_rows": 515646,
+          "test_positives": 25736,
+          "train_rate": 0.049396715379617005,
+          "test_rate": 0.04991020971751938,
+          "constant_mse": 0.047419444359907685,
+          "majority_accuracy": 0.9500897902824806
+        },
+        "selected_seed": 0,
+        "signature": "73d77041796c5fff9f382c5e98a70aa1",
+        "generation": 0,
+        "eval_size": 5000,
+        "train_fitness": 0.998,
+        "train_nmse": 0.0,
+        "val": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "test": {
+          "mse": 0.0,
+          "nmse": 0.0,
+          "nonfinite_rows": 0,
+          "accuracy": 1.0,
+          "f1": 1.0
+        },
+        "effective_instructions": 1,
+        "expression": "abs([5 divides I_5])",
+        "instructions": [
+          "\u2713 d$3 = ABS(d$1)"
+        ],
+        "program": {
+          "inputs": [
+            "2 divides I_5",
+            "5 divides I_5",
+            "p \u2261 1 mod 3"
+          ],
+          "slots": [
+            [
+              1,
+              131072,
+              36,
+              1,
+              131072,
+              0,
+              0
+            ],
+            [
+              1,
+              131072,
+              30,
+              3,
+              0,
+              3,
+              1
+            ],
+            [
+              1,
+              131074,
+              30,
+              3,
+              5,
+              1,
+              131072
+            ],
+            [
+              1,
+              131074,
+              36,
+              1,
+              131074,
+              0,
+              0
+            ],
+            [
+              1,
+              131074,
+              36,
+              1,
+              131072,
+              0,
+              0
+            ],
+            [
+              1,
+              131075,
+              36,
+              1,
+              131073,
+              0,
+              0
+            ],
+            [
+              1,
+              131074,
+              31,
+              1,
+              131072,
+              3,
+              7
+            ]
+          ],
+          "output_index": 3
+        },
+        "shuffled_test_mse": 0.09489213530212587,
+        "audit": {
+          "rows": 6,
+          "exact": 6,
+          "classification_correct": 6
+        },
+        "runs": [
+          {
+            "seed": 0,
+            "expression": "abs([5 divides I_5])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 6,
+              "exact": 6,
+              "classification_correct": 6
+            },
+            "evaluations": 14464,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                50000
+              ],
+              [
+                3,
+                75000
+              ],
+              [
+                4,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_lehmer_nesting_s0.pt"
+          },
+          {
+            "seed": 1,
+            "expression": "abs([5 divides I_5])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 6,
+              "exact": 6,
+              "classification_correct": 6
+            },
+            "evaluations": 14480,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                45000
+              ],
+              [
+                3,
+                65000
+              ],
+              [
+                4,
+                70000
+              ],
+              [
+                5,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_lehmer_nesting_s1.pt"
+          },
+          {
+            "seed": 2,
+            "expression": "abs([5 divides I_5])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 6,
+              "exact": 6,
+              "classification_correct": 6
+            },
+            "evaluations": 14464,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                40000
+              ],
+              [
+                3,
+                75000
+              ],
+              [
+                4,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_lehmer_nesting_s2.pt"
+          },
+          {
+            "seed": 3,
+            "expression": "abs([5 divides I_5])",
+            "validation": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "held_out": {
+              "mse": 0.0,
+              "nmse": 0.0,
+              "nonfinite_rows": 0,
+              "accuracy": 1.0,
+              "f1": 1.0
+            },
+            "audit": {
+              "rows": 6,
+              "exact": 6,
+              "classification_correct": 6
+            },
+            "evaluations": 14448,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                70000
+              ],
+              [
+                3,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_lehmer_nesting_s3.pt"
+          }
+        ]
+      },
+      "artin_congruence_only": {
+        "baseline": {
+          "train_rows": 78487,
+          "val_rows": 70435,
+          "test_rows": 515646,
+          "test_positives": 193031,
+          "train_rate": 0.37579471759654465,
+          "test_rate": 0.3743479053459156,
+          "constant_mse": 0.2342136443747296,
+          "majority_accuracy": 0.6256520946540844,
+          "mod_840_lookup": {
+            "test_mse": 0.08001985177826498,
+            "test_accuracy": 0.8749413357225694,
+            "test_f1": 0.8544570634118157,
+            "test_residue_classes": 192,
+            "test_classes_with_both_labels": 96,
+            "test_errors_unavoidable_by_residue": 64411
+          }
+        },
+        "selected_seed": 3,
+        "signature": "57c2eb9fae40c3dc85fbb233a9f9585f",
+        "generation": 37,
+        "eval_size": 40000,
+        "train_fitness": 0.7218010071032902,
+        "train_nmse": 0.3664916969140694,
+        "val": {
+          "mse": 0.08633870430307496,
+          "nmse": 0.3680674532062789,
+          "nonfinite_rows": 0,
+          "accuracy": 0.8261659686235536,
+          "f1": 0.721992643385859
+        },
+        "test": {
+          "mse": 0.08687064076904152,
+          "nmse": 0.3703351325961454,
+          "nonfinite_rows": 0,
+          "accuracy": 0.8246355057539475,
+          "f1": 0.7192959582790092
+        },
+        "effective_instructions": 5,
+        "expression": "([(10/p) = \u22121] / ((2 % (0.5 / 3.14159)) + (1 + [p \u2261 1 mod 3])))",
+        "instructions": [
+          "\u2713 d$2 = ADD(1.0, d$1)",
+          "\u2713 d$4 = DIV(0.5, 3.14159)",
+          "\u2713 d$3 = MOD(2.0, d$4)",
+          "\u2713 d$2 = ADD(d$3, d$2)",
+          "\u2713 d$5 = DIV(d$0, d$2)"
+        ],
+        "program": {
+          "inputs": [
+            "(10/p) = \u22121",
+            "p \u2261 1 mod 3",
+            "p \u2261 1 mod 5",
+            "p \u2261 1 mod 7",
+            "p mod 840"
+          ],
+          "slots": [
+            [
+              1,
+              131074,
+              33,
+              1,
+              131073,
+              1,
+              131072
+            ],
+            [
+              1,
+              131074,
+              30,
+              3,
+              1,
+              1,
+              131073
+            ],
+            [
+              1,
+              131075,
+              33,
+              3,
+              1,
+              3,
+              0
+            ],
+            [
+              1,
+              131077,
+              30,
+              1,
+              131072,
+              1,
+              131075
+            ],
+            [
+              1,
+              131076,
+              33,
+              3,
+              4,
+              3,
+              5
+            ],
+            [
+              1,
+              131077,
+              33,
+              1,
+              131072,
+              1,
+              131074
+            ],
+            [
+              1,
+              131075,
+              41,
+              3,
+              3,
+              1,
+              131076
+            ],
+            [
+              1,
+              131076,
+              33,
+              3,
+              7,
+              3,
+              7
+            ],
+            [
+              1,
+              131074,
+              30,
+              1,
+              131075,
+              1,
+              131074
+            ],
+            [
+              1,
+              131077,
+              33,
+              1,
+              131072,
+              1,
+              131074
+            ]
+          ],
+          "output_index": 5
+        },
+        "shuffled_test_mse": 0.3808955090033382,
+        "runs": [
+          {
+            "seed": 0,
+            "expression": "((([(10/p) = \u22121] / 2.71828) * 2) % [(10/p) = \u22121])",
+            "validation": {
+              "mse": 0.09432393750591721,
+              "nmse": 0.40210901627990603,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8740114999645063,
+              "f1": 0.8558807288790723
+            },
+            "held_out": {
+              "mse": 0.09443497843999875,
+              "nmse": 0.40258239092849435,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8738378655123864,
+              "f1": 0.855791291394472
+            },
+            "audit": null,
+            "evaluations": 14624,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                15000
+              ],
+              [
+                3,
+                25000
+              ],
+              [
+                4,
+                30000
+              ],
+              [
+                9,
+                35000
+              ],
+              [
+                15,
+                40000
+              ],
+              [
+                16,
+                45000
+              ],
+              [
+                17,
+                50000
+              ],
+              [
+                18,
+                55000
+              ],
+              [
+                19,
+                60000
+              ],
+              [
+                20,
+                65000
+              ],
+              [
+                21,
+                70000
+              ],
+              [
+                22,
+                75000
+              ],
+              [
+                23,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_congruence_only_s0.pt"
+          },
+          {
+            "seed": 1,
+            "expression": "([(10/p) = \u22121] / (([p \u2261 1 mod 3] / 2) - -1))",
+            "validation": {
+              "mse": 0.08662360095596414,
+              "nmse": 0.3692819859735048,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8740114999645063,
+              "f1": 0.8558807288790723
+            },
+            "held_out": {
+              "mse": 0.08697913771161697,
+              "nmse": 0.37079766204521186,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8738378655123864,
+              "f1": 0.855791291394472
+            },
+            "audit": null,
+            "evaluations": 14624,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                15000
+              ],
+              [
+                3,
+                20000
+              ],
+              [
+                4,
+                30000
+              ],
+              [
+                6,
+                35000
+              ],
+              [
+                27,
+                40000
+              ],
+              [
+                47,
+                45000
+              ],
+              [
+                51,
+                50000
+              ],
+              [
+                52,
+                55000
+              ],
+              [
+                62,
+                60000
+              ],
+              [
+                63,
+                65000
+              ],
+              [
+                64,
+                70000
+              ],
+              [
+                65,
+                75000
+              ],
+              [
+                66,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_congruence_only_s1.pt"
+          },
+          {
+            "seed": 2,
+            "expression": "(([(10/p) = \u22121] / 0.5) / 2.71828)",
+            "validation": {
+              "mse": 0.09432393750591721,
+              "nmse": 0.40210901627990603,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8740114999645063,
+              "f1": 0.8558807288790723
+            },
+            "held_out": {
+              "mse": 0.09443497843999875,
+              "nmse": 0.40258239092849435,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8738378655123864,
+              "f1": 0.855791291394472
+            },
+            "audit": null,
+            "evaluations": 14624,
+            "final_N": 78487,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                20000
+              ],
+              [
+                3,
+                25000
+              ],
+              [
+                9,
+                30000
+              ],
+              [
+                13,
+                35000
+              ],
+              [
+                18,
+                40000
+              ],
+              [
+                19,
+                45000
+              ],
+              [
+                20,
+                50000
+              ],
+              [
+                21,
+                55000
+              ],
+              [
+                22,
+                60000
+              ],
+              [
+                23,
+                65000
+              ],
+              [
+                24,
+                70000
+              ],
+              [
+                25,
+                75000
+              ],
+              [
+                26,
+                78487
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_congruence_only_s2.pt"
+          },
+          {
+            "seed": 3,
+            "expression": "([(10/p) = \u22121] / ((2 % (0.5 / 3.14159)) + (1 + [p \u2261 1 mod 3])))",
+            "validation": {
+              "mse": 0.08633870430307496,
+              "nmse": 0.3680674532062789,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8261659686235536,
+              "f1": 0.721992643385859
+            },
+            "held_out": {
+              "mse": 0.08687064076904152,
+              "nmse": 0.3703351325961454,
+              "nonfinite_rows": 0,
+              "accuracy": 0.8246355057539475,
+              "f1": 0.7192959582790092
+            },
+            "audit": null,
+            "evaluations": 14544,
+            "final_N": 45000,
+            "N_changes": [
+              [
+                0,
+                5000
+              ],
+              [
+                2,
+                10000
+              ],
+              [
+                3,
+                15000
+              ],
+              [
+                4,
+                20000
+              ],
+              [
+                5,
+                25000
+              ],
+              [
+                6,
+                30000
+              ],
+              [
+                11,
+                35000
+              ],
+              [
+                12,
+                40000
+              ],
+              [
+                38,
+                45000
+              ]
+            ],
+            "knowledge": "knowledge/artin_artin_congruence_only_s3.pt"
+          }
+        ]
+      },
+      "kummer_degree": {
+        "baseline": {
+          "train_rows": 27,
+          "val_rows": 26,
+          "test_rows": 26,
+          "test_positives": 26,
+          "train_rate": 1.052344324761871,
+          "test_rate": 1.020545268419087,
+          "constant_mse": 0.004029305714364438,
+          "majority_accuracy": 0.0
+        },
+        "selected_seed": 1,
+        "signature": "e96d30167a8a436bf903cbc5c8fcb1f5",
+        "generation": 33,
+        "eval_size": 27,
+        "train_fitness": 0.9865616734084536,
+        "train_nmse": 0.009528257396704761,
+        "val": {
+          "mse": 0.0008409076023682254,
+          "nmse": 0.023428330531066705,
+          "nonfinite_rows": 0,
+          "max_relative_error": 0.0850546372176415,
+          "median_relative_error": 0.009016294154163274
+        },
+        "test": {
+          "mse": 0.0006038069142693547,
+          "nmse": 0.016822523574060184,
+          "nonfinite_rows": 0,
+          "max_relative_error": 0.07534431206808323,
+          "median_relative_error": 0.008342624507764462
+        },
+        "effective_instructions": 2,
+        "expression": "([q] / (-1 + [q]))",
+        "instructions": [
+          "\u2713 d$1 = ADD(-1.0, d$0)",
+          "\u2713 d$2 = DIV(d$0, d$1)"
+        ],
+        "program": {
+          "inputs": [
+            "q",
+            "1"
+          ],
+          "slots": [
+            [
+              1,
+              131073,
+              33,
+              1,
+              131073,
+              1,
+              131073
+            ],
+            [
+              1,
+              131074,
+              33,
+              3,
+              3,
+              1,
+              131073
+            ],
+            [
+              1,
+              131074,
+              33,
+              3,
+              5,
+              1,
+              131073
+            ],
+            [
+              1,
+              131073,
+              30,
+              3,
+              2,
+              1,
+              131072
+            ],
+            [
+              1,
+              131074,
+              33,
+              1,
+              131072,
+              1,
+              131073
+            ],
+            [
+              1,
+              131073,
+              32,
+              3,
+              4,
+              1,
+              131074
+            ]
+          ],
+          "output_index": 2
+        },
+        "shuffled_test_mse": 0.004860965052740786,
+        "runs": [
+          {
+            "seed": 0,
+            "expression": "(((2 / (3.14159 / 2.71828)) / [q]) - -1)",
+            "validation": {
+              "mse": 0.001272559284116023,
+              "nmse": 0.03545447733458898,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.08773804055512135,
+              "median_relative_error": 0.014579356486584372
+            },
+            "held_out": {
+              "mse": 0.0011296565845590586,
+              "nmse": 0.03147309856054356,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.07764959393958315,
+              "median_relative_error": 0.021275800726119842
+            },
+            "audit": null,
+            "evaluations": 14416,
+            "final_N": 27,
+            "N_changes": [
+              [
+                0,
+                27
+              ]
+            ],
+            "knowledge": "knowledge/artin_kummer_degree_s0.pt"
+          },
+          {
+            "seed": 1,
+            "expression": "([q] / (-1 + [q]))",
+            "validation": {
+              "mse": 0.0008409076023682254,
+              "nmse": 0.023428330531066705,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.0850546372176415,
+              "median_relative_error": 0.009016294154163274
+            },
+            "held_out": {
+              "mse": 0.0006038069142693547,
+              "nmse": 0.016822523574060184,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.07534431206808323,
+              "median_relative_error": 0.008342624507764462
+            },
+            "audit": null,
+            "evaluations": 14416,
+            "final_N": 27,
+            "N_changes": [
+              [
+                0,
+                27
+              ]
+            ],
+            "knowledge": "knowledge/artin_kummer_degree_s1.pt"
+          },
+          {
+            "seed": 2,
+            "expression": "([q] / ([q] - [1]))",
+            "validation": {
+              "mse": 0.0008409076023682254,
+              "nmse": 0.023428330531066705,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.0850546372176415,
+              "median_relative_error": 0.009016294154163274
+            },
+            "held_out": {
+              "mse": 0.0006038069142693547,
+              "nmse": 0.016822523574060184,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.07534431206808323,
+              "median_relative_error": 0.008342624507764462
+            },
+            "audit": null,
+            "evaluations": 14416,
+            "final_N": 27,
+            "N_changes": [
+              [
+                0,
+                27
+              ]
+            ],
+            "knowledge": "knowledge/artin_kummer_degree_s2.pt"
+          },
+          {
+            "seed": 3,
+            "expression": "([q] / (-1 + (0 + [q])))",
+            "validation": {
+              "mse": 0.0008409076023682254,
+              "nmse": 0.023428330531066705,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.0850546372176415,
+              "median_relative_error": 0.009016294154163274
+            },
+            "held_out": {
+              "mse": 0.0006038069142693547,
+              "nmse": 0.016822523574060184,
+              "nonfinite_rows": 0,
+              "max_relative_error": 0.07534431206808323,
+              "median_relative_error": 0.008342624507764462
+            },
+            "audit": null,
+            "evaluations": 14416,
+            "final_N": 27,
+            "N_changes": [
+              [
+                0,
+                27
+              ]
+            ],
+            "knowledge": "knowledge/artin_kummer_degree_s3.pt"
+          }
+        ],
+        "kummer_check": {
+          "train": {
+            "primes": 27,
+            "mean_squared_standardized_residual": 1.00936968218094,
+            "max_abs_standardized_residual": 2.366901911491219,
+            "q_over_q_minus_1_mean_squared_standardized_residual": 1.00936968218094
+          },
+          "validation": {
+            "primes": 26,
+            "mean_squared_standardized_residual": 1.1095723993176203,
+            "max_abs_standardized_residual": 2.680247872202301,
+            "q_over_q_minus_1_mean_squared_standardized_residual": 1.1095723993176203
+          },
+          "test": {
+            "primes": 26,
+            "mean_squared_standardized_residual": 1.211992233466818,
+            "max_abs_standardized_residual": 2.4466795189000416,
+            "q_over_q_minus_1_mean_squared_standardized_residual": 1.211992233466818
+          },
+          "primes_checked": 9592,
+          "max_relative_difference_of_degree_from_q(q-1)": 2.220446049250313e-16,
+          "implied_artin_product": 0.37395611362655956,
+          "artin_product_same_primes": 0.37395611362655956,
+          "artin_constant": 0.3739558136191996
+        },
+        "split_q": "alternating: index mod 3 = train, validation, test"
+      }
+    }
+  },
+  "seconds": 219.1
+}
