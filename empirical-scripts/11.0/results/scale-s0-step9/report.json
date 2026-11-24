@@ -1,0 +1,32 @@
+{
+  "run_id": "scale-s0-step9",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/scale.json",
+  "git_root": {
+    "sha": "74fd86010eaee8e04bfa4700cd2e48bb5bcf169e",
+    "dirty": true,
+    "changed_paths": [
+      "M AGENTS.md",
+      " M ROADMAP.md",
+      " M empirical-scripts/11.0/config/quick.json",
+      " M empirical-scripts/11.0/config/scale.json",
+      " M empirical-scripts/11.0/lengths.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/runtime.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      " M empirical-scripts/11.0/zeros.py",
+      "?? empirical-scripts/11.0/config/orders.json",
+      "?? empirical-scripts/11.0/euler.py",
+      "?? empirical-scripts/11.0/orders_scale.py",
+      "?? empirical-scripts/11.0/tests/test_step9.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "7046ea7646f4d9b52496536354ed9963c36bbcb3d31cd43aa8197f68e2a6ca83",
+  "ndr_version": null,
+  "verdicts": {}
+}

@@ -1,0 +1,151 @@
+{
+  "run_id": "orders-s0",
+  "created": "2026-11-24T19:01:36+01:00",
+  "config_path": "empirical-scripts/11.0/config/orders.json",
+  "config_sha256": "482cf969ff514353e08d81b65b01ad967bc08fecdf4a5076f738586ce40610d0",
+  "config": {
+    "name": "orders",
+    "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report.",
+    "seed": 0,
+    "orders": {
+      "decades": [
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          999999
+        ],
+        [
+          1000000,
+          9999999
+        ],
+        [
+          10000000,
+          99999999
+        ]
+      ],
+      "per_class": 3000,
+      "max_class": 5,
+      "batch": 200000,
+      "max_batches": 60,
+      "bases": "2..199",
+      "base_sets": {
+        "L19": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "L2..31": "2..31",
+        "L2..99": "2..99",
+        "L2..199": "2..199"
+      },
+      "split": {
+        "train": 0.7,
+        "val": 0.15,
+        "test": 0.15
+      },
+      "model_seeds": 3,
+      "bootstrap": 500,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "workers": 0
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "orders": {
+      "status": "done",
+      "finished": "2026-11-24T19:10:57+01:00",
+      "seconds": 557.95,
+      "orders_file": "orders.json",
+      "integers": 58808
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-24T19:10:57+01:00",
+      "seconds": 0.01,
+      "report": "report.md",
+      "report_json": "report.json",
+      "figures": []
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/orders.json",
+    "--run-id",
+    "orders-s0",
+    "--stages",
+    "orders,report"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "74fd86010eaee8e04bfa4700cd2e48bb5bcf169e",
+      "dirty": true,
+      "changed_paths": [
+        "M AGENTS.md",
+        " M ROADMAP.md",
+        " M empirical-scripts/11.0/config/quick.json",
+        " M empirical-scripts/11.0/config/scale.json",
+        " M empirical-scripts/11.0/lengths.py",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/runtime.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        " M empirical-scripts/11.0/zeros.py",
+        "?? empirical-scripts/11.0/config/orders.json",
+        "?? empirical-scripts/11.0/euler.py",
+        "?? empirical-scripts/11.0/orders_scale.py",
+        "?? empirical-scripts/11.0/tests/test_step9.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "7046ea7646f4d9b52496536354ed9963c36bbcb3d31cd43aa8197f68e2a6ca83"
+  },
+  "ndr_version": "ndr-v11.1"
+}

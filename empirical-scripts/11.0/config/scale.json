@@ -1,6 +1,6 @@
 {
   "name": "scale",
-  "description": "ROADMAP step 5: all n in [2, 9999] plus 3000 integers per omega in [10^4, 10^5) and in [10^5, 10^6]; wide base set on 6000 integers. Step 7 (`lengths` stage): orders and Midy flags in bases 2..99 for every integer. Step 8 (`zeros` stage): exact zero classes of the NDR spectra. Step 8e (`whisky` stage): spectra after SinWhisky resampling.",
+  "description": "ROADMAP step 5: all n in [2, 9999] plus 3000 integers per omega in [10^4, 10^5) and in [10^5, 10^6]; wide base set on 6000 integers. Step 7 (`lengths` stage): orders and Midy flags in bases 2..99 for every integer. Step 8 (`zeros` stage): exact zero classes of the NDR spectra. Step 8e (`whisky` stage): spectra after SinWhisky resampling. Step 9a (`euler` stage): small-prime membership vs the C7 residues.",
   "seed": 0,
   "data": {
     "n_min": 2,
@@ -244,6 +244,19 @@
     "per_stratum": 300,
     "max_L": 50000,
     "min_L": 8,
+    "bootstrap": 500
+  },
+  "euler": {
+    "small_primes": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13
+    ],
+    "length_bases": "2..99",
+    "tolerance": 1e-09,
     "bootstrap": 500
   }
 }

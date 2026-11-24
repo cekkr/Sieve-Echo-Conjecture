@@ -139,4 +139,4 @@ Gains (points, 95% CI):
 | H_nodc | 30 | +0.0063 (p 0.002) | +0.0062 (p 0.002) | +0.0063 (p 0.002) |
 | H_nodc | 210 | +0.0149 (p 0.002) | +0.0133 (p 0.002) | +0.0153 (p 0.002) |
 
-Full numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json`, `lengths.json`, `zeros.json`, `whisky.json` in this run directory.
+Full numbers: `claims.json`, `zeros.json` in this run directory.

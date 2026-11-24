@@ -207,4 +207,4 @@ Baseline differences (points, 95% CI):
 | step-4 inputs (19 bases + entropy) | 0.5823 (0.0927) | 0.6809 | `([log n - log lcm] + (2.71828 - (2.71828 % sin((2.71828 - cos(exp(cos([share of L_b dividing n-1]))))))))` |
 | lengths 2..99 + Midy share | 0.5391 (0.0650) | 0.4984 | `((2 - -1) + [row.len98.log n - log lcm])` |
 
-Full numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json`, `lengths.json` in this run directory.
+Full numbers: `claims.json`, `scale.json`, `lengths.json` in this run directory.

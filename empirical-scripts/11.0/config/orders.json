@@ -1,0 +1,68 @@
+{
+  "name": "orders",
+  "description": "ROADMAP step 9b: order-only omega classification per decade up to 10^8 (no NDR data). Run with --stages orders,report.",
+  "seed": 0,
+  "orders": {
+    "decades": [
+      [
+        10000,
+        99999
+      ],
+      [
+        100000,
+        999999
+      ],
+      [
+        1000000,
+        9999999
+      ],
+      [
+        10000000,
+        99999999
+      ]
+    ],
+    "per_class": 3000,
+    "max_class": 5,
+    "batch": 200000,
+    "max_batches": 60,
+    "bases": "2..199",
+    "base_sets": {
+      "L19": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        19,
+        23,
+        29,
+        31
+      ],
+      "L2..31": "2..31",
+      "L2..99": "2..99",
+      "L2..199": "2..199"
+    },
+    "split": {
+      "train": 0.7,
+      "val": 0.15,
+      "test": 0.15
+    },
+    "model_seeds": 3,
+    "bootstrap": 500,
+    "gbm": {
+      "max_iter": 200,
+      "learning_rate": 0.1
+    },
+    "workers": 0
+  }
+}

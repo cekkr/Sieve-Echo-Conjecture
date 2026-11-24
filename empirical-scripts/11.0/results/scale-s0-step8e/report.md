@@ -103,4 +103,4 @@ Paper statistics are re-computed the way the v8.2 code computed them (in-sample,
 | H_sw | 741 | -0.702 | 0.9967 | 0.9967 | +0.00004 [-0.000, +0.000] |
 | H_lin | 741 | -0.705 | 0.9963 | 0.9964 | +0.00006 [-0.000, +0.000] |
 
-Full numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json`, `lengths.json`, `zeros.json`, `whisky.json` in this run directory.
+Full numbers: `claims.json`, `whisky.json` in this run directory.

@@ -191,7 +191,7 @@ def compute(table, bases: Sequence[int], tol: float, workers: int, log=print) ->
 
 def load_or_compute(run_dir: Path, dataset_key: str, table, bases, tol, workers, log=print) -> tuple[Dict[str, np.ndarray], str]:
     key = runtime.sha256_json({"dataset": dataset_key, "bases": list(map(int, bases)), "tol": tol, "version": ZEROS_VERSION})[:16]
-    path = run_dir / "cache" / f"zeros-{key}.npz"
+    path = runtime.shared_cache(run_dir, f"zeros-{key}.npz")
     if path.is_file():
         with np.load(path) as z:
             if str(z["key"]) == key:

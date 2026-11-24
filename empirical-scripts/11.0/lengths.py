@@ -143,7 +143,7 @@ def orders_and_midy(n_values: np.ndarray, bases: Sequence[int], workers: int = 0
 
 def load_or_compute(run_dir: Path, dataset_key: str, n_values: np.ndarray, bases: Sequence[int], workers: int, log=print) -> tuple[np.ndarray, np.ndarray, str]:
     key = runtime.sha256_json({"dataset": dataset_key, "bases": list(map(int, bases)), "version": LENGTHS_VERSION})[:16]
-    path = run_dir / "cache" / f"lengths-{key}.npz"
+    path = runtime.shared_cache(run_dir, f"lengths-{key}.npz")
     if path.is_file():
         with np.load(path) as z:
             if str(z["key"]) == key and np.array_equal(z["n"], n_values):

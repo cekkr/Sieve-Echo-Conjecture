@@ -71,6 +71,8 @@ All definitions are implemented once in [`ndr.py`](../../empirical-scripts/11.0/
 | `scale-s0-step7` | `config/scale.json` | the same integers; adds orders and Midy flags in all bases 2…99 (step 7) |
 | `scale-s0-step8` | `config/scale.json` | the same integers; exact zero classes of 517 642 (*n*, *b*) spectra (step 8) |
 | `scale-s0-step8e` | `config/scale.json` | 4 851 sampled pairs; spectra after SinWhisky resampling ([`libs/sinwhisky`](../../libs/sinwhisky)) |
+| `scale-s0-step9` | `config/scale.json` | the same integers; small-prime membership [ord(q) \| ord(b)] (step 9a) |
+| `orders-s0` | `config/orders.json` | 58 808 integers, 3 000 per class min(ω, 5) per decade 10⁴–10⁸; orders only, no digits (step 9b) |
 
 Base sets: the v8 paper's 13 bases {2–7, 9–11, 13–16} (`v8`), v10's 16 bases, the primes ≤ 31, and a wide set 2…99 on a sub-sample. Integers are split once, by *n*, stratified by ω, 70/15/15 (train/validation/test). Every fitted quantity is fitted on train and reported on test; every claim is also tested conditional on log *L* and log *n*, with 95% bootstrap confidence intervals and permutation nulls. Factorization labels (ω, Ω, τ, φ, λ, μ, primality) are never inputs of a predictor of ω.
 
@@ -174,6 +176,10 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 
 **Observation 6.7 (SinWhisky spectra).** Resampling each NDR period ×4 with SinWhisky — the circle through every three consecutive digits, blended with a cosine window — before the DFT (4 851 stratified pairs, `scale-s0-step8e`) leaves the entropy almost unchanged (correlation 0.9998 with the plain spectrum), keeps the Midy gap (−0.702), and adds no information about ω beyond log *L*, log *b*, log *n*, the Midy flag and the zero share (ΔR² +0.00004, CI including 0). Because the circle blend is nonlinear, it leaks power into the exact zero classes for 22.9% of the pairs that have them (up to 10^−2.3 of the mean power), whereas periodic linear interpolation — a fixed filter — never does (≤ 10^−29.6), as Proposition 1.5 implies.
 
+**Observation 6.8 (small primes in ⟨b⟩ shape the residue structure).** By Proposition 1.5(c) each bin is a sum of B_{1,χ}, multiples of L(1, χ̄) whose Euler factor at a small prime *q* is (1 − χ̄(q)/*q*)^{−1}. When *q* ∈ ⟨*b*⟩ every extension has χ(*q*) = ψ_j(*q*), a value set by the bin; otherwise it varies over the extensions. The flags [ord_n(q) | ord_n(b)] (exactly *q* ∈ ⟨*b*⟩ when (ℤ/*n*ℤ)* is cyclic) for *q* = 2, 3, 5, 7, 11, 13 explain 13% of the variance of `H_nodc` that length, size, the Midy flag and the zeros leave (test R² 0.99765 → 0.99796 over 77 709 pairs; *q* = 2 dominates with −0.109), and they shrink the C7 residue excess of `H_paper` from 0.022 to 0.011 at mod 12 and from 0.032 to 0.023 at mod 210 (`scale-s0-step9`). Together with the Midy flags they account for two thirds of the mod-12 excess and a third of the mod-210 excess over the bare C7 controls. These flags are functions of the orders; Jacobi symbols, which would remove the excess trivially because they are functions of *n* mod 4*q*, are not used.
+
+**Observation 6.9 (orders alone, up to 10⁸).** Orders need no digits, so the order-only classifier can be followed far beyond the NDR data (`orders-s0`: 3 000 integers per class min(ω, 5) per decade, orders and Midy flags in bases 2…199). Held-out accuracy with all 198 bases is 97.9%, 97.3%, 94.5%, 89.7% in the decades 10⁴…10⁸ (majority class 19–20%); with the 19 bases of this study it is 96.0%, 93.3%, 89.0%, 85.9%. Going from 98 to 198 bases adds +0.2, +1.1, +1.7, +1.2 points. The lcm of the 19 orders still equals λ(n) for 99.97% of integers at 10⁷–10⁸. The orders' information about ω is not lost, but a fixed set of bases reads less of it as *n* grows.
+
 **Observation 6.2 (growth exponents).** A v8-style fit on n ∈ [2, 9 999] gives H ≈ 0.460 · n^{0.129} (v7 reported 0.431 · n^{0.142}). On ω-balanced decades the exponent is 0.068 (0.096 with ω fixed effects) and falls to **0.020 once log L is controlled**: the growth of entropy with *n* is the growth of repetend length. The "predicted exponent 0.743" of the earlier papers belongs to a different quantity, T(x) = Σ_{p≤x} Σ_{n≤x, gcd(n,p)=1} log ord_n(p); computed for x = 100 … 3 200 its exponent is 2.07, as its x·π(x) terms imply. The two exponents are not comparable.
 
 ![Growth exponents](../../empirical-scripts/11.0/results/scale-s0/figures/growth_exponents.png)
@@ -183,6 +189,7 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 * **The order survives, the entropy does not.** Factorization structure reaches the repetend of 1/*n* through its length ord_n(b), which divides λ(n) and shrinks with each additional prime factor (Theorem 1.3). Digit entropy inherits that structure because H ≤ log L. Once length is known, entropy adds at most about one accuracy point for ω, and nothing once the orders in all bases 2…99 are known (Observation 6.3).
 * **One digit symmetry survives.** Midy's symmetry (Proposition 1.4) is visible in the digits and in the spectrum (a log 2 entropy deficit), depends on the factorization through the 2-adic valuations of the local orders, and adds a fraction of a point beyond the lengths (Observation 6.4). It is a classical theorem, not a new law, and it is computed from (*n*, *b*) by one modular exponentiation.
 * **Exact zeros survive too, and they are redundant.** The spectrum's exact zeros record relations between the prime factors of *n* through Euler factors (Proposition 1.5); they are rare for primes and common for composites, but the orders in 98 bases already contain everything they say about ω (Observation 6.6).
+* **The residue structure is partly Euler-product structure.** Whether small primes lie in ⟨*b*⟩ explains a third to two thirds of the residue-class excess (Observation 6.8); the remainder is open.
 * **Reformulated conjecture — not supported.** *The NDR spectra of 1/n carry information about ω(n) beyond the orders {ord_n(b)}, the Midy flags and n, and that information grows with n.* At 10⁵–10⁶ the measured gain is −0.07 points (CI [−0.33, +0.24]) against a baseline of 98 orders and Midy flags (`scale-s0-step7`). The step-5 drift was an under-powered baseline.
 * **Not supported:** the law's constants (golden ratio, 5 − 1/15), base invariance as a universal property, links to ζ(s) or the PNT, the prime-power dichotomy, and three-feature sufficiency.
 
@@ -190,8 +197,8 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 
 Answered in step 7 (`scale-s0-step7`): the residual signal at 10⁵–10⁶ is carried by the statistics that see Midy's vanished half-spectrum and does not survive orders in all bases 2…99 (Observations 6.3–6.4); Midy's symmetry explains about a third of the *n* mod 4 residue structure and none of the *n* mod 7 structure (Observation 4.7); λ(n) is recovered exactly by the lcm of the 19 orders, no formula is needed, and *n*/λ(n) gives only ~72% ω accuracy (Observation 6.5). Still open:
 
-1. What explains the rest of the C7 residue structure — the *n* mod 7 excess and two thirds of the *n* mod 4 excess? The k-block zeros of Proposition 1.5 do not (Observation 6.6). Proposition 1.5(c) suggests the Euler products of L(1, χ) at small primes *q*: whether *q* = 2, 3, 5, 7 lies in ⟨*b*⟩ mod *n* changes the weights |B_{1,χ}|² across bins, and by quadratic reciprocity it depends on *n* modulo 4*q*.
-2. How does the accuracy of an order-only classifier of ω behave beyond 10⁶, and how many bases does it need as *n* grows?
+1. What explains the rest of the C7 residue structure? Midy flags and small-prime membership (Observation 6.8) leave a mod-12 excess of 0.011 and a mod-210 excess of 0.023 (`H_paper`). Candidates: exact membership for non-cyclic (ℤ/*n*ℤ)* (the divisibility test is only necessary there), larger primes *q*, and the class-number term in the mean digit (the DC bin of `H_paper`) for *n* ≡ 3 (mod 4).
+2. How fast must the number of bases grow with *n* to keep order-only ω accuracy constant (Observation 6.9), and is there a closed form for the information about ω in the multiset {ord_n(b)}?
 
 ## 9. Reproducing these results
 
@@ -201,7 +208,8 @@ git submodule update --init --recursive
 .venv/bin/pip install --only-binary :all: -r empirical-scripts/11.0/requirements.txt
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/full.json --run-id full-s0-repro
-.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-repro --stages data,claims,scale,lengths,zeros,whisky,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-repro --stages data,claims,scale,lengths,zeros,whisky,euler,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/orders.json --run-id orders-s0-repro --stages orders,report
 ```
 
 Each run writes `manifest.json` (code and submodule SHAs, v11 source hash, environment, config, seed, NDR version), the claim, search and scale results, and `report.md` with the figures. The full run takes about 53 minutes and the scale run (with the step-7 `lengths`, step-8 `zeros` and `whisky` stages) about 90 minutes on an 8-core machine.

@@ -13,7 +13,9 @@ Every number names the run that produced it; run summaries, manifests and figure
 3. **The factorization information lives in the lengths.** Gradient boosting on *n* and the per-base lengths with their lcm arithmetic predicts ω classes at 98.2% held-out accuracy; evolved formulas recognize primes at 99.99% from "lcm of the lengths divides n − 1" — Fermat's little theorem in repetend form (`full-s0-step4`).
 4. **The apparent residual signal at 10⁵–10⁶ disappears** with a stronger baseline: entropy adds −0.07 accuracy points (95% CI [−0.33, +0.24]) once the orders in all bases 2…99 and the Midy flags are known (`scale-s0-step7`).
 5. **The digits do echo the factorization** — through Midy's symmetry (when −1 ∈ ⟨b⟩ mod n the DC-free entropy drops by exactly log 2, fitted −0.694; `scale-s0-step7`) and through **exact spectral zeros** whose Euler factors vanish at the prime divisors of n (0.09% of prime pairs vs 11–30% of composite pairs; `scale-s0-step8`). Both are classical number theory, and neither adds information about ω beyond the multiplicative orders (zeros: −0.05 points, CI [−0.28, +0.18]).
-6. **SinWhisky spectra** (the [circle-based resampler](libs/sinwhisky) applied before the DFT) carry the same information as the plain FFT (correlation 0.9998, no extra ω information; `scale-s0-step8e`).
+6. **Residue-class structure is partly Euler-product structure:** whether the small primes 2…13 lie in the subgroup ⟨b⟩ mod n halves the remaining mod-12 excess and cuts the mod-210 excess by 30% (`scale-s0-step9`); the rest is open.
+7. **Orders alone, up to 10⁸:** classifying ω from the orders in bases 2…199 gives 97.9%, 97.3%, 94.5%, 89.7% held-out accuracy in the decades 10⁴…10⁸; a fixed base set reads less as n grows, and more bases recover part of it (`orders-s0`).
+8. **SinWhisky spectra** (the [circle-based resampler](libs/sinwhisky) applied before the DFT) carry the same information as the plain FFT (correlation 0.9998, no extra ω information; `scale-s0-step8e`).
 
 **Conclusion so far:** the "echo of the sieve" in 1/n is real, but it is the multiplicative order ord_n(b) — and its group structure — that carries it; the digit entropy adds nothing measurable about ω beyond the orders. Open questions are listed in §8 of the paper and in the roadmap.
 
@@ -33,4 +35,4 @@ The full and scale configurations and their run times are described in [`AGENTS.
 
 The Sieve Echo Conjecture, the earlier script generations and the papers are the work of the repository author. [Evolvo](libs/evolvo) and [SinWhisky](libs/sinwhisky) are separate projects included as git submodules.
 
-Version 11 — the reproducible pipeline, the claim-by-claim re-verification, the Evolvo and SinWhisky extensions it needed, the analyses of ROADMAP steps 0–8 and the revision-9 draft — was developed in collaboration with **Claude (Anthropic)**, an AI assistant, working with the author.
+Version 11 — the reproducible pipeline, the claim-by-claim re-verification, the Evolvo and SinWhisky extensions it needed, the analyses of ROADMAP steps 0–9 and the revision-9 draft — was developed in collaboration with **Claude (Anthropic)**, an AI assistant, working with the author.

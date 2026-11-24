@@ -65,7 +65,7 @@ def build_markdown(manifest: dict, claims_out: dict) -> str:
         "",
         "## Verdicts",
         "",
-        verdict_table(claims_out["claims"]),
+        verdict_table(claims_out["claims"]) if claims_out["claims"] else "No `claims` stage in this run; see the sections below.",
         "",
     ]
     for c in claims_out["claims"]:
@@ -80,7 +80,8 @@ def build_markdown(manifest: dict, claims_out: dict) -> str:
             f"- **Verdict:** {c['verdict']}",
             "",
         ]
-    lines += ["Full numbers: `claims.json` in this run directory.", ""]
+    if claims_out["claims"]:
+        lines += ["Full numbers: `claims.json` in this run directory.", ""]
     return "\n".join(lines)
 
 
@@ -168,6 +169,12 @@ def step4_markdown(run_dir: Path) -> str:
     wf = run_dir / "whisky.json"
     if wf.is_file():
         lines += whisky_markdown(runtime.read_json(wf))
+    ef = run_dir / "euler.json"
+    if ef.is_file():
+        lines += euler_markdown(runtime.read_json(ef))
+    of = run_dir / "orders.json"
+    if of.is_file():
+        lines += orders_markdown(runtime.read_json(of))
     return "\n".join(lines)
 
 
@@ -333,9 +340,50 @@ def whisky_markdown(d: dict) -> list:
     return lines
 
 
+def euler_markdown(d: dict) -> list:
+    pl, r = d["pair_level"], d["residues"]
+    lines = ["## Step 9a — Small-prime membership and the residue structure", "",
+             f"I_q,b = [ord_n(q) | ord_n(b)] for q ∈ {d['small_primes']} (= q ∈ ⟨b⟩ when (ℤ/nℤ)* is cyclic). Share of pairs with I = 1: "
+             + ", ".join(f"q={q}: {v:.3f}" for q, v in pl["share_member"].items()) + ".", "",
+             "| entropy | test pairs | test R² (log L, log b, log n, Midy, extra zeros) | + membership | ΔR² [95% CI] | residual variance explained | coefficients by q |",
+             "| --- | --- | --- | --- | --- | --- | --- |"]
+    for var, v in pl["variants"].items():
+        lines.append(f"| {var} | {v['test_pairs']} | {v['r2_structure']:.5f} | {v['r2_plus_membership']:.5f} | {v['delta_r2']:+.5f} {_ci(v['delta_r2_ci'])} | {v['residual_variance_explained']:.3f} | "
+                     + ", ".join(f"{q}: {c:+.3f}" for q, c in v["coefficients"].items()) + " |")
+    lines += ["", f"**C7 residues** ({r['controls']}; {r['membership_columns']} membership columns). Excess η² over the permutation null (p):", "",
+              "| entropy | modulus | C7 + Midy + zeros | + membership |", "| --- | --- | --- | --- |"]
+    for var, v in r["variants"].items():
+        for q, t in v["c7_midy_zeros"].items():
+            t1 = v["plus_membership"][q]
+            lines.append(f"| {var} | {q} | {t['excess']:+.4f} (p {t['perm_p_residual']:.3f}) | {t1['excess']:+.4f} (p {t1['perm_p_residual']:.3f}) |")
+    lines.append("")
+    return lines
+
+
+def orders_markdown(d: dict) -> list:
+    cfg = d["settings"]
+    lines = ["## Step 9b — Order-only ω classification beyond 10⁶", "",
+             f"{d['integers']} integers, up to {cfg['per_class']} per class min(ω, {cfg['max_class']}) per decade; orders and Midy flags in bases {cfg['bases']}; "
+             f"GBM accuracy averaged over {cfg['model_seeds']} seeds; each base set gets log n, per-base log L, coprime count, lcm arithmetic and Midy flags.", ""]
+    names = next((list(x["accuracy"]) for x in d["decades"] if "accuracy" in x), [])
+    lines += ["| decade | test rows | majority | lcm19 = λ | " + " | ".join(names) + " |", "| --- | --- | --- | --- | " + " | ".join("---" for _ in names) + " |"]
+    for x in d["decades"]:
+        if "accuracy" not in x:
+            lines.append(f"| {x['decade'][0]}–{x['decade'][1]} | {x['test']} | skipped | | |")
+            continue
+        lines.append(f"| {x['decade'][0]}–{x['decade'][1]} | {x['test']} | {x['majority']:.4f} | {x.get('lcm19_equals_lambda', float('nan')):.4f} | " + " | ".join(f"{x['accuracy'][k]:.4f}" for k in names) + " |")
+    lines += ["", "Gains between consecutive base sets (points, 95% CI):", ""]
+    for x in d["decades"]:
+        if "gain" in x:
+            lines.append(f"- {x['decade'][0]}–{x['decade'][1]}: " + "; ".join(f"{k}: {_pts(g)}" for k, g in x["gain"].items()))
+    lines += ["", "Sampling: " + "; ".join(f"{s['decade'][0]}–{s['decade'][1]}: {s['taken']} from {s['draws']} draws" for s in d["sampling"]), ""]
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
-    claims_out = runtime.read_json(run_dir / "claims.json")
+    cpath = run_dir / "claims.json"
+    claims_out = runtime.read_json(cpath) if cpath.is_file() else {"claims": [], "settings": {}, "ndr_version": None}
     md = build_markdown(manifest, claims_out)
     try:
         import figures
@@ -350,7 +398,13 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json`, `lengths.json`, `zeros.json`, `whisky.json` in this run directory.")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json")
+                   if (run_dir / f).is_file()]
+        footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
+        if "Full numbers: `claims.json` in this run directory." in md:
+            md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\n" + footer)
+        else:
+            md = md.rstrip("\n") + "\n\n" + extra + "\n" + footer + "\n"
     (run_dir / "report.md").write_text(md)
     runtime.write_json(
         run_dir / "report.json",

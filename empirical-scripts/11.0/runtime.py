@@ -60,6 +60,29 @@ def bootstrap_sinwhisky():
     return module
 
 
+def shared_cache(run_dir: Path, name: str) -> Path:
+    """`<run_dir>/cache/<name>`; when missing, hard-link (or copy) the same file from another run's cache.
+
+    Cache file names carry a content key, so a file with the same name holds the same computation.
+    """
+    import os
+    import shutil
+
+    path = run_dir / "cache" / name
+    if path.is_file():
+        return path
+    for other in sorted(RESULTS_DIR.glob(f"*/cache/{name}")):
+        if other.resolve() == path.resolve():
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            os.link(other, path)
+        except OSError:
+            shutil.copy2(other, path)
+        break
+    return path
+
+
 def _git(cwd: Path, *args: str) -> str | None:
     try:
         out = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=30)

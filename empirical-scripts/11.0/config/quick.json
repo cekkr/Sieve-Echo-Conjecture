@@ -275,5 +275,18 @@
     "max_L": 20000,
     "min_L": 8,
     "bootstrap": 200
+  },
+  "euler": {
+    "small_primes": [
+      2,
+      3,
+      5,
+      7,
+      11,
+      13
+    ],
+    "length_bases": "2..99",
+    "tolerance": 1e-09,
+    "bootstrap": 200
   }
 }
