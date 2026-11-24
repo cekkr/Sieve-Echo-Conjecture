@@ -159,6 +159,9 @@ def step4_markdown(run_dir: Path) -> str:
     sc = run_dir / "scale.json"
     if sc.is_file():
         lines += scale_markdown(runtime.read_json(sc))
+    ln = run_dir / "lengths.json"
+    if ln.is_file():
+        lines += lengths_markdown(runtime.read_json(ln))
     return "\n".join(lines)
 
 
@@ -199,6 +202,69 @@ def scale_markdown(d: dict) -> list:
     return lines
 
 
+def lengths_markdown(d: dict) -> list:
+    cfg = d["settings"]
+    names = ["L19", "L19 + Midy19", "L98", "L98 + Midy98"]
+    lines = ["## Step 7 — Stronger length baselines, Midy symmetry, λ(n)", "",
+             f"Orders ord_n(b) and Midy flags [b^(L/2) ≡ −1 (mod n)] for bases {cfg['bases']} ({len(d['length_bases'])} bases) and every integer; "
+             f"L19 = n + per-base L + length arithmetic over the {len(d['bases19'])} v8/v10/primes31 bases (the step-5 baseline), L98 = the same over all length bases. "
+             f"Same ω-balanced samples and GBM settings as step 5; per-row correctness averaged over {cfg.get('model_seeds', 1)} GBM seed(s) (the first reproduces step 5); {cfg['bootstrap']} paired bootstrap resamples over test rows.", "",
+             "**7a — accuracy of each baseline, and the gain from adding the entropy columns** (Δ in points, 95% CI):", "",
+             "| n range | test rows | " + " | ".join(names) + " |", "| --- | --- | " + " | ".join("---" for _ in names) + " |"]
+    for b in d["c9_bins"]:
+        if "skipped" in b:
+            lines.append(f"| {b['bin'][0]}–{b['bin'][1]} | {b['test']} | skipped | | | |")
+            continue
+        cells = []
+        for nm in names:
+            g = b["gain_over_baseline"][nm]["entropy"]
+            cells.append(f"{b['accuracy'][nm]:.4f} → {b['accuracy'][nm + ' + entropy']:.4f} (Δ {g['value'] * 100:+.2f} {_ci([x * 100 for x in g['ci95']])})")
+        lines.append(f"| {b['bin'][0]}–{b['bin'][1]} | {b['test']} | " + " | ".join(cells) + " |")
+    lines += ["", "Baseline differences (points, 95% CI): "]
+    for b in d["c9_bins"]:
+        if "baseline_gain" in b:
+            lines.append(f"- {b['bin'][0]}–{b['bin'][1]}: " + "; ".join(f"{k} {v['value'] * 100:+.2f} {_ci([x * 100 for x in v['ci95']])}" for k, v in b["baseline_gain"].items())
+                         + "; all NDR over L98 + Midy98: " + (lambda g: f"{g['value'] * 100:+.2f} {_ci([x * 100 for x in g['ci95']])}")(b["gain_over_baseline"]["L98 + Midy98"]["all NDR"]))
+    a = d.get("ablation")
+    if a:
+        lines += ["", f"**NDR feature families** on {a['bin'][0]}–{a['bin'][1]} ({a['test_rows']} test rows): gain in points over L19 / over L19 + Midy19", "",
+                  "| family | columns | over L19 | over L19 + Midy19 |", "| --- | --- | --- | --- |"]
+        for f, k in a["families"].items():
+            g0, g1 = a["over"]["L19"]["gain"][f], a["over"]["L19 + Midy19"]["gain"][f]
+            lines.append(f"| {f} | {k} | {g0['value'] * 100:+.2f} {_ci([x * 100 for x in g0['ci95']])} | {g1['value'] * 100:+.2f} {_ci([x * 100 for x in g1['ci95']])} |")
+    m = d["pair_mechanism"]
+    lines += ["", f"**7b — pair-level mechanism** ({m['pairs']} pairs; orders match the dataset's pair table: {m['orders_match_pair_table']}). "
+              f"Share of Midy pairs {m['midy_share']:.3f}; by ω: " + ", ".join(f"ω={w}: {v:.3f}" for w, v in m["midy_share_by_omega"].items()) + ".", "",
+              "| entropy | test R² (log L, log b, log n) | + Midy flag | residual variance explained | Midy coefficient (log 2 = 0.693) |", "| --- | --- | --- | --- | --- |"]
+    for var, v in m["variants"].items():
+        lines.append(f"| {var} | {v['r2_baseline']:.4f} | {v['r2_with_midy']:.4f} | {v['residual_variance_explained']:.3f} | {v['midy_coefficient']:+.3f} |")
+    r = d["residues"]
+    lines += ["", f"**C7 residues with Midy controls** — {r['controls']}; then + {r['midy_controls']}. Excess η² over the permutation null (p):", "",
+              "| entropy | modulus | C7 controls | + Midy flags |", "| --- | --- | --- | --- |"]
+    for var, v in r["variants"].items():
+        for q, t in v["c7_controls"].items():
+            t1 = v["c7_controls_plus_midy"][q]
+            lines.append(f"| {var} | {q} | {t['excess']:+.4f} (p {t['perm_p_residual']:.3f}) | {t1['excess']:+.4f} (p {t1['perm_p_residual']:.3f}) |")
+    lam = d["lambda"]
+    cov, th, bd = lam["coverage_all"], lam["theorem_1_3_odd_n"], lam["length_only_bound_odd_n"]
+    lines += ["", "**7c — λ(n) and ω** (λ and φ are labels: diagnostics and a labelled control only)", "",
+              f"- lcm of the orders = λ(n): 19 bases {cov['lcm19 == λ']:.4f}, bases {cfg['bases']} {cov['lcm98 == λ']:.4f} of all integers (lcm always divides λ: {cov['lcm98 divides λ']}).",
+              f"- Theorem 1.3 on {th['rows']} odd n: {th['violations of 2^(ω−1) ≤ φ/λ']} violations. Length-only bound {bd['bound']}: {bd['violations']} violations, tight for {bd['share_tight']:.3f}, mean slack {bd['mean_slack']:.2f}.", "",
+              "| n range | lcm19 = λ | lcm98 = λ | " + " | ".join(next((list(b["accuracy"]) for b in lam["bins"] if "accuracy" in b), [])) + " |",
+              "| --- | --- | --- | " + " | ".join("---" for _ in next((list(b["accuracy"]) for b in lam["bins"] if "accuracy" in b), [])) + " |"]
+    for b in lam["bins"]:
+        lines.append(f"| {b['bin'][0]}–{b['bin'][1]} | {b['coverage']['lcm19 == λ']:.4f} | {b['coverage']['lcm98 == λ']:.4f} | " + " | ".join(f"{v:.4f}" for v in b.get("accuracy", {}).values()) + " |")
+    f = d.get("formulas")
+    if f:
+        lines += ["", f"**Evolvo formulas for ω** (whole table; guides {f['settings']['guides']}, seeds {f['settings']['seeds']}, population {f['settings']['population']} × {f['settings']['generations']} generations; selection on validation, one test read):", "",
+                  "| inputs | mean test accuracy (sd) | best by validation: test accuracy | expression |", "| --- | --- | --- | --- |"]
+        for label, v in f["input_sets"].items():
+            bb = v["best_by_validation"]
+            lines.append(f"| {label} | {v['test_accuracy_mean']:.4f} ({v['test_accuracy_std']:.4f}) | {bb['test']['accuracy']:.4f} | `{_cell(bb['expression'], 160)}` |")
+    lines.append("")
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     claims_out = runtime.read_json(run_dir / "claims.json")
@@ -216,7 +282,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json` in this run directory.")
+        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json`, `lengths.json` in this run directory.")
     (run_dir / "report.md").write_text(md)
     runtime.write_json(
         run_dir / "report.json",

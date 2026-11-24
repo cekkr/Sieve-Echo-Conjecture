@@ -68,6 +68,27 @@ def length_arithmetic(table: Dict[str, np.ndarray], bases: Sequence[int]) -> Tup
     return feats, list(LENGTH_ARITHMETIC_NAMES)
 
 
+def length_arithmetic_from_orders(n: np.ndarray, L: np.ndarray) -> Tuple[np.ndarray, List[str]]:
+    """`length_arithmetic` for a rows x bases order matrix (0 = base not coprime to n): same five columns."""
+    n = np.asarray(n, dtype=np.int64)
+    L = np.asarray(L, dtype=np.int64)
+    has = L > 0
+    lcm = np.lcm.reduce(np.where(has, L, 1), axis=1)
+    nm1 = n - 1
+    div = has & ((nm1[:, None] % np.where(has, L, 1)) == 0)
+    cnt = has.sum(axis=1)
+    feats = np.column_stack(
+        [
+            np.log(lcm.astype(float)),
+            np.log(n.astype(float)) - np.log(lcm.astype(float)),
+            (nm1 % lcm == 0).astype(float),
+            np.log(np.maximum(np.gcd(lcm, nm1), 1).astype(float)),
+            np.where(cnt > 0, div.sum(axis=1) / np.maximum(cnt, 1), np.nan),
+        ]
+    )
+    return feats, list(LENGTH_ARITHMETIC_NAMES)
+
+
 def column(table: Dict[str, np.ndarray], name: str, cache: Dict[str, np.ndarray], bases: Sequence[int]) -> np.ndarray:
     """A named input: a `row.*` column, `log n`, or one of the length-arithmetic features."""
     if name == "log n":

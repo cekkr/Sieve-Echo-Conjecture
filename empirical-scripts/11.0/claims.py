@@ -706,6 +706,34 @@ def c6_pnt(ctx: Ctx) -> dict:
 # ---------------------------------------------------------------------------------------------
 
 
+def c7_design(ctx: Ctx, var: str, per_base_L: list[np.ndarray], coprime: list[np.ndarray]) -> tuple:
+    """(H, control columns, train mask, test mask) of the C7 residual model for one entropy variant."""
+    H, L = ctx.H(var), ctx.logL()
+    base = ctx.mask(H, L)
+    tr, te = base & (ctx.split == 0), base & (ctx.split == 2)
+    levels = np.unique(ctx.omega[tr])
+    return H, [ctx.logn] + per_base_L + coprime + _dummies(ctx.omega, levels), tr, te
+
+
+def residue_excess(ctx: Ctx, H: np.ndarray, cols: list[np.ndarray], tr: np.ndarray, te: np.ndarray) -> dict:
+    """η² of n mod q on the test residuals of H ~ cols (fitted on train), minus its permutation-null mean."""
+    thr = float(ctx.cfg["effect_threshold"])
+    _, _, pred = _fit_eval(ctx, H, cols, tr, te)
+    res_te = H[te] - pred
+    per_q = {}
+    for q in ctx.cfg["moduli"]:
+        g = ctx.n[te] % q
+        raw = eta_squared(H[te], g)
+        adj = eta_squared(res_te, g)
+        rng = ctx.rng()
+        P = min(ctx.P, 500)
+        p_adj = (1 + sum(eta_squared(res_te, g[rng.permutation(g.size)]) >= adj for _ in range(P))) / (P + 1)
+        null_adj = float(np.mean([eta_squared(res_te, g[rng.permutation(g.size)]) for _ in range(100)]))
+        sup = p_adj < 0.01 and adj - null_adj >= thr
+        per_q[q] = {"classes": int(np.unique(g).size), "eta2_raw": raw, "eta2_residual": adj, "eta2_residual_null_mean": null_adj, "excess": adj - null_adj, "perm_p_residual": p_adj, "supported": bool(sup)}
+    return per_q
+
+
 def c7_modular(ctx: Ctx) -> dict:
     Hv8 = ctx.H("H_v8", "v8")
     m = ctx.mask(Hv8, paper_range=True)
@@ -728,28 +756,10 @@ def c7_modular(ctx: Ctx) -> dict:
     }
     supported_by_var = {}
     for var in ctx.cfg["entropies"][:2]:
-        H, L = ctx.H(var), ctx.logL()
-        base = ctx.mask(H, L)
-        tr, te = base & (ctx.split == 0), base & (ctx.split == 2)
-        levels = np.unique(ctx.omega[tr])
-        cols = [ctx.logn] + per_base_L + coprime + _dummies(ctx.omega, levels)
-        _, _, pred = _fit_eval(ctx, H, cols, tr, te)
-        res_te = H[te] - pred
-        per_q = {}
-        sup_any = False
-        for q in ctx.cfg["moduli"]:
-            g = ctx.n[te] % q
-            raw = eta_squared(H[te], g)
-            adj = eta_squared(res_te, g)
-            rng = ctx.rng()
-            P = min(ctx.P, 500)
-            p_adj = (1 + sum(eta_squared(res_te, g[rng.permutation(g.size)]) >= adj for _ in range(P))) / (P + 1)
-            null_adj = float(np.mean([eta_squared(res_te, g[rng.permutation(g.size)]) for _ in range(100)]))
-            sup = p_adj < 0.01 and adj - null_adj >= thr
-            sup_any |= sup
-            per_q[q] = {"classes": int(np.unique(g).size), "eta2_raw": raw, "eta2_residual": adj, "eta2_residual_null_mean": null_adj, "excess": adj - null_adj, "perm_p_residual": p_adj, "supported": bool(sup)}
+        H, cols, tr, te = c7_design(ctx, var, per_base_L, coprime)
+        per_q = residue_excess(ctx, H, cols, tr, te)
         tests["variants"][var] = {"test_rows": int(te.sum()), "moduli": per_q}
-        supported_by_var[var] = sup_any
+        supported_by_var[var] = any(t["supported"] for t in per_q.values())
     v0 = ctx.cfg["entropies"][0]
     v1 = ctx.cfg["entropies"][1] if len(ctx.cfg["entropies"]) > 1 else v0
     if supported_by_var[v0]:

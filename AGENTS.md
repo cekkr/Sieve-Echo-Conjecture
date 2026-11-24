@@ -6,7 +6,7 @@ Fast-access operational reference for AI agents working in this repository. Read
 
 **What it is not.** It is not a proof, and no script so far is a rigorous demonstration. It is not the Evolvo library: Evolvo is a separate repository vendored as the git submodule [`libs/evolvo`](libs/evolvo) with its own [`AGENTS.md`](libs/evolvo/AGENTS.md). The copies named `evolvo*.py` inside old version folders are historical forks of that library, not the library to use.
 
-**Current goal.** Build **version 11** in [`empirical-scripts/11.0/`](empirical-scripts/11.0) (scaffold, dataset, claim verdicts and report exist; Evolvo search is planned): one reproducible, leakage-free execution script that tests every claim of the current paper [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) and uses the submodule [`libs/evolvo`](libs/evolvo) for all evolutionary search. The step plan lives in [`ROADMAP.md`](ROADMAP.md).
+**Current goal.** Build **version 11** in [`empirical-scripts/11.0/`](empirical-scripts/11.0) (every stage exists: dataset, claim verdicts, Evolvo formula and GFSL-NN search, scale analysis, step-7 length/Midy analysis, report): one reproducible, leakage-free execution script that tests every claim of the current paper [`studies/8/sieve-echo-conjecture-8.md`](studies/8/sieve-echo-conjecture-8.md) and uses the submodule [`libs/evolvo`](libs/evolvo) for all evolutionary search. The step plan lives in [`ROADMAP.md`](ROADMAP.md).
 
 ## Read This First
 
@@ -84,7 +84,7 @@ These are mandatory for every task from v11 onward.
 
 ## Architecture and Data/Control Flow
 
-v11 flow (every stage exists; scale-up to 10⁶ and figures are planned — see [`ROADMAP.md`](ROADMAP.md)):
+v11 flow (every stage exists — see [`ROADMAP.md`](ROADMAP.md); `scale` and `lengths` run after the searches on ω-balanced n-ranges):
 
 `11.0` entry script + config → **dataset builder** (integers, factorization labels, coprime bases, `ord_n(b)`, digit sequences, NDR, spectra, per-base and cross-base features, cached to disk) → **split** by `n` → **statistical claim tests** (paper §2 and §4 claims, each with baseline and null) → **Evolvo symbolic search** (`GFSLEvolver` formulas on allowed features) and **Evolvo GFSL-NN search** (`evolvo.nnarch.ArchitectureSearch` + `TorchTask`) → **held-out evaluation** → **report** (JSON + Markdown + figures, claim-by-claim verdict table).
 
@@ -133,10 +133,10 @@ The owner's Mathematical Annotation Language proposal. The `level: … connects_
 
 ### [`empirical-scripts/11.0/sieve_echo_v11.py`](empirical-scripts/11.0/sieve_echo_v11.py)
 
-v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, report`).
+v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, scale, lengths, report`).
 
-- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_formulas` (`formulas.json`, `best_formulas.md`, `knowledge/policy_<target>.pt`), `stage_nn` (`baselines.json`, `nn.json`, `knowledge/nn_<input>.json`), `stage_scale` (`scale.json`), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED` = all six stages.
-- **Contract:** default `--stages` is `data,claims,formulas,nn,scale,report`. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
+- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_formulas` (`formulas.json`, `best_formulas.md`, `knowledge/policy_<target>.pt`), `stage_nn` (`baselines.json`, `nn.json`, `knowledge/nn_<input>.json`), `stage_scale` (`scale.json`), `stage_lengths` (`lengths.json`, `cache/lengths-<key>.npz`), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED` = all seven stages.
+- **Contract:** default `--stages` is `data,claims,formulas,nn,scale,lengths,report`. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
 
 ### [`empirical-scripts/11.0/runtime.py`](empirical-scripts/11.0/runtime.py)
 
@@ -158,6 +158,7 @@ ROADMAP step 2: one function per claim (`c1_law` … `c9_beyond_L`), driven by `
 
 - **Key parts:** helpers `lstsq`, `r2`, `partial_corr`, `bootstrap`, `perm_p`, `eta_squared`; `Ctx` (table access, masks, seeded RNG stream, v8 order loader with a NumPy-only unpickler); `_per_base_logL` (per-base log L matrix from the pair table); `_length_arithmetic` (lcm of the per-base lengths, its relation to n - 1: functions of n and L only); C9 compares gradient-boosting classifiers of ω (baseline n + per-base L + length arithmetic; + entropy columns; + all NDR columns) with paired bootstrap on test rows, a majority baseline and shuffled-label nulls.
 - **Contract:** settings come from the config's `claims` block over `DEFAULTS`; `PAPER` holds the stored v8.2/v7.0 values. Factorization labels are used only as targets, groupings, or labelled controls (C7 ω dummies).
+- **C7 helpers:** `c7_design(ctx, var, per_base_L, coprime)` → (H, controls, train, test) and `residue_excess(ctx, H, cols, train, test)` → per-modulus η² excess; `lengths.residues` reuses them with extra Midy controls.
 - **Common mistakes:** controlling for the *mean* log L only (residue classes change which per-base orders are short — C7 needs per-base log L); a C9 baseline without length arithmetic (trees cannot compute an lcm, so NDR features then look informative); reading `row.wide.*` as if every n had it (sub-sampled).
 
 ### [`empirical-scripts/11.0/report.py`](empirical-scripts/11.0/report.py)
@@ -166,11 +167,11 @@ ROADMAP step 2: one function per claim (`c1_law` … `c9_beyond_L`), driven by `
 
 ### [`empirical-scripts/11.0/figures.py`](empirical-scripts/11.0/figures.py)
 
-Static PNG figures into `<run>/figures/`: `entropy_vs_length` (needs the dataset), `heldout_omega` (baselines/nn/formulas), `formula_guides_omega` (formulas), `c9_gain_by_decade`, `invariance_by_decade`, `growth_exponents` (scale). Palette: categorical blue/orange/aqua (validated with the dataviz validator: adjacent CVD ΔE ≥ 9.2; aqua < 3:1 contrast, so lines are always direct-labelled), single-hue blue ramp for ω, legend plus direct labels for multi-series charts.
+Static PNG figures into `<run>/figures/`: `entropy_vs_length` (needs the dataset), `heldout_omega` (baselines/nn/formulas), `formula_guides_omega` (formulas), `c9_gain_by_decade`, `invariance_by_decade`, `growth_exponents` (scale), `c9_gain_by_baseline`, `midy_entropy_gap` (lengths). Palette: categorical blue/orange/aqua (validated with the dataviz validator: adjacent CVD ΔE ≥ 9.2; aqua < 3:1 contrast, so lines are always direct-labelled), single-hue blue ramp for ω, legend plus direct labels for multi-series charts.
 
 ### [`empirical-scripts/11.0/features.py`](empirical-scripts/11.0/features.py)
 
-Predictor inputs shared by claims C9, baselines, formulas and GFSL-NN: `per_base` (rows × bases matrix of a pair feature), `length_arithmetic` (log lcm of the L_b, log n − log lcm, lcm | n−1, log gcd(lcm, n−1), share of L_b dividing n−1 — functions of n and L only), `column`/`build_matrix` (named allowed inputs; raise on `label.*`, `target_side.*`, `pair.*`), `Standardizer` (train z-score, NaN → train median), `token_tensor` (per-base tokens for the GFSL-NN set input).
+Predictor inputs shared by claims C9, baselines, formulas and GFSL-NN: `per_base` (rows × bases matrix of a pair feature), `length_arithmetic` (log lcm of the L_b, log n − log lcm, lcm | n−1, log gcd(lcm, n−1), share of L_b dividing n−1 — functions of n and L only) and `length_arithmetic_from_orders` (the same from a rows × bases order matrix), `column`/`build_matrix` (named allowed inputs; raise on `label.*`, `target_side.*`, `pair.*`), `Standardizer` (train z-score, NaN → train median), `token_tensor` (per-base tokens for the GFSL-NN set input).
 
 ### [`empirical-scripts/11.0/search_formulas.py`](empirical-scripts/11.0/search_formulas.py)
 
@@ -190,9 +191,16 @@ GFSL-NN search for ω classes with `TorchTask.classification`: `vec` input (the 
 
 ROADMAP step 5. `run_stage` splits integers into n-ranges (`scale.bins`), takes an ω-balanced sample per range (`_balanced`), and `bin_statistics` recomputes C1 (ΔR², partial r), C2 (Spearman, primes − composites), C3 (partial r), C4 (CV < 0.1 rates for H_paper, Hn_nodc, log L; v8 and wide), C9 (gradient boosting: baseline → + entropy → + all NDR, paired-bootstrap Δ) on the range's train/test rows; `stability` compares labels of the last two ranges. `growth` fits H ~ n^a (v8-style on [2, 9999]; ω-balanced with ω fixed effects; with log L control; per ω). `T_exponent` computes the theta-7 double sum T(x) = Σ_p Σ_n log ord_n(p) and its log-log slope.
 
+### [`empirical-scripts/11.0/lengths.py`](empirical-scripts/11.0/lengths.py)
+
+ROADMAP step 7: what the residual entropy signal is. `orders_and_midy` (rows × bases matrices of ord_n(b), exact from λ(n), and the Midy flag `b^(L/2) ≡ −1 (mod n)`, process pool; cached as `cache/lengths-<key>.npz` keyed by dataset key, bases and `LENGTHS_VERSION`), `length_block`/`midy_block`/`summary_columns` (functions of n, orders and flags only), `c9_bins` (7a: per n-range C9 with baselines L19, L19 + Midy19, L98, L98 + Midy98 on the scale stage's ω-balanced samples — L19 reproduces `scale.json` exactly), `ablation` (NDR feature families over L19 and L19 + Midy19), `pair_mechanism` (7b: pair-level H ~ log L, log b, log n ± Midy), `residues` (C7 test ± per-base Midy controls via `claims.c7_design`/`claims.residue_excess`), `lambda_analysis` (7c: lcm-of-orders = λ coverage, Theorem 1.3 check, length-only bound ω ≤ ⌈log₂(n/lcm)⌉, ω classifiers from log λ [labelled control] and from length-only estimates), `formula_search` (Evolvo formulas for ω: step-4 inputs vs `FORMULA_INPUTS_98`, same table and budget), `run_stage`.
+
+- **Contract:** `lengths.bases` must contain the v8/v10/primes31 bases (raises otherwise). λ(n) and φ(n) are read only as diagnostics and as an explicitly labelled control.
+- **Common mistakes:** treating the Midy flag as a factorization label (it is a function of (n, b), visible in the digit sequence); comparing `lengths.json` gains with `claims.json` C9 (different samples: claims uses the whole split, lengths the ω-balanced ranges).
+
 ### [`empirical-scripts/11.0/config/`](empirical-scripts/11.0/config)
 
-`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s), `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; data ~20 min) and `scale.json` (step 5: n ∈ [2, 9999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶], wide set on 6 000; run with `--stages data,claims,scale,report`). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. `formulas.{targets, guides, seeds, population, generations, parsimony, eval_size_min/max/step, q_target (per target), top_fraction, save_threshold_ratio, save_top_per_gen, safety_net, ablation_guide, fixed_size, warm_start, knowledge_seed, inputs, workers}`; `nn.baselines.{max_train_rows, gbm}`, `nn.search.{population, generations, patience, max_train_rows, max_val_rows, hard_max_epochs, max_rows, max_params, knowledge_in}`. Quick: population 100 × 30 generations, N step 500 (train has 7 366 rows); full: 200 × 60, N step 5 000 up to 100 000. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
+`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s), `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; data ~20 min) and `scale.json` (step 5: n ∈ [2, 9999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶], wide set on 6 000; run with `--stages data,claims,scale,report`). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. `lengths.{bases, bins, per_omega_cap, min_per_omega, bootstrap, max_omega_class, gbm, ablation, pair_bins, formulas.{guides, seeds, population, generations, …}, workers}` (step 7; `formulas: null` skips the Evolvo part). `formulas.{targets, guides, seeds, population, generations, parsimony, eval_size_min/max/step, q_target (per target), top_fraction, save_threshold_ratio, save_top_per_gen, safety_net, ablation_guide, fixed_size, warm_start, knowledge_seed, inputs, workers}`; `nn.baselines.{max_train_rows, gbm}`, `nn.search.{population, generations, patience, max_train_rows, max_val_rows, hard_max_epochs, max_rows, max_params, knowledge_in}`. Quick: population 100 × 30 generations, N step 500 (train has 7 366 rows); full: 200 × 60, N step 5 000 up to 100 000. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
 
 ### [`empirical-scripts/11.0/tests/`](empirical-scripts/11.0/tests)
 
@@ -255,7 +263,7 @@ The v8.2 run cited by the paper: [`sieve_echo_results_20250825_224642.json`](emp
 
 ### [`libs/evolvo`](libs/evolvo) (git submodule)
 
-Evolvo library, upstream `https://github.com/Geckos-Ink/evolvo`, branch `main`, registered in [`.gitmodules`](.gitmodules). Step 3 added declared inputs, `InstructionProfile`, `execute_batch`, `fitness_epoch`, `GFSLPolicyGuide`, `TorchTask.classification` and fixed a validator op-list aliasing bug; those commits exist locally and are **not pushed** until the owner asks (a fresh clone cannot check out the pointer before then). Own handbook: [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) — it applies to every file under `libs/evolvo/`. Source in [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo), tests in [`libs/evolvo/tests/`](libs/evolvo/tests), specs in [`libs/evolvo/papers/`](libs/evolvo/papers). `libs/evolvo/gold/evolvo.py` is a single-file legacy snapshot; do not use it.
+Evolvo library, upstream `https://github.com/Geckos-Ink/evolvo`, branch `main`, registered in [`.gitmodules`](.gitmodules). Step 3 added declared inputs, `InstructionProfile`, `execute_batch`, `fitness_epoch`, `GFSLPolicyGuide`, `TorchTask.classification` and fixed a validator op-list aliasing bug; those commits are on upstream `main` (pushed by the owner after step 6). Own handbook: [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) — it applies to every file under `libs/evolvo/`. Source in [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo), tests in [`libs/evolvo/tests/`](libs/evolvo/tests), specs in [`libs/evolvo/papers/`](libs/evolvo/papers). `libs/evolvo/gold/evolvo.py` is a single-file legacy snapshot; do not use it.
 
 ### [`libs/genetic_ml/`](libs/genetic_ml), [`libs/evolvo_engines/`](libs/evolvo_engines)
 
@@ -296,6 +304,13 @@ Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dat
 - **Symptom:** NDR features seem to add a lot to an ω classifier that already has every per-base L.
 - **Cause:** a tree model cannot compute lcm(L_b) or test whether it divides n - 1 (λ(n) and Fermat-type structure); NDR features re-encode part of that.
 - **Safe pattern:** give the baseline the length arithmetic (`features.length_arithmetic`): quick data 94.9% without it vs 97.8% with it (`quick-s0-step6` baselines); with it the NDR gain is +0.6–0.8 points.
+
+### Midy symmetry read as "NDR information beyond L"
+
+- **Symptom:** entropy features (especially DC-free normalized entropy and spectral flatness) add a point of ω accuracy over a length baseline at large n.
+- **Cause:** when b^(L/2) ≡ −1 (mod n) the repetend's halves are digit complements and every even DFT bin except DC vanishes, so `H_nodc` is log 2 lower at fixed L (pair-level coefficient −0.694, `scale-s0-step7`). For odd n the flag needs equal 2-adic valuations of the local orders, so it is rarer for larger ω. A baseline of 19 orders also under-describes the group: orders in 98 bases add +3.3 points at 10⁵–10⁶.
+- **Safe pattern:** compare against `lengths` baselines (L98 + Midy98); average gradient-boosting fits over several seeds (`lengths.model_seeds`) before reading sub-point gains.
+- **Status:** with that baseline the entropy gain at 10⁵–10⁶ is −0.07 points (CI [−0.33, +0.24]).
 
 ### Training-set accuracy reported as model accuracy
 
@@ -356,7 +371,7 @@ Run Evolvo's tests:
 cd libs/evolvo && PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests
 ```
 
-Run the v11 tests from the repo root (39 tests incl. figures, ~40 s–1 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
+Run the v11 tests from the repo root (44 tests incl. figures, ~1–1.5 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
 
 ```bash
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests -v
@@ -380,6 +395,12 @@ Run the step-5 scale analysis (data build is the long part; run it in the backgr
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0 --stages data,claims,scale,report
 ```
 
+Run the step-7 analysis (reuses the scale dataset cache; orders in bases 2..99 ~1 min, C9 baselines and ablation, Evolvo formulas):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-step7 --stages data,claims,scale,lengths,report
+```
+
 Resume an existing run (finished stages are skipped; config and seed must match):
 
 ```bash
@@ -393,7 +414,7 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 ## Test Ownership Map
 
 - Evolvo library → [`libs/evolvo/tests/test_gfsl_core.py`](libs/evolvo/tests/test_gfsl_core.py) (GFSL core), [`libs/evolvo/tests/test_policy_guide.py`](libs/evolvo/tests/test_policy_guide.py), [`libs/evolvo/tests/test_nnarch.py`](libs/evolvo/tests/test_nnarch.py) (GFSL-NN). Functions, lists and Kompute have only smoke demos.
-- v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py); `features.py`, `search_formulas.py`, `baselines.py`, `search_nn.py` → [`empirical-scripts/11.0/tests/test_search.py`](empirical-scripts/11.0/tests/test_search.py); `scale.py` and multi-range sampling → [`empirical-scripts/11.0/tests/test_scale.py`](empirical-scripts/11.0/tests/test_scale.py). The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
+- v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py); `features.py`, `search_formulas.py`, `baselines.py`, `search_nn.py` → [`empirical-scripts/11.0/tests/test_search.py`](empirical-scripts/11.0/tests/test_search.py); `scale.py` and multi-range sampling → [`empirical-scripts/11.0/tests/test_scale.py`](empirical-scripts/11.0/tests/test_scale.py); `lengths.py` (Midy ⇔ complementary halves ⇔ vanishing even DFT bins, the 2-adic characterization for odd n, order matrix, lcm of all orders = λ, length-arithmetic parity, stage end-to-end incl. reproduction of the scale stage's C9) → [`empirical-scripts/11.0/tests/test_lengths.py`](empirical-scripts/11.0/tests/test_lengths.py). The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
 
 ## Data, Security, Privacy, and Compatibility Boundaries
 
@@ -408,22 +429,21 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
 - Evolvo submodule at [`libs/evolvo`](libs/evolvo) with the step-3 features (see [Standing Evolvo Facts](#standing-evolvo-facts-relevant-to-v11)).
 
-- v11 steps 0–5 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, Markdown/JSON report, 39 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
+- v11 steps 0–5 and 7 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), Markdown/JSON report with figures, 44 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
 
 ### Experimental / Scaffold
 
-- Every n up to 10⁶ was not built (≈ 15 h); step 5 uses ω-stratified decades instead. The `studies/9` draft awaits owner review.
+- Every n up to 10⁶ was not built (≈ 15 h); steps 5 and 7 use ω-stratified decades instead. The `studies/9` draft (now including step 7) awaits owner review.
 
 ### Known Gaps
 
 - Paper numbers (§2–§4) come from one v8.2 run (plus a v7.0 log for "98.8%" and "r = -0.843") with leakage, training-set accuracy, 100-row samples and size-driven correlations. v11 reproduces every stored v8.2 statistic and has corrected verdicts for C1–C9 (ROADMAP Results log); the §3.1 three-feature claim is retested in step 4.
 - Paper direction-of-effect statements contradict each other and the data.
-- The Evolvo submodule commits from step 3 are not pushed upstream.
 
 ### Near-Term Priorities
 
-1. Owner review of the step-6 report and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) step 6).
-2. Open questions of `studies/9` §8 (stronger length baseline over all bases 2…99; residue structure via quadratic characters).
+1. Owner review of the step-6/7 reports and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) steps 6–7).
+2. Remaining open questions of `studies/9` §8: the rest of the C7 residue structure (n mod 7, part of n mod 4; candidate: k-block Midy conditions) and order-only ω classification beyond 10⁶.
 
 ## Task Start and Handoff Checklist
 

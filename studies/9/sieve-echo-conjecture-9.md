@@ -9,9 +9,10 @@ We re-examine the Sieve Echo Conjecture — that the factorization complexity of
 1. Every stored statistic of the v8 paper is reproduced exactly from its own code path (law fit α = −0.4681, β = 1.9174, R² = 0.2345; 6% base invariance; ζ and PNT correlations; residue-class variances) — and each is explained by repetend length, by the size of *n*, by construction, or by a small sample.
 2. NDR entropy is, to first order, a function of repetend length: log *L* and log *n* explain 95.9% of its held-out variance; adding log ω adds 0.04% (run `full-s0-step4`). Primes have the *highest* entropy, not the lowest.
 3. The factorization information that is present lives in the repetend **lengths**. A gradient-boosting classifier on *n* and the per-base lengths (with their lcm arithmetic) predicts ω classes with 98.2% held-out accuracy; all NDR features together add 0.6 points (`full-s0-step4`). An evolved three-instruction formula recognizes primes with 99.99% held-out accuracy from "lcm of the repetend lengths divides *n* − 1" — Fermat's little theorem in repetend form.
-4. The small residual NDR signal grows with *n*: entropy features add +1.3 accuracy points at 10⁵–10⁶ (95% CI [+0.4, +2.0]) but none detectable at 10⁴–10⁵ (`scale-s0`).
+4. A small residual NDR signal seemed to grow with *n* (+1.3 accuracy points at 10⁵–10⁶ over a 19-base length baseline, `scale-s0`). It does not survive a stronger baseline: with the orders in every base 2…99 and one symmetry bit per base, entropy adds −0.07 points (95% CI [−0.33, +0.24]) at 10⁵–10⁶ (`scale-s0-step7`).
+5. The one digit property that carries information beyond the lengths is **Midy's symmetry**: when −1 ∈ ⟨b⟩ mod *n* the two halves of the repetend are digit complements, every even Fourier bin vanishes, and the DC-free entropy drops by exactly log 2 on average (fitted −0.694). The symmetry depends on the 2-adic valuations of the orders modulo each prime power of *n* (Proposition 1.4), so it thins out as ω grows (61.5% of pairs for ω = 1, 1.0% for ω = 5); as a feature it adds +0.4 points beyond the 98 lengths.
 
-The "echo" of the sieve is real, but it is the multiplicative order, not the digit entropy.
+The "echo" of the sieve is real, but it is the multiplicative order — and one bit of its group structure — not the digit entropy.
 
 ---
 
@@ -34,6 +35,18 @@ All definitions are implemented once in [`ndr.py`](../../empirical-scripts/11.0/
 
   Hence log L ≤ log n − (ω − 1) log 2 for odd *n*: more distinct prime factors force shorter repetends, and shorter repetends force lower entropy. This is the mechanism behind the negative slope of the "Sieve Echo Law"; it needs no property of the digits.
 
+* **Proposition 1.4 (Midy symmetry; added in step 7).** Let gcd(*n*, *b*) = 1, *L* = ord_n(b), and call (*n*, *b*) a *Midy pair* when −1 ∈ ⟨b⟩ mod *n*. Then:
+
+  (a) (*n*, *b*) is a Midy pair iff *L* is even and *b*^{L/2} ≡ −1 (mod *n*);
+
+  (b) for a Midy pair the two halves of the repetend are digit complements, *d*_{k+L/2} = *b* − 1 − *d*ₖ, and every DFT bin of Θ_{n,b} with even index *j* ≠ 0 vanishes, so `H_nodc` ≤ log(*L*/2);
+
+  (c) for odd *n* = ∏ pᵢ^{kᵢ}, (*n*, *b*) is a Midy pair iff the orders of *b* modulo the pᵢ^{kᵢ} all have the same 2-adic valuation, and that valuation is ≥ 1.
+
+  *Proof.* (a) If *b*^k ≡ −1 with 0 ≤ k < L then *b*^{2k} ≡ 1, so *L* | 2*k* < 2*L*, hence 2*k* = *L*. (b) The remainders are *r*ₖ ≡ *b*^k, so *r*_{k+L/2} = *n* − *r*ₖ and *d*_{k+L/2} = ⌊*b*(*n* − *r*ₖ)/*n*⌋ = *b* − 1 − ⌊*b·r*ₖ/*n*⌋, because *b·r*ₖ/*n* is not an integer. Then x_{k+L/2} = c − x_k with c = (*b* − 1)/*b*, and for even *j* = 2*m* ≠ 0 the DFT is X_j = c·Σ_{k<L/2} e^{−2πi·mk/(L/2)} = 0. (c) By the CRT, *b*^{L/2} ≡ −1 mod *n* iff it holds modulo every pᵢ^{kᵢ}. Each (ℤ/pᵢ^{kᵢ})* is cyclic, so with *L*ᵢ = ord_{pᵢ^{kᵢ}}(b) we have *b*^m ≡ −1 iff *L*ᵢ ∤ m and *L*ᵢ | 2*m*, i.e. v₂(m) = v₂(*L*ᵢ) − 1 and the odd part of *L*ᵢ divides *m*. With *m* = *L*/2 = lcm(*L*ᵢ)/2 the odd-part condition always holds, and v₂(*L*/2) = maxⱼ v₂(*L*ⱼ) − 1, which equals v₂(*L*ᵢ) − 1 for every *i* iff all v₂(*L*ᵢ) are equal (and ≥ 1, since *L* is even). ∎
+
+  Part (b) is Midy's theorem (1836) in its general form; (c) shows why Midy pairs thin out as ω grows: each extra odd prime factor adds one more 2-adic valuation that must match. The flag is a function of (*n*, *b*) and is visible in the digits, so it is NDR information, not a factorization label; but unlike *L* it is not a function of the length alone. All three parts are unit-tested in [`tests/test_lengths.py`](../../empirical-scripts/11.0/tests/test_lengths.py).
+
 ## 2. Data and method
 
 | run | config | content |
@@ -41,6 +54,7 @@ All definitions are implemented once in [`ndr.py`](../../empirical-scripts/11.0/
 | `quick-s0-step4` | `config/quick.json` | all n ∈ [2, 9 999] + 100 integers per ω from [10⁴, 10⁵]; 10 523 integers |
 | `full-s0-step4` | `config/full.json` | all n ∈ [2, 150 000] + 2 000 per ω from (1.5·10⁵, 10⁶]; 162 007 integers, 2 340 678 (n, b) pairs |
 | `scale-s0` | `config/scale.json` | all n ∈ [2, 9 999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶]; 41 074 integers |
+| `scale-s0-step7` | `config/scale.json` | the same integers; adds orders and Midy flags in all bases 2…99 (step 7) |
 
 Base sets: the v8 paper's 13 bases {2–7, 9–11, 13–16} (`v8`), v10's 16 bases, the primes ≤ 31, and a wide set 2…99 on a sub-sample. Integers are split once, by *n*, stratified by ω, 70/15/15 (train/validation/test). Every fitted quantity is fitted on train and reported on test; every claim is also tested conditional on log *L* and log *n*, with 95% bootstrap confidence intervals and permutation nulls. Factorization labels (ω, Ω, τ, φ, λ, μ, primality) are never inputs of a predictor of ω.
 
@@ -78,7 +92,7 @@ The "Theorems" of the v8 paper are empirical fits; here they are **Observations*
 
 **Observation 4.6 (no PNT connection; C6).** corr(H·log *n*, H) = 0.946, against 0.831 (CI [0.826, 0.836]) when H is randomly permuted across integers; the excess is H's growth with *n*. The prime-counting errors |n/log n − π(n)| and |li(n) − π(n)| have partial correlations −0.03 and −0.02 with H given log *n*.
 
-**Observation 4.7 (small residue structure; C7).** Residue classes of *n* modulo 6, 12, 30, 210 explain 22–32% of the variance of H raw, because they fix which bases are coprime to *n* and how long the per-base repetends are. After controlling per-base log *L*, coprimality, log *n* and ω, a small excess remains (η² above the permutation null: 0.000, 0.033, 0.014, 0.032; p ≤ 0.002 except mod 6) — consistent with information about *n* mod 4 (mod 12 exceeds mod 6) and mod 7 (mod 210 exceeds mod 30) that is not ω.
+**Observation 4.7 (small residue structure; C7).** Residue classes of *n* modulo 6, 12, 30, 210 explain 22–32% of the variance of H raw, because they fix which bases are coprime to *n* and how long the per-base repetends are. After controlling per-base log *L*, coprimality, log *n* and ω, a small excess remains (η² above the permutation null: 0.000, 0.033, 0.014, 0.032; p ≤ 0.002 except mod 6) — consistent with information about *n* mod 4 (mod 12 exceeds mod 6) and mod 7 (mod 210 exceeds mod 30) that is not ω. Adding the Midy flag of each v8 base (Proposition 1.4) as a further control lowers the mod-12 excess from 0.035 to 0.022 and leaves mod 30 and mod 210 almost unchanged (0.014, 0.031; `scale-s0-step7`): the symmetry explains about a third of the *n* mod 4 structure and none of the *n* mod 7 structure.
 
 **Observation 4.8 (no special constants; C8).** No 95% interval of α or β contains the "theoretical" −1.599 or 4.933 under any definition (e.g. canonical H with log(ω+1): α = −1.155, CI [−1.164, −1.147]). A random value near α matches some sum or difference of v8's 20-constant library within 0.01 with probability 0.87, so the "tribonacci − ln 10" match carries no evidence.
 
@@ -95,7 +109,7 @@ The "Theorems" of the v8 paper are empirical fits; here they are **Observations*
 | … + all NDR columns | 98.9% (Δ +0.6, CI [+0.5, +0.8]) |
 | shuffled-label null | 37.2% |
 
-The lcm arithmetic matters: without lcm(*L_b*) and its relation to *n* − 1 the same classifier on the raw per-base lengths reaches 94.9%, against 97.8% with it (`quick-s0-step6`) — a gap that NDR features would otherwise appear to fill. NDR does carry a little information that a tree model cannot read off the lengths, but it is about one accuracy point.
+The lcm arithmetic matters: without lcm(*L_b*) and its relation to *n* − 1 the same classifier on the raw per-base lengths reaches 94.9%, against 97.8% with it (`quick-s0-step6`) — a gap that NDR features would otherwise appear to fill. NDR does carry a little information that a tree model cannot read off the lengths, but it is about one accuracy point — and Observation 6.3 shows that a richer length baseline absorbs it.
 
 ![Entropy against repetend length](../../empirical-scripts/11.0/results/full-s0-step4/figures/entropy_vs_length.png)
 
@@ -115,9 +129,28 @@ Formulas were evolved with the Evolvo GFSL language (submodule `libs/evolvo`) on
 
 ## 6. Scale and growth
 
-**Observation 6.1 (stability to 10⁶).** On ω-balanced samples per decade (`scale-s0`), the verdicts of C1–C4 are the same at 10⁴–10⁵ and 10⁵–10⁶. C9 drifts: the length baseline loses accuracy with *n* (97.4% → 95.6% → 91.9%) as 19 bases pin down λ(n) less completely, and entropy features then add +1.3 points (CI [+0.4, +2.0]) at 10⁵–10⁶.
+**Observation 6.1 (stability to 10⁶).** On ω-balanced samples per decade (`scale-s0`), the verdicts of C1–C4 are the same at 10⁴–10⁵ and 10⁵–10⁶. C9 drifts: the 19-base length baseline loses accuracy with *n* (97.4% → 95.6% → 91.9%), and entropy features then add +1.3 points (CI [+0.4, +2.0]) at 10⁵–10⁶. The baseline does not weaken because λ(n) is lost — the lcm of the 19 orders equals λ(n) for every integer of the data (`scale-s0-step7`) — but because 19 orders describe how the order of *b* varies across the group (ℤ/nℤ)* less and less completely as *n* grows.
 
 ![NDR gain by decade](../../empirical-scripts/11.0/results/scale-s0/figures/c9_gain_by_decade.png)
+
+**Observation 6.3 (the drift vanishes with a stronger length baseline).** Orders in all 98 bases 2…99 cost seconds to compute exactly (no digits are needed). Per ω-balanced decade, same samples and models as Observation 6.1, accuracy averaged over five gradient-boosting fits (`scale-s0-step7`; test rows 1 230 / 2 072 / 2 560):
+
+| baseline | 10³–10⁴ | 10⁴–10⁵ | 10⁵–10⁶ | entropy gain at 10⁵–10⁶ (points, 95% CI) |
+| --- | --- | --- | --- | --- |
+| *n* + 19 orders + lcm arithmetic (L19) | 97.6% | 95.4% | 92.1% | +0.90 [+0.19, +1.54] |
+| L19 + 19 Midy flags | 97.8% | 95.6% | 92.4% | +0.47 [−0.11, +0.94] |
+| *n* + 98 orders + lcm arithmetic (L98) | 97.0% | 97.8% | 95.3% | +0.14 [−0.22, +0.50] |
+| L98 + 98 Midy flags | 98.0% | 98.0% | 95.7% | **−0.07 [−0.33, +0.24]** |
+
+All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last baseline at 10⁵–10⁶; at 10³–10⁴ (5 700 training integers, ~270 columns) adding any NDR columns lowers accuracy (overfitting). Over L19 the gain at 10⁵–10⁶ comes from the normalized DC-free entropy (+1.0 points), spectral flatness (+1.2) and skewness (+0.6), the statistics that see a vanished half of the spectrum; with the Midy flags in the baseline only flatness keeps a gain (+0.7, CI [+0.2, +1.3]), and with 98 orders nothing does. Single fits differ from these five-fit averages by up to half a point (the step-5 +1.3 becomes +0.9), so single-fit gains of this size should be read with that in mind.
+
+![Entropy gain by length baseline](../../empirical-scripts/11.0/results/scale-s0-step7/figures/c9_gain_by_baseline.png)
+
+**Observation 6.4 (Midy's symmetry is the digit signal).** Over 783 040 (*n*, *b*) pairs, the Midy flag of Proposition 1.4 lowers `H_nodc` by 0.694 at fixed log *L*, log *b*, log *n* — log 2 to three digits — and explains 82% of the variance of `H_nodc` that length and size leave (test R² 0.9864 → 0.9976). For `H_paper` the DC bin dilutes it (coefficient −0.182). The share of Midy pairs falls with ω: 0.615, 0.206, 0.076, 0.029, 0.010 for ω = 1…5, as Proposition 1.4(c) predicts. As a feature, the flags add +0.37 points (CI [+0.09, +0.65]) beyond the 98 orders at 10⁵–10⁶ and +0.98 at 10³–10⁴ — the only information about ω beyond the lengths that this study finds, and it is computable from (*n*, *b*) without any digits.
+
+![Midy entropy gap](../../empirical-scripts/11.0/results/scale-s0-step7/figures/midy_entropy_gap.png)
+
+**Observation 6.5 (λ(n) and ω).** Theorem 1.3 holds on all 19 390 odd *n* of the data; its length-only form ω ≤ ⌈log₂(*n* / lcm_b ord_n(b))⌉ is never violated and is tight for 64% of odd *n*. But *n*/λ(n) determines ω only loosely: gradient boosting on (log *n*, log λ(n)) — a labelled, factorization-derived control — reaches 73% / 69% / 72% per decade, 75–78% with the share of Midy pairs, against 96–98% from the 98 orders. Evolved GFSL formulas do not close the gap: on the same table, mean test accuracy 58% with the step-4 inputs and 54% with inputs built from the 98 orders (λ estimate, Midy share; 2 guides × 3 seeds). The information is in how the orders vary across bases, which a single scalar like λ(n) does not carry.
 
 **Observation 6.2 (growth exponents).** A v8-style fit on n ∈ [2, 9 999] gives H ≈ 0.460 · n^{0.129} (v7 reported 0.431 · n^{0.142}). On ω-balanced decades the exponent is 0.068 (0.096 with ω fixed effects) and falls to **0.020 once log L is controlled**: the growth of entropy with *n* is the growth of repetend length. The "predicted exponent 0.743" of the earlier papers belongs to a different quantity, T(x) = Σ_{p≤x} Σ_{n≤x, gcd(n,p)=1} log ord_n(p); computed for x = 100 … 3 200 its exponent is 2.07, as its x·π(x) terms imply. The two exponents are not comparable.
 
@@ -125,15 +158,17 @@ Formulas were evolved with the Evolvo GFSL language (submodule `libs/evolvo`) on
 
 ## 7. What survives
 
-* **The order survives, the entropy does not.** Factorization structure reaches the repetend of 1/*n* through its length ord_n(b), which divides λ(n) and shrinks with each additional prime factor (Theorem 1.3). Digit entropy inherits that structure because H ≤ log L. Once length is known, entropy adds at most about one accuracy point for ω.
-* **Reformulated conjecture (open).** *The NDR spectra of 1/n carry information about ω(n) beyond the multiset {ord_n(b)} and n, and that information grows with n.* Observation 6.1 is weak evidence for it at 10⁵–10⁶; it should be tested against a stronger length baseline (more bases, or λ(n) estimated from the lengths) before any mechanism is proposed.
+* **The order survives, the entropy does not.** Factorization structure reaches the repetend of 1/*n* through its length ord_n(b), which divides λ(n) and shrinks with each additional prime factor (Theorem 1.3). Digit entropy inherits that structure because H ≤ log L. Once length is known, entropy adds at most about one accuracy point for ω, and nothing once the orders in all bases 2…99 are known (Observation 6.3).
+* **One digit symmetry survives.** Midy's symmetry (Proposition 1.4) is visible in the digits and in the spectrum (a log 2 entropy deficit), depends on the factorization through the 2-adic valuations of the local orders, and adds a fraction of a point beyond the lengths (Observation 6.4). It is a classical theorem, not a new law, and it is computed from (*n*, *b*) by one modular exponentiation.
+* **Reformulated conjecture — not supported.** *The NDR spectra of 1/n carry information about ω(n) beyond the orders {ord_n(b)}, the Midy flags and n, and that information grows with n.* At 10⁵–10⁶ the measured gain is −0.07 points (CI [−0.33, +0.24]) against a baseline of 98 orders and Midy flags (`scale-s0-step7`). The step-5 drift was an under-powered baseline.
 * **Not supported:** the law's constants (golden ratio, 5 − 1/15), base invariance as a universal property, links to ζ(s) or the PNT, the prime-power dichotomy, and three-feature sufficiency.
 
 ## 8. Open questions
 
-1. Which per-base NDR statistic carries the residual signal at 10⁵–10⁶, and does it survive when the baseline includes lengths in all bases 2…99?
-2. Is the C7 residue structure (n mod 4, mod 7) explained by the quadratic characters of the bases, i.e. by whether −1 lies in ⟨b⟩ mod *n*?
-3. Can an evolved formula recover λ(n) or *n*/λ(n) from the lengths exactly — and how much of ω does *n*/λ(n) determine?
+Answered in step 7 (`scale-s0-step7`): the residual signal at 10⁵–10⁶ is carried by the statistics that see Midy's vanished half-spectrum and does not survive orders in all bases 2…99 (Observations 6.3–6.4); Midy's symmetry explains about a third of the *n* mod 4 residue structure and none of the *n* mod 7 structure (Observation 4.7); λ(n) is recovered exactly by the lcm of the 19 orders, no formula is needed, and *n*/λ(n) gives only ~72% ω accuracy (Observation 6.5). Still open:
+
+1. What explains the rest of the C7 residue structure — the *n* mod 7 excess and two thirds of the *n* mod 4 excess? A candidate is the k-block generalization of Midy's theorem (1 + c + … + c^{k−1} ≡ 0 mod *n* with c = b^{L/k}), which constrains the bins j ≡ 0 (mod k).
+2. How does the accuracy of an order-only classifier of ω behave beyond 10⁶, and how many bases does it need as *n* grows?
 
 ## 9. Reproducing these results
 
@@ -143,7 +178,7 @@ git submodule update --init --recursive
 .venv/bin/pip install --only-binary :all: -r empirical-scripts/11.0/requirements.txt
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/full.json --run-id full-s0-repro
-.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-repro --stages data,claims,scale,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-repro --stages data,claims,scale,lengths,report
 ```
 
-Each run writes `manifest.json` (code and submodule SHAs, v11 source hash, environment, config, seed, NDR version), the claim, search and scale results, and `report.md` with the figures. The full run takes about 53 minutes and the scale run about 22 minutes on an 8-core machine.
+Each run writes `manifest.json` (code and submodule SHAs, v11 source hash, environment, config, seed, NDR version), the claim, search and scale results, and `report.md` with the figures. The full run takes about 53 minutes and the scale run (with the step-7 `lengths` stage) about 60 minutes on an 8-core machine.

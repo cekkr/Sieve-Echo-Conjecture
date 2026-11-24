@@ -210,6 +210,53 @@ def fig_guides(formulas: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]
     return _save(fig, out / "formula_guides_omega.png"), "Test NMSE of the validation-selected ω formula per seed (dots) and mean (bar) for each guide / S1 schedule / S2 warm start (step 4)."
 
 
+def fig_midy_gap(lengths: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    mech = lengths.get("pair_mechanism") or {}
+    curves = mech.get("binned_H_nodc_by_logL") or {}
+    if not curves.get("0") or not curves.get("1"):
+        return None
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(7.2, 4.4))
+    for j, (flag, name) in enumerate((("0", "−1 ∉ ⟨b⟩ mod n"), ("1", "−1 ∈ ⟨b⟩ mod n (Midy)"))):
+        c = np.array(curves[flag])
+        ax.plot(c[:, 0], c[:, 1], marker=MARKERS[j], ms=5, lw=2, color=SERIES[j], label=name)
+        ax.annotate(name, (c[-1, 0], c[-1, 1]), xytext=(8, 10 if j == 0 else -12), textcoords="offset points", color=TEXT, fontsize=9, va="center")
+    coef = mech["variants"]["H_nodc"]["midy_coefficient"]
+    ax.set_xlabel("log repetend length, log L (one (n, b) pair)")
+    ax.set_ylabel("mean DC-free NDR entropy H_nodc")
+    ax.set_title(f"Midy pairs sit log 2 lower: fitted gap {coef:+.3f} (log 2 = 0.693)")
+    ax.legend(loc="upper left", fontsize=8)
+    ax.set_xlim(right=ax.get_xlim()[1] + 0.12 * (ax.get_xlim()[1] - ax.get_xlim()[0]))
+    return _save(fig, out / "midy_entropy_gap.png"), ("Test-split (n, b) pairs of the 19 v8/v10/primes31 bases: mean H_nodc per log L bin, split by the Midy flag b^(L/2) ≡ −1 (mod n). "
+                                                      "When it holds the two halves of the repetend are digit complements and every even DFT bin except DC vanishes (step 7b).")
+
+
+def fig_c9_by_baseline(lengths: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    bins = [b for b in lengths.get("c9_bins", []) if "gain_over_baseline" in b]
+    names = [nm for nm in ("L19", "L19 + Midy19", "L98 + Midy98") if all(nm in b["gain_over_baseline"] for b in bins)]
+    if not bins or not names:
+        return None
+    plt = _plt()
+    x = np.arange(len(bins))
+    fig, ax = plt.subplots(figsize=(7.4, 4.4))
+    ax.axhline(0, color=TEXT_2, lw=1)
+    desc = {"L19": "19-base lengths", "L19 + Midy19": "19-base lengths + Midy flags", "L98 + Midy98": "lengths + Midy, bases 2…99"}
+    for j, nm in enumerate(names):
+        v = np.array([b["gain_over_baseline"][nm]["entropy"]["value"] for b in bins]) * 100
+        ci = np.array([b["gain_over_baseline"][nm]["entropy"]["ci95"] for b in bins]) * 100
+        xx = x + (j - (len(names) - 1) / 2) * 0.16
+        ax.errorbar(xx, v, yerr=[v - ci[:, 0], ci[:, 1] - v], fmt=MARKERS[j], ms=7, color=SERIES[j], ecolor=SERIES[j], elinewidth=2, capsize=0, lw=0, label=f"over {desc[nm]}")
+        ax.annotate(desc[nm], (xx[-1], v[-1]), xytext=(x[-1] + 0.3, v[-1]), textcoords="data", color=TEXT, fontsize=8.5, va="center")
+    labels = [f"{_decade_label(*b['bin'])}\n" + " / ".join(f"{b['accuracy'][nm] * 100:.1f}" for nm in names) + "%" for b in bins]
+    ax.set_xticks(x, labels)
+    ax.set_xlim(-0.5, len(bins) - 0.5 + 0.9)
+    ax.set_ylabel("accuracy gain from entropy columns (points)")
+    ax.set_title("Entropy's gain shrinks as the length baseline gets stronger")
+    ax.legend(loc="upper left", fontsize=8)
+    return _save(fig, out / "c9_gain_by_baseline.png"), ("Held-out gain (95% bootstrap CI) from adding the entropy columns to three length baselines, per ω-balanced n-range; "
+                                                         "tick labels give the baselines' own accuracies in the same order (step 7a).")
+
+
 def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -> List[Tuple[str, str]]:
     out = run_dir / "figures"
     made: List[Tuple[str, str]] = []
@@ -231,4 +278,8 @@ def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -
         add(fig_c9_by_decade(sc, out))
         add(fig_invariance_by_decade(sc, out))
         add(fig_growth(sc, out))
+    if (run_dir / "lengths.json").is_file():
+        ln = runtime.read_json(run_dir / "lengths.json")
+        add(fig_c9_by_baseline(ln, out))
+        add(fig_midy_gap(ln, out))
     return made
