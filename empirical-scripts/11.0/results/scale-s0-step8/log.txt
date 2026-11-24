@@ -1,0 +1,51 @@
+[18:25:47] run scale-s0-step8 seed=0 stages=['data', 'claims', 'zeros', 'report'] dir=empirical-scripts/11.0/results/scale-s0-step8
+[18:25:47] data: cache hit dataset-9768d7f9ec7d09fb.npz (reused from run scale-s0)
+[18:25:47] data: done in 0.5s
+[18:25:56]   C1: reproduced but explained by size/length (8.72s)
+[18:26:00]   C2: not supported (4.09s)
+[18:26:02]   C3: not reproduced (2.1s)
+[18:26:29]   C4: reproduced; invariance increases with n (26.79s)
+[18:26:31]   C5: reproduced but explained by size/length (1.58s)
+[18:26:32]   C6: reproduced but explained by size/length (1.13s)
+[18:26:33]   C7: supported (residue structure beyond per-base L and ω) (1.4s)
+[18:26:35]   C8: not supported (1.91s)
+[18:27:30]   C9: supported (54.89s)
+[18:27:30] claims: done in 102.6s
+[18:27:30]   8a: zero classes for the pairs of bases [2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 23, 29, 31]
+[18:29:09]     zeros: chunk 11/56 (99s)
+[18:31:14]     zeros: chunk 22/56 (224s)
+[18:32:45]     zeros: chunk 33/56 (315s)
+[18:35:01]     zeros: chunk 44/56 (451s)
+[18:36:35]     zeros: chunk 55/56 (544s)
+[18:36:35]   zeros: 517642 pairs in 545.1s
+[18:36:37]   lengths: 41074 integers x 98 bases in 2.0s
+[18:36:37]   8a: exact cyclotomic check on a sample
+[18:36:38]     exact check: 400/400 agree
+[18:36:39]   8b: C9 per n-range with zero features
+[18:36:56]     bin [1000, 9999] L19: 0.9758
+[18:37:16]     bin [1000, 9999] L19 + zeros: 0.9741
+[18:37:35]     bin [1000, 9999] L98 + Midy98: 0.9800
+[18:37:44]     bin [1000, 9999] L98 + Midy98 + entropy: 0.9634
+[18:38:23]     bin [1000, 9999] L98 + Midy98 + zeros: 0.9793
+[18:38:41]     bin [1000, 9999] L98 + Midy98 + zeros + entropy: 0.9600
+[18:39:00]     bin [1000, 9999] L98 + Midy98 + zeros + all NDR: 0.9572
+[18:39:21]     bin [1000, 9999] log n + zero aggregates: 0.7330
+[18:39:38]     bin [10000, 99999] L19: 0.9540
+[18:39:56]     bin [10000, 99999] L19 + zeros: 0.9564
+[18:40:29]     bin [10000, 99999] L98 + Midy98: 0.9801
+[18:41:10]     bin [10000, 99999] L98 + Midy98 + entropy: 0.9831
+[18:41:48]     bin [10000, 99999] L98 + Midy98 + zeros: 0.9812
+[18:42:50]     bin [10000, 99999] L98 + Midy98 + zeros + entropy: 0.9834
+[18:44:17]     bin [10000, 99999] L98 + Midy98 + zeros + all NDR: 0.9827
+[18:44:52]     bin [10000, 99999] log n + zero aggregates: 0.7123
+[18:45:22]     bin [100000, 1000000] L19: 0.9205
+[18:45:53]     bin [100000, 1000000] L19 + zeros: 0.9280
+[18:47:19]     bin [100000, 1000000] L98 + Midy98: 0.9568
+[18:49:00]     bin [100000, 1000000] L98 + Midy98 + entropy: 0.9561
+[18:50:17]     bin [100000, 1000000] L98 + Midy98 + zeros: 0.9563
+[18:51:19]     bin [100000, 1000000] L98 + Midy98 + zeros + entropy: 0.9577
+[18:53:00]     bin [100000, 1000000] L98 + Midy98 + zeros + all NDR: 0.9594
+[18:53:21]     bin [100000, 1000000] log n + zero aggregates: 0.6855
+[18:53:22]   8c: residue classes with Midy and zero controls
+[18:53:26] zeros: done in 1555.8s
+[18:53:26] report: done in 0.5s

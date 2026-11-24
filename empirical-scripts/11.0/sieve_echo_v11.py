@@ -7,7 +7,7 @@ One command runs the whole pipeline from a config file and a seed and writes eve
     .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/quick.json
 
 Stages (ROADMAP.md): data (step 1) -> claims (step 2) -> formulas, nn (steps 3-4) -> report (steps 2/6).
-All stages are implemented (`scale` is ROADMAP step 5, `lengths` step 7): `formulas` runs the Evolvo GFSL formula experiments (guides x
+All stages are implemented (`scale` is ROADMAP step 5, `lengths` step 7, `zeros` step 8, `whisky` step 8e): `formulas` runs the Evolvo GFSL formula experiments (guides x
 seeds, S1 adaptive evaluation size, S2 RL guide, warm starts); `nn` runs the held-out baselines,
 the §3.1 three-feature retest and the GFSL-NN architecture search.
 
@@ -21,6 +21,8 @@ Run directory:
     nn.json            GFSL-NN search results; knowledge/ holds reusable guide and search knowledge
     scale.json         per-n-range claim statistics, stability between the last two ranges, growth exponents
     lengths.json       step 7: C9 against lengths in bases 2..99 and Midy flags, Midy mechanism, residues, lambda(n)
+    zeros.json         step 8: exact zero classes of the NDR spectra, C9 with zero features, residues
+    whisky.json        step 8e: NDR spectra after SinWhisky resampling (libs/sinwhisky): zero leakage, Midy, omega
     report.md/.json    verdict table and per-claim summary
     log.txt            stage log
     cache/             disposable dataset cache (git-ignored)
@@ -40,10 +42,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import runtime  # noqa: E402
 
-STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "report")
+STAGES = ("data", "claims", "formulas", "nn", "scale", "lengths", "zeros", "whisky", "report")
 IMPLEMENTED = set(STAGES)
-ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "report": "step 6"}
-DEFAULT_STAGES = "data,claims,formulas,nn,scale,lengths,report"
+ROADMAP_STEP = {"claims": "step 2", "formulas": "steps 3-4", "nn": "steps 3-4", "scale": "step 5", "lengths": "step 7", "zeros": "step 8", "whisky": "step 8e", "report": "step 6"}
+DEFAULT_STAGES = "data,claims,formulas,nn,scale,lengths,zeros,whisky,report"
 
 
 class Run:
@@ -250,6 +252,25 @@ def stage_lengths(run: Run) -> dict:
     return {"lengths_file": "lengths.json", "c9_labels": {str(b["bin"]): b.get("label", b.get("skipped")) for b in out["c9_bins"]}}
 
 
+def stage_zeros(run: Run) -> dict:
+    import zeros
+
+    table = load_table(run)
+    out = zeros.run_stage(table, run.config.get("zeros", {}), run.config.get("claims", {}), run.config["data"]["base_sets"], _formula_inputs(run),
+                          run.seed, run.dir, run.manifest["stages"]["data"]["dataset_key"], log=run.log)
+    runtime.write_json(run.dir / "zeros.json", out)
+    return {"zeros_file": "zeros.json", "exact_check": f"{out['exact_check']['agree']}/{out['exact_check']['pairs']}"}
+
+
+def stage_whisky(run: Run) -> dict:
+    import whisky_spectra
+
+    table = load_table(run)
+    out = whisky_spectra.run_stage(table, run.config.get("whisky", {}), run.config["data"]["base_sets"], run.seed, log=run.log)
+    runtime.write_json(run.dir / "whisky.json", out)
+    return {"whisky_file": "whisky.json", "pairs": out["pairs"]}
+
+
 def stage_report(run: Run) -> dict:
     import report
 
@@ -262,7 +283,7 @@ def stage_report(run: Run) -> dict:
     return report.write_report(run.dir, table)
 
 
-STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "report": stage_report}
+STAGE_FUNCS = {"data": stage_data, "claims": stage_claims, "formulas": stage_formulas, "nn": stage_nn, "scale": stage_scale, "lengths": stage_lengths, "zeros": stage_zeros, "whisky": stage_whisky, "report": stage_report}
 
 
 # ---------------------------------------------------------------------------------------------

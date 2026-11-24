@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import importlib.util
 import json
 import math
 import platform
@@ -20,6 +21,7 @@ V11_DIR = Path(__file__).resolve().parent
 REPO_ROOT = V11_DIR.parents[1]
 EVOLVO_ROOT = REPO_ROOT / "libs" / "evolvo"
 EVOLVO_SRC = EVOLVO_ROOT / "src"
+SINWHISKY_ROOT = REPO_ROOT / "libs" / "sinwhisky"
 RESULTS_DIR = V11_DIR / "results"
 
 TRACKED_PACKAGES = ("numpy", "scipy", "sklearn", "sympy", "torch", "matplotlib", "psutil")
@@ -45,6 +47,17 @@ def bootstrap_evolvo():
     if EVOLVO_SRC.resolve() not in origin.parents:
         raise EvolvoMissingError(f"`evolvo` resolved to {origin}, not to the submodule at {EVOLVO_SRC}.")
     return evolvo
+
+
+def bootstrap_sinwhisky():
+    """Import the vectorized SinWhisky resampler from the libs/sinwhisky submodule (step 8e)."""
+    mod = SINWHISKY_ROOT / "v2" / "whisky_np.py"
+    if not mod.is_file():
+        raise EvolvoMissingError(f"SinWhisky submodule (with v2/whisky_np.py) not found at {SINWHISKY_ROOT}. Run `git submodule update --init --recursive`.")
+    spec = importlib.util.spec_from_file_location("sinwhisky_np", mod)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _git(cwd: Path, *args: str) -> str | None:
@@ -124,6 +137,7 @@ def environment_info() -> dict[str, Any]:
         "devices": torch_devices(),
         "git_root": git_info(REPO_ROOT),
         "git_evolvo": git_info(EVOLVO_ROOT),
+        "git_sinwhisky": git_info(SINWHISKY_ROOT) if SINWHISKY_ROOT.is_dir() else None,
         "v11_code_sha256": code_sha256(),
     }
 

@@ -224,5 +224,56 @@
       "generations": 10,
       "eval_size_step": 500
     }
+  },
+  "zeros": {
+    "tolerance": 1e-09,
+    "exact_sample": 100,
+    "exact_max_L": 200,
+    "bins": [
+      [
+        100,
+        999
+      ],
+      [
+        1000,
+        9999
+      ],
+      [
+        10000,
+        99999
+      ]
+    ],
+    "per_omega_cap": 3000,
+    "min_per_omega": 30,
+    "bootstrap": 200,
+    "model_seeds": 1,
+    "max_omega_class": 5,
+    "gbm": {
+      "max_iter": 100,
+      "learning_rate": 0.1
+    },
+    "length_bases": "2..99"
+  },
+  "whisky": {
+    "zoom": 3,
+    "neighbors": 1,
+    "bins": [
+      [
+        100,
+        999
+      ],
+      [
+        1000,
+        9999
+      ],
+      [
+        10000,
+        99999
+      ]
+    ],
+    "per_stratum": 60,
+    "max_L": 20000,
+    "min_L": 8,
+    "bootstrap": 200
   }
 }

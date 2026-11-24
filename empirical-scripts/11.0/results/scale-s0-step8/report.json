@@ -1,0 +1,82 @@
+{
+  "run_id": "scale-s0-step8",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/scale.json",
+  "git_root": {
+    "sha": "5570ad3b25fc9ef1c3ea2846eea040e993161a30",
+    "dirty": true,
+    "changed_paths": [
+      "M ROADMAP.md",
+      " M empirical-scripts/11.0/config/quick.json",
+      " M empirical-scripts/11.0/config/scale.json",
+      " M empirical-scripts/11.0/figures.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/tests/test_zeros.py",
+      "?? empirical-scripts/11.0/zeros.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "bed73809447766823db8d0a8c44995d142863476cb3dfe90fc1bf39b76409a84",
+  "ndr_version": "ndr-v11.1",
+  "verdicts": {
+    "C1": {
+      "title": "Sieve Echo Law H = \u03b1\u00b7log \u03c9 + \u03b2 (\u00a72.2)",
+      "verdict": "reproduced but explained by size/length",
+      "reproduction": "reproduced",
+      "reason": "H_paper: test R\u00b2 law-only 0.298, baseline (log L, log n) 0.971, full 0.972; \u0394R\u00b2 0.0005 CI [0.000, 0.001] (threshold 0.01); partial r(H, log \u03c9 | log L, log n) -0.135."
+    },
+    "C2": {
+      "title": "Direction of the effect (\u00a71.3, \u00a77.1)",
+      "verdict": "not supported",
+      "reproduction": "reproduced",
+      "reason": "Measured on test (H_paper): primes minus composites mean H = 0.902 CI [0.860, 0.946]; Spearman(H, \u03c9) -0.515 (negative); given log L and log n the sign is negative. Primes have the highest entropy, so \u00a71.3 ('primes low-entropy') and \u00a77.1 item 2 are contradicted; only \u03b1 < 0 holds."
+    },
+    "C3": {
+      "title": "Prime-power dichotomy (\u00a72.3)",
+      "verdict": "not reproduced",
+      "reproduction": "not reproduced",
+      "reason": "The paper's -0.843 is corr(\u03c9, is_prime_power) (v11: -0.655 on [2, 9999]), not an entropy correlation. Actual r(H, prime power) on test = 0.468 (positive: prime powers have higher H); given log L, log n: -0.057 CI [-0.080, -0.035]."
+    },
+    "C4": {
+      "title": "Base invariance CV < 0.1 (\u00a72.4, Q5.2)",
+      "verdict": "reproduced; invariance increases with n",
+      "reproduction": "reproduced",
+      "reason": "v8.2's 6% is a 100-integer sample (v11 on all n in [2, 9999]: 0.091). Spearman(CV, log n) for v8/H_paper: -0.102 CI [-0.111, -0.093]. Highest overall rate: v8/Hn_nodc = 0.977. Normalized DC-free entropy saturates near its maximum for long, noise-like repetends, so its CV shrinks with L; the CV of log L itself also falls with n."
+    },
+    "C5": {
+      "title": "Correlation with n^-s (zeta, \u00a74.1)",
+      "verdict": "reproduced but explained by size/length",
+      "reproduction": "reproduced",
+      "reason": "n^-s is a monotone function of n; after a cubic in log n the partial correlations are s=2: -0.011, s=3: -0.011, s=4: -0.010; H ~ log n alone has test R\u00b2 0.334."
+    },
+    "C6": {
+      "title": "H\u00b7log n vs prime number theorem (\u00a74.2)",
+      "verdict": "reproduced but explained by size/length",
+      "reproduction": "reproduced",
+      "reason": "corr(H\u00b7log n, H) = 0.946; with H randomly permuted across n the same statistic is 0.831 CI [0.826, 0.836]: most of it comes from H appearing on both sides, the rest from H growing with n (corr(H, log n) = 0.593). PNT/Li errors are functions of n; partial r given log n: pnt -0.002, li -0.014."
+    },
+    "C7": {
+      "title": "Residue-class structure mod 6/12/30/210 (\u00a74.3)",
+      "verdict": "supported (residue structure beyond per-base L and \u03c9)",
+      "reproduction": "reproduced",
+      "reason": "\u03b7\u00b2 of residue class on test, raw \u2192 excess over the permutation null after controls. H_paper: mod 6: 0.270 \u2192 excess 0.002 (p 0.018), mod 12: 0.283 \u2192 excess 0.035 (p 0.002), mod 30: 0.306 \u2192 excess 0.016 (p 0.002), mod 210: 0.346 \u2192 excess 0.034 (p 0.002). H_nodc: mod 6: 0.191 \u2192 excess 0.001 (p 0.066), mod 12: 0.209 \u2192 excess 0.037 (p 0.002), mod 30: 0.237 \u2192 excess 0.006 (p 0.002), mod 210: 0.286 \u2192 excess 0.015 (p 0.002). Residues mod 6/12/30/210 fix divisibility by 2, 3, 5, 7 and the quadratic characters of the bases, which set the per-base orders."
+    },
+    "C8": {
+      "title": "Fitted constants vs theory and constant matching (\u00a75)",
+      "verdict": "not supported",
+      "reproduction": "reproduced",
+      "reason": "Theory constants inside a 95% CI: no. A value drawn at random near \u03b1 matches some library combination within 0.01 with probability 0.87 (near \u03b2: 0.88), so the matches carry no evidence; \u03b1 and \u03b2 also change with log(\u03c9) vs log(\u03c9+1) and with the entropy definition."
+    },
+    "C9": {
+      "title": "Information about \u03c9 beyond L and n (core question)",
+      "verdict": "supported",
+      "reproduction": "n/a",
+      "reason": "Held-out \u03c9 classification: baseline (n, per-base L, lcm arithmetic) accuracy 0.956; +entropy features 0.960 (\u0394 +0.005 CI [0.000, 0.009]); +all NDR features 0.965 (\u0394 +0.009 CI [0.004, 0.014], log-loss gain +0.0200 CI [0.010, 0.028]); majority 0.246, shuffled-label null 0.238."
+    }
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "run_id": "scale-s0-step8e",
+  "created": "2026-11-24T18:36:50+01:00",
+  "config_path": "empirical-scripts/11.0/config/scale.json",
+  "config_sha256": "f0f3b481b90ca8fabd3ad92765f4ff511ccf785f8f2a159fd9b86016e8b4b47b",
+  "config": {
+    "name": "scale",
+    "description": "ROADMAP step 5: all n in [2, 9999] plus 3000 integers per omega in [10^4, 10^5) and in [10^5, 10^6]; wide base set on 6000 integers. Step 7 (`lengths` stage): orders and Midy flags in bases 2..99 for every integer. Step 8 (`zeros` stage): exact zero classes of the NDR spectra. Step 8e (`whisky` stage): spectra after SinWhisky resampling.",
+    "seed": 0,
+    "data": {
+      "n_min": 2,
+      "n_max": 9999,
+      "stratified": [
+        {
+          "n_lo": 10000,
+          "n_hi": 99999,
+          "per_omega": 3000
+        },
+        {
+          "n_lo": 100000,
+          "n_hi": 1000000,
+          "per_omega": 3000
+        }
+      ],
+      "base_sets": {
+        "v8": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9,
+          10,
+          11,
+          13,
+          14,
+          15,
+          16
+        ],
+        "v10": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          10,
+          12,
+          11,
+          13,
+          15,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "primes31": [
+          2,
+          3,
+          5,
+          7,
+          11,
+          13,
+          17,
+          19,
+          23,
+          29,
+          31
+        ],
+        "wide": {
+          "bases": "2..99",
+          "sample": 6000
+        }
+      },
+      "workers": 0
+    },
+    "split": {
+      "train": 0.7,
+      "val": 0.15,
+      "test": 0.15,
+      "stratify": "omega"
+    },
+    "claims": {
+      "primary_set": "v8",
+      "entropies": [
+        "H_paper",
+        "H_nodc",
+        "Hn_paper"
+      ],
+      "bootstrap": 1000,
+      "permutations": 1000,
+      "effect_threshold": 0.01,
+      "cv_threshold": 0.1,
+      "invariance_sets": [
+        "v8",
+        "v10",
+        "primes31",
+        "wide"
+      ],
+      "invariance_variants": [
+        "H_paper",
+        "H_nodc",
+        "Hn_paper",
+        "Hn_nodc"
+      ],
+      "moduli": [
+        6,
+        12,
+        30,
+        210
+      ],
+      "zeta_s": [
+        2,
+        3,
+        4
+      ],
+      "classifier": {
+        "max_iter": 300,
+        "learning_rate": 0.1,
+        "max_omega_class": 5,
+        "shuffled_nulls": 3
+      }
+    },
+    "scale": {
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          1000000
+        ]
+      ],
+      "per_omega_cap": 3000,
+      "min_per_omega": 30,
+      "bootstrap": 500,
+      "primary_set": "v8",
+      "entropy": "H_paper",
+      "effect_threshold": 0.01,
+      "cv_threshold": 0.1,
+      "max_omega_class": 5,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "T_x": [
+        100,
+        200,
+        400,
+        800,
+        1600,
+        3200
+      ]
+    },
+    "lengths": {
+      "bases": "2..99",
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          1000000
+        ]
+      ],
+      "per_omega_cap": 3000,
+      "min_per_omega": 30,
+      "max_omega_class": 5,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "ablation": true,
+      "pair_bins": 24,
+      "formulas": {
+        "guides": [
+          "none",
+          "policy"
+        ],
+        "seeds": [
+          0,
+          1,
+          2
+        ],
+        "population": 120,
+        "generations": 40
+      },
+      "bootstrap": 500,
+      "model_seeds": 5
+    },
+    "zeros": {
+      "tolerance": 1e-09,
+      "exact_sample": 400,
+      "exact_max_L": 400,
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          1000000
+        ]
+      ],
+      "per_omega_cap": 3000,
+      "min_per_omega": 30,
+      "bootstrap": 500,
+      "model_seeds": 5,
+      "max_omega_class": 5,
+      "gbm": {
+        "max_iter": 200,
+        "learning_rate": 0.1
+      },
+      "length_bases": "2..99"
+    },
+    "whisky": {
+      "zoom": 3,
+      "neighbors": 1,
+      "bins": [
+        [
+          1000,
+          9999
+        ],
+        [
+          10000,
+          99999
+        ],
+        [
+          100000,
+          1000000
+        ]
+      ],
+      "per_stratum": 300,
+      "max_L": 50000,
+      "min_L": 8,
+      "bootstrap": 500
+    }
+  },
+  "seed": 0,
+  "stages": {
+    "data": {
+      "status": "done",
+      "finished": "2026-11-24T18:36:54+01:00",
+      "seconds": 0.52,
+      "dataset_key": "9768d7f9ec7d09fb",
+      "cache": "cache/dataset-9768d7f9ec7d09fb.npz",
+      "split_file": "split.json",
+      "split_sha256": "9789b5b2e545ffa77faf30e3c16adcb1395d78aa854fde05dc5bbd3d56d39f3b",
+      "split_counts": {
+        "train": 28752,
+        "val": 6160,
+        "test": 6162
+      },
+      "integers": 41074,
+      "pairs": 783040,
+      "build_seconds": 1132.59,
+      "reused_from_run": "scale-s0"
+    },
+    "claims": {
+      "status": "done",
+      "finished": "2026-11-24T18:39:07+01:00",
+      "seconds": 133.3,
+      "claims_file": "claims.json",
+      "claims_sha256": "d99d0b4bc180286f81c3300b5f195f8db78aac51e18156ba03be28c7bbf54d01",
+      "verdicts": {
+        "C1": "reproduced but explained by size/length",
+        "C2": "not supported",
+        "C3": "not reproduced",
+        "C4": "reproduced; invariance increases with n",
+        "C5": "reproduced but explained by size/length",
+        "C6": "reproduced but explained by size/length",
+        "C7": "supported (residue structure beyond per-base L and \u03c9)",
+        "C8": "not supported",
+        "C9": "supported"
+      }
+    },
+    "whisky": {
+      "status": "done",
+      "finished": "2026-11-24T18:39:36+01:00",
+      "seconds": 28.09,
+      "whisky_file": "whisky.json",
+      "pairs": 4851
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-24T18:39:36+01:00",
+      "seconds": 0.44,
+      "report": "report.md",
+      "report_json": "report.json",
+      "figures": [
+        "figures/entropy_vs_length.png"
+      ]
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/scale.json",
+    "--run-id",
+    "scale-s0-step8e",
+    "--stages",
+    "data,claims,whisky,report"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "5570ad3b25fc9ef1c3ea2846eea040e993161a30",
+      "dirty": true,
+      "changed_paths": [
+        "M  .gitmodules",
+        " M AGENTS.md",
+        " M ROADMAP.md",
+        " M empirical-scripts/11.0/config/quick.json",
+        " M empirical-scripts/11.0/config/scale.json",
+        " M empirical-scripts/11.0/figures.py",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/runtime.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        "AM libs/sinwhisky",
+        "?? empirical-scripts/11.0/tests/test_zeros.py",
+        "?? empirical-scripts/11.0/whisky_spectra.py",
+        "?? empirical-scripts/11.0/zeros.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "c806f2e73c0f0099c7799534ea6e5b478d6021a21d50cb484fc2c6a27e777541"
+  },
+  "ndr_version": "ndr-v11.1"
+}

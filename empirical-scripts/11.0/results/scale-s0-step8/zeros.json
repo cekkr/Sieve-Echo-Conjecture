@@ -1,0 +1,592 @@
+{
+  "version": "zeros-v11.1",
+  "settings": {
+    "sets": [
+      "v8",
+      "v10",
+      "primes31"
+    ],
+    "tolerance": 1e-09,
+    "exact_sample": 400,
+    "exact_max_L": 400,
+    "bins": [
+      [
+        1000,
+        9999
+      ],
+      [
+        10000,
+        99999
+      ],
+      [
+        100000,
+        1000000
+      ]
+    ],
+    "per_omega_cap": 3000,
+    "min_per_omega": 30,
+    "bootstrap": 500,
+    "model_seeds": 5,
+    "max_omega_class": 5,
+    "gbm": {
+      "max_iter": 200,
+      "learning_rate": 0.1
+    },
+    "length_bases": "2..99",
+    "workers": 0
+  },
+  "zero_bases": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    19,
+    23,
+    29,
+    31
+  ],
+  "zeros_cache_key": "ad1530f7441831ed",
+  "zero_feature_names": [
+    "extra_share.b2",
+    "extra_share.b3",
+    "extra_share.b4",
+    "extra_share.b5",
+    "extra_share.b6",
+    "extra_share.b7",
+    "extra_share.b9",
+    "extra_share.b10",
+    "extra_share.b11",
+    "extra_share.b12",
+    "extra_share.b13",
+    "extra_share.b14",
+    "extra_share.b15",
+    "extra_share.b16",
+    "extra_share.b17",
+    "extra_share.b19",
+    "extra_share.b23",
+    "extra_share.b29",
+    "extra_share.b31",
+    "extra any share",
+    "extra share mean",
+    "extra share max",
+    "zero share mean"
+  ],
+  "describe": {
+    "pairs": 517642,
+    "share_with_extra_zeros": 0.11105938080758516,
+    "by_omega": {
+      "1": {
+        "pairs": 138128,
+        "share_with_extra": 0.000919437043901309,
+        "mean_extra_share": 7.344660779097405e-05
+      },
+      "2": {
+        "pairs": 151773,
+        "share_with_extra": 0.13640766144175842,
+        "mean_extra_share": 0.0018927682780537968
+      },
+      "3": {
+        "pairs": 113480,
+        "share_with_extra": 0.18146810010574552,
+        "mean_extra_share": 0.004323369466800231
+      },
+      "4": {
+        "pairs": 64852,
+        "share_with_extra": 0.14813729723061742,
+        "mean_extra_share": 0.004069752596076626
+      },
+      "5": {
+        "pairs": 35937,
+        "share_with_extra": 0.1300887664524028,
+        "mean_extra_share": 0.003727293156696989
+      },
+      "6": {
+        "pairs": 13440,
+        "share_with_extra": 0.13214285714285715,
+        "mean_extra_share": 0.003322008486072657
+      }
+    },
+    "primes": {
+      "pairs": 136814,
+      "share_with_extra": 0.00086248483342348
+    },
+    "prime_powers_not_prime": {
+      "pairs": 1314,
+      "share_with_extra": 0.00684931506849315
+    },
+    "numerics": {
+      "max_log10_zero_power_over_mean": -24.78593300948125,
+      "min_log10_nonzero_power_over_mean": -12.102392883212259,
+      "inconsistent_classes": 1695
+    },
+    "by_bin": [
+      {
+        "bin": [
+          1000,
+          9999
+        ],
+        "by_omega": {
+          "1": 0.00325148015141221,
+          "2": 0.16128300517194447,
+          "3": 0.24427295375827915,
+          "4": 0.29712505310862486,
+          "5": 0.297029702970297
+        }
+      },
+      {
+        "bin": [
+          10000,
+          99999
+        ],
+        "by_omega": {
+          "1": 0.0002457002457002457,
+          "2": 0.12377421407103525,
+          "3": 0.1623623455754933,
+          "4": 0.1682643427741467,
+          "5": 0.19122409326424872
+        }
+      },
+      {
+        "bin": [
+          100000,
+          1000000
+        ],
+        "by_omega": {
+          "1": 7.017543859649122e-05,
+          "2": 0.11039030552165628,
+          "3": 0.12227586758782576,
+          "4": 0.09306035628822122,
+          "5": 0.09635205063507676,
+          "6": 0.13048377403846154
+        }
+      }
+    ]
+  },
+  "exact_check": {
+    "pairs": 400,
+    "with_extra_zeros": 200,
+    "agree": 400,
+    "mismatches": []
+  },
+  "c9_bins": [
+    {
+      "bin": [
+        1000,
+        9999
+      ],
+      "rows": 7991,
+      "train": 5510,
+      "test": 1230,
+      "accuracy": {
+        "L19": 0.9757723577235773,
+        "L19 + zeros": 0.9741463414634147,
+        "L98 + Midy98": 0.9799999999999999,
+        "L98 + Midy98 + entropy": 0.9634146341463414,
+        "L98 + Midy98 + zeros": 0.9793495934959349,
+        "L98 + Midy98 + zeros + entropy": 0.96,
+        "L98 + Midy98 + zeros + all NDR": 0.9572357723577236,
+        "log n + zero aggregates": 0.7330081300813008
+      },
+      "gain": {
+        "L19 + zeros vs L19": {
+          "value": -0.001626016260162566,
+          "ci95": [
+            -0.005939024390243947,
+            0.0021138211382113526
+          ]
+        },
+        "L98 + Midy98 + zeros vs L98 + Midy98": {
+          "value": -0.0006504065040650042,
+          "ci95": [
+            -0.0039024390243902474,
+            0.002601626016260239
+          ]
+        },
+        "L98 + Midy98 + entropy vs L98 + Midy98": {
+          "value": -0.01658536585365844,
+          "ci95": [
+            -0.022926829268292703,
+            -0.010569105691057063
+          ]
+        },
+        "L98 + Midy98 + zeros + entropy vs L98 + Midy98 + zeros": {
+          "value": -0.019349593495934903,
+          "ci95": [
+            -0.025691056910569054,
+            -0.012922764227642236
+          ]
+        },
+        "L98 + Midy98 + zeros + all NDR vs L98 + Midy98 + zeros": {
+          "value": -0.022113821138211254,
+          "ci95": [
+            -0.029516260162601483,
+            -0.01430894308943087
+          ]
+        }
+      }
+    },
+    {
+      "bin": [
+        10000,
+        99999
+      ],
+      "rows": 13783,
+      "train": 9671,
+      "test": 2072,
+      "accuracy": {
+        "L19": 0.9539575289575289,
+        "L19 + zeros": 0.9563706563706563,
+        "L98 + Midy98": 0.9801158301158301,
+        "L98 + Midy98 + entropy": 0.9831081081081081,
+        "L98 + Midy98 + zeros": 0.9811776061776062,
+        "L98 + Midy98 + zeros + entropy": 0.9833976833976834,
+        "L98 + Midy98 + zeros + all NDR": 0.9827220077220078,
+        "log n + zero aggregates": 0.7122586872586872
+      },
+      "gain": {
+        "L19 + zeros vs L19": {
+          "value": 0.0024131274131273805,
+          "ci95": [
+            -0.002027027027027062,
+            0.0065178571428571395
+          ]
+        },
+        "L98 + Midy98 + zeros vs L98 + Midy98": {
+          "value": 0.001061776061776043,
+          "ci95": [
+            -0.0009652509652509661,
+            0.0034749034749035346
+          ]
+        },
+        "L98 + Midy98 + entropy vs L98 + Midy98": {
+          "value": 0.0029922779922779696,
+          "ci95": [
+            -5.828670879282056e-17,
+            0.006370656370656369
+          ]
+        },
+        "L98 + Midy98 + zeros + entropy vs L98 + Midy98 + zeros": {
+          "value": 0.002220077220077221,
+          "ci95": [
+            -0.0007263513513513091,
+            0.00501930501930509
+          ]
+        },
+        "L98 + Midy98 + zeros + all NDR vs L98 + Midy98 + zeros": {
+          "value": 0.001544401544401608,
+          "ci95": [
+            -0.002027027027026898,
+            0.005115830115830056
+          ]
+        }
+      }
+    },
+    {
+      "bin": [
+        100000,
+        1000000
+      ],
+      "rows": 17260,
+      "train": 12119,
+      "test": 2560,
+      "accuracy": {
+        "L19": 0.9205468750000001,
+        "L19 + zeros": 0.928046875,
+        "L98 + Midy98": 0.956796875,
+        "L98 + Midy98 + entropy": 0.95609375,
+        "L98 + Midy98 + zeros": 0.9563281250000001,
+        "L98 + Midy98 + zeros + entropy": 0.957734375,
+        "L98 + Midy98 + zeros + all NDR": 0.959375,
+        "log n + zero aggregates": 0.685546875
+      },
+      "gain": {
+        "L19 + zeros vs L19": {
+          "value": 0.007499999999999951,
+          "ci95": [
+            0.002265625000000049,
+            0.01246289062500004
+          ]
+        },
+        "L98 + Midy98 + zeros vs L98 + Midy98": {
+          "value": -0.00046874999999990674,
+          "ci95": [
+            -0.0028124999999999427,
+            0.0018378906250000502
+          ]
+        },
+        "L98 + Midy98 + entropy vs L98 + Midy98": {
+          "value": -0.0007031250000000266,
+          "ci95": [
+            -0.003791015625000052,
+            0.0025781250000002087
+          ]
+        },
+        "L98 + Midy98 + zeros + entropy vs L98 + Midy98 + zeros": {
+          "value": 0.0014062499999999423,
+          "ci95": [
+            -0.0019531249999998946,
+            0.0044941406250000185
+          ]
+        },
+        "L98 + Midy98 + zeros + all NDR vs L98 + Midy98 + zeros": {
+          "value": 0.0030468749999998934,
+          "ci95": [
+            -0.0011347656250000199,
+            0.007894531249999922
+          ]
+        }
+      }
+    }
+  ],
+  "residues": {
+    "controls": "C7 controls; + Midy flag of each primary-set base; + extra-zero share and indicator of each primary-set base",
+    "variants": {
+      "H_paper": {
+        "test_rows": 6155,
+        "c7_controls": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.26979607575209485,
+            "eta2_residual": 0.002391535556950564,
+            "eta2_residual_null_mean": 0.0008214440321868385,
+            "excess": 0.0015700915247637256,
+            "perm_p_residual": 0.007984031936127744,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.28345521300867554,
+            "eta2_residual": 0.036892138287803376,
+            "eta2_residual_null_mean": 0.0017616570606124636,
+            "excess": 0.03513048122719091,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.30611359508213565,
+            "eta2_residual": 0.020161897766454193,
+            "eta2_residual_null_mean": 0.00484947677996064,
+            "excess": 0.015312420986493554,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.34626158280712593,
+            "eta2_residual": 0.06759844260928237,
+            "eta2_residual_null_mean": 0.03383848211156224,
+            "excess": 0.03375996049772013,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        },
+        "plus_midy": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.26979607575209485,
+            "eta2_residual": 0.002880633201472193,
+            "eta2_residual_null_mean": 0.0008599744003755924,
+            "excess": 0.0020206588010966008,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.28345521300867554,
+            "eta2_residual": 0.023580396331728495,
+            "eta2_residual_null_mean": 0.0018256443772531978,
+            "excess": 0.021754751954475297,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.30611359508213565,
+            "eta2_residual": 0.01913940503065924,
+            "eta2_residual_null_mean": 0.004785354454347504,
+            "excess": 0.014354050576311736,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.34626158280712593,
+            "eta2_residual": 0.06534573365409661,
+            "eta2_residual_null_mean": 0.03392355458088098,
+            "excess": 0.031422179073215636,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        },
+        "plus_midy_zeros": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.26979607575209485,
+            "eta2_residual": 0.003115887264723834,
+            "eta2_residual_null_mean": 0.0008026044066159729,
+            "excess": 0.002313282858107861,
+            "perm_p_residual": 0.003992015968063872,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.28345521300867554,
+            "eta2_residual": 0.023474654372434144,
+            "eta2_residual_null_mean": 0.0017912389608026728,
+            "excess": 0.02168341541163147,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.30611359508213565,
+            "eta2_residual": 0.019041392550569403,
+            "eta2_residual_null_mean": 0.004647396020150132,
+            "excess": 0.01439399653041927,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.34626158280712593,
+            "eta2_residual": 0.0656689023877893,
+            "eta2_residual_null_mean": 0.03411990860680068,
+            "excess": 0.031548993780988625,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        }
+      },
+      "H_nodc": {
+        "test_rows": 6155,
+        "c7_controls": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.19129511764969093,
+            "eta2_residual": 0.001606797771318859,
+            "eta2_residual_null_mean": 0.0008481676597497123,
+            "excess": 0.0007586301115691467,
+            "perm_p_residual": 0.09580838323353294,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.2087884206903141,
+            "eta2_residual": 0.03848498942158336,
+            "eta2_residual_null_mean": 0.0017740316739403642,
+            "excess": 0.036710957747643,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.23671458032516648,
+            "eta2_residual": 0.011013313322109886,
+            "eta2_residual_null_mean": 0.004698368159087292,
+            "excess": 0.006314945163022594,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": false
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.28625928768042164,
+            "eta2_residual": 0.04903241872146646,
+            "eta2_residual_null_mean": 0.034118515911715705,
+            "excess": 0.014913902809750752,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        },
+        "plus_midy": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.19129511764969093,
+            "eta2_residual": 0.0019948826507076686,
+            "eta2_residual_null_mean": 0.0008301063077420989,
+            "excess": 0.0011647763429655698,
+            "perm_p_residual": 0.03792415169660679,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.2087884206903141,
+            "eta2_residual": 0.03390160745502183,
+            "eta2_residual_null_mean": 0.0017423336917518995,
+            "excess": 0.032159273763269935,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.23671458032516648,
+            "eta2_residual": 0.010883950955925781,
+            "eta2_residual_null_mean": 0.0046712936825179545,
+            "excess": 0.006212657273407827,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": false
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.28625928768042164,
+            "eta2_residual": 0.047293957496019286,
+            "eta2_residual_null_mean": 0.033959416995318695,
+            "excess": 0.013334540500700591,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        },
+        "plus_midy_zeros": {
+          "6": {
+            "classes": 6,
+            "eta2_raw": 0.19129511764969093,
+            "eta2_residual": 0.0025180778780943256,
+            "eta2_residual_null_mean": 0.0007996246833897814,
+            "excess": 0.0017184531947045441,
+            "perm_p_residual": 0.013972055888223553,
+            "supported": false
+          },
+          "12": {
+            "classes": 12,
+            "eta2_raw": 0.2087884206903141,
+            "eta2_residual": 0.03427641481857568,
+            "eta2_residual_null_mean": 0.001674690567456871,
+            "excess": 0.032601724251118805,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          },
+          "30": {
+            "classes": 30,
+            "eta2_raw": 0.23671458032516648,
+            "eta2_residual": 0.010967275807837164,
+            "eta2_residual_null_mean": 0.004713308493285748,
+            "excess": 0.006253967314551416,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": false
+          },
+          "210": {
+            "classes": 210,
+            "eta2_raw": 0.28625928768042164,
+            "eta2_residual": 0.04939471862726932,
+            "eta2_residual_null_mean": 0.0340649219655543,
+            "excess": 0.015329796661715016,
+            "perm_p_residual": 0.001996007984031936,
+            "supported": true
+          }
+        }
+      }
+    }
+  },
+  "seconds": 1555.7
+}

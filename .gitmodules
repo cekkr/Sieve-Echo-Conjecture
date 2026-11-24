@@ -1,3 +1,6 @@
 [submodule "libs/evolvo"]
 	path = libs/evolvo
 	url = https://github.com/Geckos-Ink/evolvo.git
+[submodule "libs/sinwhisky"]
+	path = libs/sinwhisky
+	url = https://github.com/cekkr/sinwhisky.py.git

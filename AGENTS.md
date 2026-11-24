@@ -30,6 +30,7 @@ These are mandatory for every task from v11 onward.
 - **D5 — Keep this file live.** Follow the [AGENTS.md bootstrap protocol](#collaboration-and-maintenance-rules): every change that adds, moves, or changes a file, command, contract, or result updates the matching section here in the same change.
 - **D6 — Evaluation size grows with quality.** Each genome is scored on 5 000 integers at first, rising step by step to at most 100 000 as the average of the best scores improves. Never compare fitness values taken at different sizes. Spec: [`ROADMAP.md` S1](ROADMAP.md#s1--adaptive-evaluation-size-5-000--100-000).
 - **D7 — Reinforcement learning through PyTorch is required.** A torch guide learns which genome edits work over time (weights saved and reused across runs) and lowers exploration as the best scores improve, which reduces the spread of results. Rewards are relative to the average best scores. PyTorch is therefore a hard dependency of v11. Spec: [`ROADMAP.md` S2](ROADMAP.md#s2--torch-reinforcement-learning-guide).
+- **D8 — Where v11 takes an FFT of a digit sequence, also use SinWhisky.** The owner's circle-based resampler lives in the git submodule [`libs/sinwhisky`](libs/sinwhisky) (upstream `https://github.com/cekkr/sinwhisky.py`); v11 imports its vectorized `v2/whisky_np.py` through `runtime.bootstrap_sinwhisky()` and compares spectra after SinWhisky resampling with the plain FFT (step 8e). Edit SinWhisky inside the submodule (keep its `AGENTS.md`/`README.md` and tests current, commit on its `main`), then commit the pointer here, as for Evolvo (D3).
 
 ## Collaboration and Maintenance Rules
 
@@ -133,10 +134,10 @@ The owner's Mathematical Annotation Language proposal. The `level: … connects_
 
 ### [`empirical-scripts/11.0/sieve_echo_v11.py`](empirical-scripts/11.0/sieve_echo_v11.py)
 
-v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, scale, lengths, report`).
+v11 entry point. Parses `--config --seed --run-id --resume --stages --results-dir`, imports Evolvo through `runtime.bootstrap_evolvo()` before any stage, creates `results/<run-id>/`, and runs the requested stages in order (`data, claims, formulas, nn, scale, lengths, zeros, whisky, report`).
 
-- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_formulas` (`formulas.json`, `best_formulas.md`, `knowledge/policy_<target>.pt`), `stage_nn` (`baselines.json`, `nn.json`, `knowledge/nn_<input>.json`), `stage_scale` (`scale.json`), `stage_lengths` (`lengths.json`, `cache/lengths-<key>.npz`), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED` = all seven stages.
-- **Contract:** default `--stages` is `data,claims,formulas,nn,scale,lengths,report`. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
+- **Key parts:** `Run` (manifest, log, stage status; refuses to reuse a run dir without `--resume`, refuses `--resume` with a different config or seed), `stage_data` (build, load, or reuse the cached dataset; writes `data_summary.json` and `split.json`), `load_table`, `stage_claims` (`claims.json`), `stage_formulas` (`formulas.json`, `best_formulas.md`, `knowledge/policy_<target>.pt`), `stage_nn` (`baselines.json`, `nn.json`, `knowledge/nn_<input>.json`), `stage_scale` (`scale.json`), `stage_lengths` (`lengths.json`, `cache/lengths-<key>.npz`), `stage_zeros` (`zeros.json`, `cache/zeros-<key>.npz`), `stage_whisky` (`whisky.json`), `stage_report` (`report.md`, `report.json`, prints the verdict table), `IMPLEMENTED` = all nine stages.
+- **Contract:** default `--stages` is `data,claims,formulas,nn,scale,lengths,zeros,whisky,report`. Add each new stage to `STAGE_FUNCS` and `IMPLEMENTED`. When no local cache exists, `stage_data` hard-links (or copies) `results/*/cache/dataset-<key>.npz` and its `data_summary.json` from another run with the same key and records `reused_from_run`; bump `dataset.DATASET_FORMAT` or `ndr.NDR_VERSION` whenever code changes the dataset content, or stale caches will be reused.
 
 ### [`empirical-scripts/11.0/runtime.py`](empirical-scripts/11.0/runtime.py)
 
@@ -167,7 +168,7 @@ ROADMAP step 2: one function per claim (`c1_law` … `c9_beyond_L`), driven by `
 
 ### [`empirical-scripts/11.0/figures.py`](empirical-scripts/11.0/figures.py)
 
-Static PNG figures into `<run>/figures/`: `entropy_vs_length` (needs the dataset), `heldout_omega` (baselines/nn/formulas), `formula_guides_omega` (formulas), `c9_gain_by_decade`, `invariance_by_decade`, `growth_exponents` (scale), `c9_gain_by_baseline`, `midy_entropy_gap` (lengths). Palette: categorical blue/orange/aqua (validated with the dataviz validator: adjacent CVD ΔE ≥ 9.2; aqua < 3:1 contrast, so lines are always direct-labelled), single-hue blue ramp for ω, legend plus direct labels for multi-series charts.
+Static PNG figures into `<run>/figures/`: `entropy_vs_length` (needs the dataset), `heldout_omega` (baselines/nn/formulas), `formula_guides_omega` (formulas), `c9_gain_by_decade`, `invariance_by_decade`, `growth_exponents` (scale), `c9_gain_by_baseline`, `midy_entropy_gap` (lengths), `spectral_zeros_by_omega` (zeros). Palette: categorical blue/orange/aqua (validated with the dataviz validator: adjacent CVD ΔE ≥ 9.2; aqua < 3:1 contrast, so lines are always direct-labelled), single-hue blue ramp for ω, legend plus direct labels for multi-series charts.
 
 ### [`empirical-scripts/11.0/features.py`](empirical-scripts/11.0/features.py)
 
@@ -198,9 +199,20 @@ ROADMAP step 7: what the residual entropy signal is. `orders_and_midy` (rows × 
 - **Contract:** `lengths.bases` must contain the v8/v10/primes31 bases (raises otherwise). λ(n) and φ(n) are read only as diagnostics and as an explicitly labelled control.
 - **Common mistakes:** treating the Midy flag as a factorization label (it is a function of (n, b), visible in the digit sequence); comparing `lengths.json` gains with `claims.json` C9 (different samples: claims uses the whole split, lengths the ω-balanced ranges).
 
+### [`empirical-scripts/11.0/zeros.py`](empirical-scripts/11.0/zeros.py)
+
+ROADMAP step 8: exact zeros of the NDR spectrum. `pair_zeros` (per pair: vanishing classes k | L from the float FFT of the remainders — all bins with L/gcd(j, L) = k vanish together — split into Midy classes and *extra* classes; shares, counts, smallest extra k, power-gap diagnostics, partly-vanishing classes), `exact_zero_classes` (exact test Φ_k | Σ_t T_t x^t with T_t = Σ_{i≡t mod k} r_i; tests and run samples only), `float_zero_classes`, `compute`/`load_or_compute` (process pool over the pairs of the v8/v10/primes31 bases; cache `cache/zeros-<key>.npz` keyed by dataset key, bases, tolerance and `ZEROS_VERSION`), `row_block` (per-base extra-zero share + aggregates), `describe`, `exact_check`, `c9` (L19 ± zeros, L98 + Midy98 ± zeros ± entropy/all NDR, zero aggregates alone; same samples and seeds as step 7), `residues` (C7 ± Midy ± zero controls), `run_stage`.
+
+- **Contract:** the theory is in the module docstring (DFT identity, class-wise vanishing, character expansion with Euler factors) and in `tests/test_zeros.py`; zero features are digit (NDR) features, allowed as inputs.
+- **Common mistakes:** thresholding bins individually instead of by class; using `flatness` as a zero detector (it floors zero bins at 1e-12 of the mean and mixes all classes).
+
+### [`empirical-scripts/11.0/whisky_spectra.py`](empirical-scripts/11.0/whisky_spectra.py)
+
+ROADMAP step 8e (directive D8): on an ω × n-range stratified sample of (n, b) pairs (19 bases, `max_L`), each NDR period is resampled ×(zoom + 1) by SinWhisky (`sinwhisky_resample_np(..., periodic=True)` from [`libs/sinwhisky`](libs/sinwhisky)) and by periodic linear interpolation (`linear_periodic`, the linear control that keeps exact spectral zeros). `pair_record` (entropies of the plain, SinWhisky and linear spectra; leakage of power into the original zero classes), `run_stage` (leakage summary, Midy coefficient per entropy, test ΔR² of log ω beyond log L, log b, log n, Midy flag and extra-zero share, bootstrap CI). Output `whisky.json` records the SinWhisky submodule's git state.
+
 ### [`empirical-scripts/11.0/config/`](empirical-scripts/11.0/config)
 
-`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s), `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; data ~20 min) and `scale.json` (step 5: n ∈ [2, 9999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶], wide set on 6 000; run with `--stages data,claims,scale,report`). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. `lengths.{bases, bins, per_omega_cap, min_per_omega, bootstrap, max_omega_class, gbm, ablation, pair_bins, formulas.{guides, seeds, population, generations, …}, workers}` (step 7; `formulas: null` skips the Evolvo part). `formulas.{targets, guides, seeds, population, generations, parsimony, eval_size_min/max/step, q_target (per target), top_fraction, save_threshold_ratio, save_top_per_gen, safety_net, ablation_guide, fixed_size, warm_start, knowledge_seed, inputs, workers}`; `nn.baselines.{max_train_rows, gbm}`, `nn.search.{population, generations, patience, max_train_rows, max_val_rows, hard_max_epochs, max_rows, max_params, knowledge_in}`. Quick: population 100 × 30 generations, N step 500 (train has 7 366 rows); full: 200 × 60, N step 5 000 up to 100 000. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
+`quick.json` (n ∈ [2, 9999] + 100 per ω from [10⁴, 10⁵], 4 base sets; builds in ~8 s), `full.json` (n ∈ [2, 150 000] + 2 000 per ω up to 10⁶; data ~20 min) and `scale.json` (step 5: n ∈ [2, 9999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶], wide set on 6 000; run with `--stages data,claims,scale,report`). Keys: `seed`, `data.{n_min, n_max, stratified, base_sets, workers}`, `split.{train, val, test, stratify}`, `claims.{primary_set, entropies, bootstrap, permutations, effect_threshold, cv_threshold, invariance_sets, invariance_variants, moduli, zeta_s, classifier}`. `lengths.{bases, bins, per_omega_cap, min_per_omega, bootstrap, max_omega_class, gbm, ablation, pair_bins, formulas.{guides, seeds, population, generations, …}, workers}` (step 7; `formulas: null` skips the Evolvo part). `zeros.{tolerance, exact_sample, exact_max_L, bins, per_omega_cap, min_per_omega, bootstrap, model_seeds, max_omega_class, gbm, length_bases, sets, workers}` (step 8). `whisky.{zoom, neighbors, bins, per_stratum, max_L, min_L, sets, bootstrap}` (step 8e). `formulas.{targets, guides, seeds, population, generations, parsimony, eval_size_min/max/step, q_target (per target), top_fraction, save_threshold_ratio, save_top_per_gen, safety_net, ablation_guide, fixed_size, warm_start, knowledge_seed, inputs, workers}`; `nn.baselines.{max_train_rows, gbm}`, `nn.search.{population, generations, patience, max_train_rows, max_val_rows, hard_max_epochs, max_rows, max_params, knowledge_in}`. Quick: population 100 × 30 generations, N step 500 (train has 7 366 rows); full: 200 × 60, N step 5 000 up to 100 000. A base set is a list, `"a..b"`, or `{"bases": …, "sample": k}`.
 
 ### [`empirical-scripts/11.0/tests/`](empirical-scripts/11.0/tests)
 
@@ -265,6 +277,10 @@ The v8.2 run cited by the paper: [`sieve_echo_results_20250825_224642.json`](emp
 
 Evolvo library, upstream `https://github.com/Geckos-Ink/evolvo`, branch `main`, registered in [`.gitmodules`](.gitmodules). Step 3 added declared inputs, `InstructionProfile`, `execute_batch`, `fitness_epoch`, `GFSLPolicyGuide`, `TorchTask.classification` and fixed a validator op-list aliasing bug; those commits are on upstream `main` (pushed by the owner after step 6). Own handbook: [`libs/evolvo/AGENTS.md`](libs/evolvo/AGENTS.md) — it applies to every file under `libs/evolvo/`. Source in [`libs/evolvo/src/evolvo/`](libs/evolvo/src/evolvo), tests in [`libs/evolvo/tests/`](libs/evolvo/tests), specs in [`libs/evolvo/papers/`](libs/evolvo/papers). `libs/evolvo/gold/evolvo.py` is a single-file legacy snapshot; do not use it.
 
+### [`libs/sinwhisky`](libs/sinwhisky) (git submodule)
+
+SinWhisky by the owner, upstream `https://github.com/cekkr/sinwhisky.py`, branch `main`: a circle-based 1-D resampler (circle through every three consecutive samples, cosine-window blend; C99 core in `sinwhisky_c/`, scalar Python reference `v2/whisky.py`). v11 uses the vectorized `v2/whisky_np.py::sinwhisky_resample_np` (added for step 8e; identical results to the reference, `periodic=True` mode). Own handbook: [`libs/sinwhisky/AGENTS.md`](libs/sinwhisky/AGENTS.md). Commits made from this repository go on its `main` and are pushed only when the owner asks.
+
 ### [`libs/genetic_ml/`](libs/genetic_ml), [`libs/evolvo_engines/`](libs/evolvo_engines)
 
 Pre-submodule copies (`evolvo_model.py`, `model_evolver.py`, `evolvo_engine-1.0.py`). Superseded by [`libs/evolvo`](libs/evolvo); do not import.
@@ -311,6 +327,12 @@ Standard Python template plus `empirical-scripts/11.0/results/*/cache/` (v11 dat
 - **Cause:** when b^(L/2) ≡ −1 (mod n) the repetend's halves are digit complements and every even DFT bin except DC vanishes, so `H_nodc` is log 2 lower at fixed L (pair-level coefficient −0.694, `scale-s0-step7`). For odd n the flag needs equal 2-adic valuations of the local orders, so it is rarer for larger ω. A baseline of 19 orders also under-describes the group: orders in 98 bases add +3.3 points at 10⁵–10⁶.
 - **Safe pattern:** compare against `lengths` baselines (L98 + Midy98); average gradient-boosting fits over several seeds (`lengths.model_seeds`) before reading sub-point gains.
 - **Status:** with that baseline the entropy gain at 10⁵–10⁶ is −0.07 points (CI [−0.33, +0.24]).
+
+### Spectral zeros read as new factorization information
+
+- **Symptom:** features counting exactly vanishing DFT bins of the digit sequence separate primes from composites and add ω accuracy over a 19-base length baseline (+0.75 points at 10⁵–10⁶, `scale-s0-step8`).
+- **Cause:** zeros come in Galois classes k | L and are explained by characters: even extensions (Midy) and Euler factors (1 − χ*(p)) for primes p | n (`zeros.py` docstring, `studies/9` Proposition 1.5). They are real digit information, but the orders in 98 bases already carry it (−0.05 points over L98 + Midy98).
+- **Safe pattern:** detect zeros class-wise (not bin-wise), check against the exact Φ_k test, and compare against the step-7 baseline.
 
 ### Training-set accuracy reported as model accuracy
 
@@ -371,7 +393,7 @@ Run Evolvo's tests:
 cd libs/evolvo && PYTHONPATH=src ../../.venv/bin/python -m unittest discover -s tests
 ```
 
-Run the v11 tests from the repo root (44 tests incl. figures, ~1–1.5 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
+Run the v11 tests from the repo root (49 tests incl. figures, ~2–2.5 min — the end-to-end claims test dominates; the reproduction tests need the stored v8/v10 results):
 
 ```bash
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests -v
@@ -401,6 +423,18 @@ Run the step-7 analysis (reuses the scale dataset cache; orders in bases 2..99 ~
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-step7 --stages data,claims,scale,lengths,report
 ```
 
+Run the step-8 analysis (reuses the scale dataset cache; FFT zero classes of every pair, then 5-seed C9 models; run in the background):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-step8 --stages data,claims,zeros,report
+```
+
+Run the step-8e SinWhisky spectra analysis (single process, stratified pair sample):
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-step8e --stages data,claims,whisky,report
+```
+
 Resume an existing run (finished stages are skipped; config and seed must match):
 
 ```bash
@@ -414,7 +448,7 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 ## Test Ownership Map
 
 - Evolvo library → [`libs/evolvo/tests/test_gfsl_core.py`](libs/evolvo/tests/test_gfsl_core.py) (GFSL core), [`libs/evolvo/tests/test_policy_guide.py`](libs/evolvo/tests/test_policy_guide.py), [`libs/evolvo/tests/test_nnarch.py`](libs/evolvo/tests/test_nnarch.py) (GFSL-NN). Functions, lists and Kompute have only smoke demos.
-- v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py); `features.py`, `search_formulas.py`, `baselines.py`, `search_nn.py` → [`empirical-scripts/11.0/tests/test_search.py`](empirical-scripts/11.0/tests/test_search.py); `scale.py` and multi-range sampling → [`empirical-scripts/11.0/tests/test_scale.py`](empirical-scripts/11.0/tests/test_scale.py); `lengths.py` (Midy ⇔ complementary halves ⇔ vanishing even DFT bins, the 2-adic characterization for odd n, order matrix, lcm of all orders = λ, length-arithmetic parity, stage end-to-end incl. reproduction of the scale stage's C9) → [`empirical-scripts/11.0/tests/test_lengths.py`](empirical-scripts/11.0/tests/test_lengths.py). The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
+- v11 `ndr.py` → [`empirical-scripts/11.0/tests/test_ndr.py`](empirical-scripts/11.0/tests/test_ndr.py); `dataset.py` → [`empirical-scripts/11.0/tests/test_dataset.py`](empirical-scripts/11.0/tests/test_dataset.py); `claims.py`, `report.py` → [`empirical-scripts/11.0/tests/test_claims.py`](empirical-scripts/11.0/tests/test_claims.py); `features.py`, `search_formulas.py`, `baselines.py`, `search_nn.py` → [`empirical-scripts/11.0/tests/test_search.py`](empirical-scripts/11.0/tests/test_search.py); `scale.py` and multi-range sampling → [`empirical-scripts/11.0/tests/test_scale.py`](empirical-scripts/11.0/tests/test_scale.py); `lengths.py` (Midy ⇔ complementary halves ⇔ vanishing even DFT bins, the 2-adic characterization for odd n, order matrix, lcm of all orders = λ, length-arithmetic parity, stage end-to-end incl. reproduction of the scale stage's C9) → [`empirical-scripts/11.0/tests/test_lengths.py`](empirical-scripts/11.0/tests/test_lengths.py); `zeros.py` (digit/remainder DFT identity, exact Φ_k classes = FFT classes for n < 700, character expansion and Euler factors for n = p·q, stage end-to-end) and `whisky_spectra.py` (linear control keeps zeros, Midy coefficient, report) → [`empirical-scripts/11.0/tests/test_zeros.py`](empirical-scripts/11.0/tests/test_zeros.py). SinWhisky's own suite (`cd libs/sinwhisky && ../../.venv/bin/python -m unittest discover -s tests`, 21 tests incl. the vectorized/periodic cross-validation) owns `libs/sinwhisky`. The entry script has no unit test; it is verified by the quick run. Older version folders have no tests.
 
 ## Data, Security, Privacy, and Compatibility Boundaries
 
@@ -429,11 +463,11 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 - Historical scripts v3.1–v10 and their stored results (exploratory, see pitfalls).
 - Evolvo submodule at [`libs/evolvo`](libs/evolvo) with the step-3 features (see [Standing Evolvo Facts](#standing-evolvo-facts-relevant-to-v11)).
 
-- v11 steps 0–5 and 7 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), Markdown/JSON report with figures, 44 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
+- v11 steps 0–5, 7 and 8 ([`ROADMAP.md`](ROADMAP.md)): entry script, manifest, canonical `ndr-v11.1` definitions, dataset with split and cache, C1–C9 tests with reproduction of every stored v8.2 statistic, Evolvo formula search (4 guides × 5 seeds, S1 adaptive evaluation size, S2 RL guide with warm starts), held-out baselines, §3.1 retest, GFSL-NN search, scale analysis to 10⁶ with growth exponents, step-7 length/Midy/λ analysis (`lengths` stage), step-8 exact spectral zeros (`zeros`) and SinWhisky spectra (`whisky`, submodule `libs/sinwhisky`), Markdown/JSON report with figures, 49 unit tests, `.venv` with torch. Verdicts and their runs are in [`ROADMAP.md` Results log](ROADMAP.md#results-log).
 
 ### Experimental / Scaffold
 
-- Every n up to 10⁶ was not built (≈ 15 h); steps 5 and 7 use ω-stratified decades instead. The `studies/9` draft (now including step 7) awaits owner review.
+- Every n up to 10⁶ was not built (≈ 15 h); steps 5 and 7 use ω-stratified decades instead. The `studies/9` draft (now including steps 7–8) awaits owner review.
 
 ### Known Gaps
 
@@ -442,8 +476,9 @@ Long runs: v10 ran perpetually with multi-GB memory. Run v11 full-scale jobs in 
 
 ### Near-Term Priorities
 
-1. Owner review of the step-6/7 reports and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) steps 6–7).
-2. Remaining open questions of `studies/9` §8: the rest of the C7 residue structure (n mod 7, part of n mod 4; candidate: k-block Midy conditions) and order-only ω classification beyond 10⁶.
+1. Owner review of the step-6/7/8 reports and the `studies/9` draft ([`ROADMAP.md`](ROADMAP.md) steps 6–8).
+2. ROADMAP step 9: the rest of the C7 residue structure (small-prime membership q ∈ ⟨b⟩, Euler products of L(1, χ)) and order-only ω classification beyond 10⁶.
+3. The `libs/sinwhisky` commit `4fa78f3` (vectorized resampler) is not pushed upstream yet; push it with the root pointer.
 
 ## Task Start and Handoff Checklist
 

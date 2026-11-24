@@ -12,7 +12,9 @@ We re-examine the Sieve Echo Conjecture — that the factorization complexity of
 4. A small residual NDR signal seemed to grow with *n* (+1.3 accuracy points at 10⁵–10⁶ over a 19-base length baseline, `scale-s0`). It does not survive a stronger baseline: with the orders in every base 2…99 and one symmetry bit per base, entropy adds −0.07 points (95% CI [−0.33, +0.24]) at 10⁵–10⁶ (`scale-s0-step7`).
 5. The one digit property that carries information beyond the lengths is **Midy's symmetry**: when −1 ∈ ⟨b⟩ mod *n* the two halves of the repetend are digit complements, every even Fourier bin vanishes, and the DC-free entropy drops by exactly log 2 on average (fitted −0.694). The symmetry depends on the 2-adic valuations of the orders modulo each prime power of *n* (Proposition 1.4), so it thins out as ω grows (61.5% of pairs for ω = 1, 1.0% for ω = 5); as a feature it adds +0.4 points beyond the 98 lengths.
 
-The "echo" of the sieve is real, but it is the multiplicative order — and one bit of its group structure — not the digit entropy.
+6. The digit spectrum also has **exact zeros** that mark the factorization: by Proposition 1.5 a whole frequency class vanishes when the Euler factors (1 − χ*(p)) of the relevant characters vanish at primes *p* | *n*. Such zeros occur in 0.09% of prime (*n*, *b*) pairs and 11–30% of composite pairs — yet they add nothing to ω classification once the orders in 98 bases are known (−0.05 points, CI [−0.28, +0.18]; `scale-s0-step8`). Spectra taken after SinWhisky's circle-based resampling carry the same information as the plain FFT (`scale-s0-step8e`).
+
+The "echo" of the sieve is real, and it even reaches the digits as Midy's symmetry and as exact spectral zeros — but everything it says about ω is already said by the multiplicative orders.
 
 ---
 
@@ -47,6 +49,18 @@ All definitions are implemented once in [`ndr.py`](../../empirical-scripts/11.0/
 
   Part (b) is Midy's theorem (1836) in its general form; (c) shows why Midy pairs thin out as ω grows: each extra odd prime factor adds one more 2-adic valuation that must match. The flag is a function of (*n*, *b*) and is visible in the digits, so it is NDR information, not a factorization label; but unlike *L* it is not a function of the length alone. All three parts are unit-tested in [`tests/test_lengths.py`](../../empirical-scripts/11.0/tests/test_lengths.py).
 
+* **Proposition 1.5 (spectral zeros; added in step 8).** With *r*ᵢ = *b*^i mod *n*, *d*ᵢ = (*b·r*ᵢ − *r*_{i+1})/*n* and X_j(x) = Σᵢ xᵢ e^{−2πi·ij/L}:
+
+  (a) X_j(d) = (*b* − e^{2πi·j/L})·X_j(r)/*n*, so the digits, the NDR and the remainders vanish on the same bins;
+
+  (b) with k = L/gcd(j, L) and T_t = Σ_{i ≡ t (mod k)} rᵢ, X_j(r) = Σ_{t<k} T_t ζ_k^{ut} for a primitive k-th root of unity ζ_k^u, so X_j = 0 iff the cyclotomic polynomial Φ_k divides Σ_t T_t x^t — bins vanish in whole classes {j : L/gcd(j, L) = k};
+
+  (c) with G = (ℤ/nℤ)*, H = ⟨b⟩, m = [G : H] and ψ_j(b^i) = e^{−2πi·ij/L}: X_j(r) = (*n*/m) Σ_{χ ∈ Ĝ, χ|_H = ψ_j} B_{1,χ}, where B_{1,χ} = (1/*n*) Σ_{a=1}^{n} χ(a)·a.
+
+  *Proof.* (a) Sum dᵢ e^{−2πi·ij/L} and shift the index of r_{i+1}; *b* − e^{2πi·j/L} ≠ 0 because *b* ≥ 2. (b) e^{−2πi·ij/L} depends on i only modulo k and equals ζ_k^{u·i} with u = j/gcd(j, L) coprime to k; the value of an integer polynomial at a primitive k-th root of unity is 0 iff Φ_k divides it, independently of which root. (c) Orthogonality on G/H: Σ_{χ|_H = ψ} χ(a) = m·ψ(a) for a ∈ H and 0 otherwise. ∎
+
+  Even nontrivial characters have B_{1,χ} = 0 — when every extension of ψ_j is even, the bin vanishes, which is Proposition 1.4(b) again. For χ induced by a primitive χ*, B_{1,χ} = B_{1,χ*} ∏_{p | n} (1 − χ*(p)) (standard; e.g. Washington, *Introduction to Cyclotomic Fields*, ch. 4): an Euler factor vanishes when χ*(p) = 1 for a prime *p* dividing *n*, a relation between the prime factors of *n* that the digit spectrum records as an exact zero. For prime *n* there are no such factors, and zeros need a cancellation among the extensions. Parts (a)–(c) and the Euler-factor formula (for *n* = *p·q*) are checked exactly in [`tests/test_zeros.py`](../../empirical-scripts/11.0/tests/test_zeros.py).
+
 ## 2. Data and method
 
 | run | config | content |
@@ -55,6 +69,8 @@ All definitions are implemented once in [`ndr.py`](../../empirical-scripts/11.0/
 | `full-s0-step4` | `config/full.json` | all n ∈ [2, 150 000] + 2 000 per ω from (1.5·10⁵, 10⁶]; 162 007 integers, 2 340 678 (n, b) pairs |
 | `scale-s0` | `config/scale.json` | all n ∈ [2, 9 999] + 3 000 per ω in [10⁴, 10⁵) and in [10⁵, 10⁶]; 41 074 integers |
 | `scale-s0-step7` | `config/scale.json` | the same integers; adds orders and Midy flags in all bases 2…99 (step 7) |
+| `scale-s0-step8` | `config/scale.json` | the same integers; exact zero classes of 517 642 (*n*, *b*) spectra (step 8) |
+| `scale-s0-step8e` | `config/scale.json` | 4 851 sampled pairs; spectra after SinWhisky resampling ([`libs/sinwhisky`](../../libs/sinwhisky)) |
 
 Base sets: the v8 paper's 13 bases {2–7, 9–11, 13–16} (`v8`), v10's 16 bases, the primes ≤ 31, and a wide set 2…99 on a sub-sample. Integers are split once, by *n*, stratified by ω, 70/15/15 (train/validation/test). Every fitted quantity is fitted on train and reported on test; every claim is also tested conditional on log *L* and log *n*, with 95% bootstrap confidence intervals and permutation nulls. Factorization labels (ω, Ω, τ, φ, λ, μ, primality) are never inputs of a predictor of ω.
 
@@ -152,6 +168,12 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 
 **Observation 6.5 (λ(n) and ω).** Theorem 1.3 holds on all 19 390 odd *n* of the data; its length-only form ω ≤ ⌈log₂(*n* / lcm_b ord_n(b))⌉ is never violated and is tight for 64% of odd *n*. But *n*/λ(n) determines ω only loosely: gradient boosting on (log *n*, log λ(n)) — a labelled, factorization-derived control — reaches 73% / 69% / 72% per decade, 75–78% with the share of Midy pairs, against 96–98% from the 98 orders. Evolved GFSL formulas do not close the gap: on the same table, mean test accuracy 58% with the step-4 inputs and 54% with inputs built from the 98 orders (λ estimate, Midy share; 2 guides × 3 seeds). The information is in how the orders vary across bases, which a single scalar like λ(n) does not carry.
 
+**Observation 6.6 (spectral zeros are an echo, but a redundant one).** Over 517 642 pairs of the 19 bases (`scale-s0-step8`), the FFT finds zero classes at ≤ 10^−24.8 of the mean power, and the exact cyclotomic test of Proposition 1.5(b) agrees on all 400 sampled pairs. Classes beyond Midy's vanish for 0.09% of prime pairs and 0.68% of prime-power pairs, but for 13.6%, 18.1%, 14.8%, 13.0% of pairs with ω = 2, 3, 4, 5 (for ω = 4: 29.7% at 10³–10⁴, 9.3% at 10⁵–10⁶). Zero features alone, with log *n*, classify ω at 69–73%, and they add +0.75 points (CI [+0.23, +1.25]) to the 19-base length baseline at 10⁵–10⁶. Against orders in 98 bases with Midy flags they add −0.05 (CI [−0.28, +0.18]), and entropy or all NDR columns on top add +0.14 and +0.30 (CIs include 0). Neither Midy flags nor zero features explain the C7 residue excess (mod 12: 0.035 → 0.022 → 0.022; mod 210: 0.034 → 0.031 → 0.032).
+
+![Spectral zeros by ω](../../empirical-scripts/11.0/results/scale-s0-step8/figures/spectral_zeros_by_omega.png)
+
+**Observation 6.7 (SinWhisky spectra).** Resampling each NDR period ×4 with SinWhisky — the circle through every three consecutive digits, blended with a cosine window — before the DFT (4 851 stratified pairs, `scale-s0-step8e`) leaves the entropy almost unchanged (correlation 0.9998 with the plain spectrum), keeps the Midy gap (−0.702), and adds no information about ω beyond log *L*, log *b*, log *n*, the Midy flag and the zero share (ΔR² +0.00004, CI including 0). Because the circle blend is nonlinear, it leaks power into the exact zero classes for 22.9% of the pairs that have them (up to 10^−2.3 of the mean power), whereas periodic linear interpolation — a fixed filter — never does (≤ 10^−29.6), as Proposition 1.5 implies.
+
 **Observation 6.2 (growth exponents).** A v8-style fit on n ∈ [2, 9 999] gives H ≈ 0.460 · n^{0.129} (v7 reported 0.431 · n^{0.142}). On ω-balanced decades the exponent is 0.068 (0.096 with ω fixed effects) and falls to **0.020 once log L is controlled**: the growth of entropy with *n* is the growth of repetend length. The "predicted exponent 0.743" of the earlier papers belongs to a different quantity, T(x) = Σ_{p≤x} Σ_{n≤x, gcd(n,p)=1} log ord_n(p); computed for x = 100 … 3 200 its exponent is 2.07, as its x·π(x) terms imply. The two exponents are not comparable.
 
 ![Growth exponents](../../empirical-scripts/11.0/results/scale-s0/figures/growth_exponents.png)
@@ -160,6 +182,7 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 
 * **The order survives, the entropy does not.** Factorization structure reaches the repetend of 1/*n* through its length ord_n(b), which divides λ(n) and shrinks with each additional prime factor (Theorem 1.3). Digit entropy inherits that structure because H ≤ log L. Once length is known, entropy adds at most about one accuracy point for ω, and nothing once the orders in all bases 2…99 are known (Observation 6.3).
 * **One digit symmetry survives.** Midy's symmetry (Proposition 1.4) is visible in the digits and in the spectrum (a log 2 entropy deficit), depends on the factorization through the 2-adic valuations of the local orders, and adds a fraction of a point beyond the lengths (Observation 6.4). It is a classical theorem, not a new law, and it is computed from (*n*, *b*) by one modular exponentiation.
+* **Exact zeros survive too, and they are redundant.** The spectrum's exact zeros record relations between the prime factors of *n* through Euler factors (Proposition 1.5); they are rare for primes and common for composites, but the orders in 98 bases already contain everything they say about ω (Observation 6.6).
 * **Reformulated conjecture — not supported.** *The NDR spectra of 1/n carry information about ω(n) beyond the orders {ord_n(b)}, the Midy flags and n, and that information grows with n.* At 10⁵–10⁶ the measured gain is −0.07 points (CI [−0.33, +0.24]) against a baseline of 98 orders and Midy flags (`scale-s0-step7`). The step-5 drift was an under-powered baseline.
 * **Not supported:** the law's constants (golden ratio, 5 − 1/15), base invariance as a universal property, links to ζ(s) or the PNT, the prime-power dichotomy, and three-feature sufficiency.
 
@@ -167,7 +190,7 @@ All NDR columns together add +0.13 points (CI [−0.34, +0.59]) over the last ba
 
 Answered in step 7 (`scale-s0-step7`): the residual signal at 10⁵–10⁶ is carried by the statistics that see Midy's vanished half-spectrum and does not survive orders in all bases 2…99 (Observations 6.3–6.4); Midy's symmetry explains about a third of the *n* mod 4 residue structure and none of the *n* mod 7 structure (Observation 4.7); λ(n) is recovered exactly by the lcm of the 19 orders, no formula is needed, and *n*/λ(n) gives only ~72% ω accuracy (Observation 6.5). Still open:
 
-1. What explains the rest of the C7 residue structure — the *n* mod 7 excess and two thirds of the *n* mod 4 excess? A candidate is the k-block generalization of Midy's theorem (1 + c + … + c^{k−1} ≡ 0 mod *n* with c = b^{L/k}), which constrains the bins j ≡ 0 (mod k).
+1. What explains the rest of the C7 residue structure — the *n* mod 7 excess and two thirds of the *n* mod 4 excess? The k-block zeros of Proposition 1.5 do not (Observation 6.6). Proposition 1.5(c) suggests the Euler products of L(1, χ) at small primes *q*: whether *q* = 2, 3, 5, 7 lies in ⟨*b*⟩ mod *n* changes the weights |B_{1,χ}|² across bins, and by quadratic reciprocity it depends on *n* modulo 4*q*.
 2. How does the accuracy of an order-only classifier of ω behave beyond 10⁶, and how many bases does it need as *n* grows?
 
 ## 9. Reproducing these results
@@ -178,7 +201,7 @@ git submodule update --init --recursive
 .venv/bin/pip install --only-binary :all: -r empirical-scripts/11.0/requirements.txt
 .venv/bin/python -m unittest discover -s empirical-scripts/11.0/tests
 .venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/full.json --run-id full-s0-repro
-.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-repro --stages data,claims,scale,lengths,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/scale.json --run-id scale-s0-repro --stages data,claims,scale,lengths,zeros,whisky,report
 ```
 
-Each run writes `manifest.json` (code and submodule SHAs, v11 source hash, environment, config, seed, NDR version), the claim, search and scale results, and `report.md` with the figures. The full run takes about 53 minutes and the scale run (with the step-7 `lengths` stage) about 60 minutes on an 8-core machine.
+Each run writes `manifest.json` (code and submodule SHAs, v11 source hash, environment, config, seed, NDR version), the claim, search and scale results, and `report.md` with the figures. The full run takes about 53 minutes and the scale run (with the step-7 `lengths`, step-8 `zeros` and `whisky` stages) about 90 minutes on an 8-core machine.

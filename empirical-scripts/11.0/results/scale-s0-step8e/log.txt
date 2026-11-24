@@ -1,0 +1,19 @@
+[18:36:54] run scale-s0-step8e seed=0 stages=['data', 'claims', 'whisky', 'report'] dir=empirical-scripts/11.0/results/scale-s0-step8e
+[18:36:54] data: cache hit dataset-9768d7f9ec7d09fb.npz (reused from run scale-s0)
+[18:36:54] data: done in 0.5s
+[18:37:04]   C1: reproduced but explained by size/length (9.35s)
+[18:37:08]   C2: not supported (4.12s)
+[18:37:10]   C3: not reproduced (2.15s)
+[18:37:38]   C4: reproduced; invariance increases with n (28.7s)
+[18:37:40]   C5: reproduced but explained by size/length (1.72s)
+[18:37:41]   C6: reproduced but explained by size/length (1.23s)
+[18:37:43]   C7: supported (residue structure beyond per-base L and ω) (1.49s)
+[18:37:45]   C8: not supported (2.03s)
+[18:39:07]   C9: supported (82.49s)
+[18:39:07] claims: done in 133.3s
+[18:39:08]   8e: 4851 pairs (L ≤ 50000), SinWhisky zoom 3, neighbors 1
+[18:39:36]     H_fft: Midy coef -0.694; ΔR² log ω +0.00002 CI [-0.00003, +0.00009]
+[18:39:36]     H_sw: Midy coef -0.702; ΔR² log ω +0.00004 CI [-0.00004, +0.00012]
+[18:39:36]     H_lin: Midy coef -0.705; ΔR² log ω +0.00006 CI [-0.00003, +0.00015]
+[18:39:36] whisky: done in 28.1s
+[18:39:36] report: done in 0.4s

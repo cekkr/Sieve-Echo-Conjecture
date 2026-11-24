@@ -162,6 +162,12 @@ def step4_markdown(run_dir: Path) -> str:
     ln = run_dir / "lengths.json"
     if ln.is_file():
         lines += lengths_markdown(runtime.read_json(ln))
+    zf = run_dir / "zeros.json"
+    if zf.is_file():
+        lines += zeros_markdown(runtime.read_json(zf))
+    wf = run_dir / "whisky.json"
+    if wf.is_file():
+        lines += whisky_markdown(runtime.read_json(wf))
     return "\n".join(lines)
 
 
@@ -265,6 +271,68 @@ def lengths_markdown(d: dict) -> list:
     return lines
 
 
+def _pts(g) -> str:
+    return f"{g['value'] * 100:+.2f} {_ci([x * 100 for x in g['ci95']])}"
+
+
+def zeros_markdown(d: dict) -> list:
+    cfg, ds, ex = d["settings"], d["describe"], d["exact_check"]
+    nm = ds["numerics"]
+    lines = ["## Step 8 — Exact zeros of the NDR spectrum", "",
+             f"Zero classes k | L (all bins j with L/gcd(j, L) = k vanish together) for {ds['pairs']} pairs of bases {d['zero_bases']}; float FFT of the remainders, "
+             f"threshold {cfg['tolerance']:g} × mean non-DC power. Largest zero-class power / mean: 10^{nm['max_log10_zero_power_over_mean']:.1f}; smallest non-zero class power / mean: "
+             f"10^{nm['min_log10_nonzero_power_over_mean']:.1f} (a single small Galois conjugate; the class maximum decides); non-zero classes with some bin below the threshold: {nm['inconsistent_classes']}. "
+             f"Exact cyclotomic test (Φ_k | Σ T_t x^t) on {ex['pairs']} sampled pairs ({ex['with_extra_zeros']} with extra zeros): {ex['agree']} agree.", "",
+             "**8a — pairs with extra zero classes (beyond Midy's even bins), by ω:**", "",
+             "| ω | pairs | share with extra zeros | mean share of bins | " + " | ".join(f"{b['bin'][0]}–{b['bin'][1]}" for b in ds["by_bin"]) + " |",
+             "| --- | --- | --- | --- | " + " | ".join("---" for _ in ds["by_bin"]) + " |"]
+    for w, v in ds["by_omega"].items():
+        per = [b["by_omega"].get(w, b["by_omega"].get(str(w))) for b in ds["by_bin"]]
+        lines.append(f"| {w} | {v['pairs']} | {v['share_with_extra']:.3f} | {v['mean_extra_share']:.4f} | " + " | ".join("–" if x is None else f"{x:.3f}" for x in per) + " |")
+    pp = ds["prime_powers_not_prime"]
+    lines += ["", f"Primes: {ds['primes']['share_with_extra']:.4f} of {ds['primes']['pairs']} pairs; prime powers (not prime): " + ("–" if pp["share_with_extra"] is None else f"{pp['share_with_extra']:.4f} of {pp['pairs']}") + ".", "",
+              f"**8b — held-out ω accuracy with zero features** (per-row correctness averaged over {cfg.get('model_seeds', 1)} GBM seed(s); same samples as steps 5 and 7):", ""]
+    names = None
+    for b in d["c9_bins"]:
+        if "accuracy" in b:
+            names = list(b["accuracy"])
+            break
+    if names:
+        lines += ["| n range | test rows | " + " | ".join(names) + " |", "| --- | --- | " + " | ".join("---" for _ in names) + " |"]
+        for b in d["c9_bins"]:
+            if "accuracy" in b:
+                lines.append(f"| {b['bin'][0]}–{b['bin'][1]} | {b['test']} | " + " | ".join(f"{b['accuracy'][k]:.4f}" for k in names) + " |")
+        lines += ["", "Gains (points, 95% CI):", ""]
+        for b in d["c9_bins"]:
+            if "gain" in b:
+                lines.append(f"- {b['bin'][0]}–{b['bin'][1]}: " + "; ".join(f"{k}: {_pts(g)}" for k, g in b["gain"].items()))
+    r = d["residues"]
+    lines += ["", f"**8c — C7 residues** ({r['controls']}). Excess η² over the permutation null (p):", "",
+              "| entropy | modulus | C7 controls | + Midy | + Midy + zeros |", "| --- | --- | --- | --- | --- |"]
+    for var, v in r["variants"].items():
+        for q, t in v["c7_controls"].items():
+            t1, t2 = v["plus_midy"][q], v["plus_midy_zeros"][q]
+            lines.append(f"| {var} | {q} | {t['excess']:+.4f} (p {t['perm_p_residual']:.3f}) | {t1['excess']:+.4f} (p {t1['perm_p_residual']:.3f}) | {t2['excess']:+.4f} (p {t2['perm_p_residual']:.3f}) |")
+    lines.append("")
+    return lines
+
+
+def whisky_markdown(d: dict) -> list:
+    cfg, lk = d["settings"], d["leakage"]
+    lines = ["## Step 8e — NDR spectra after SinWhisky resampling", "",
+             f"{d['pairs']} (n, b) pairs (19 bases, L ≤ {cfg['max_L']}, at most {cfg['per_stratum']} per n-range × ω), each NDR period resampled ×{cfg['zoom'] + 1} "
+             f"by SinWhisky (libs/sinwhisky `sinwhisky_resample_np`, periodic, neighbors {cfg['neighbors']}) and by periodic linear interpolation (control); "
+             f"entropies over all non-DC bins. corr(H_fft, H_sw) = {d['corr_H_fft_H_sw']:.4f}.", "",
+             f"**Zero-class leakage** ({lk['pairs_with_zero_classes']} pairs with zero classes; power at the original zero bins / mean baseband power, log10): "
+             f"SinWhisky median {lk['sw']['median_log10']:.1f}, max {lk['sw']['max_log10']:.1f}, share above 10⁻⁶ {lk['sw']['share_above_1e-6']:.3f}; "
+             f"linear median {lk['lin']['median_log10']:.1f}, max {lk['lin']['max_log10']:.1f}, share above 10⁻⁶ {lk['lin']['share_above_1e-6']:.3f}.", "",
+             "| entropy | test pairs | Midy coefficient | test R² (log L, log b, log n, Midy, extra-zero share) | + log ω | ΔR² [95% CI] |", "| --- | --- | --- | --- | --- | --- |"]
+    for var, m in d["models"].items():
+        lines.append(f"| {var} | {m['test_pairs']} | {m['midy_coefficient']:+.3f} | {m['r2_structure']:.4f} | {m['r2_plus_log_omega']:.4f} | {m['delta_r2_log_omega']:+.5f} {_ci(m['delta_r2_ci'])} |")
+    lines.append("")
+    return lines
+
+
 def write_report(run_dir: Path, table=None) -> dict:
     manifest = runtime.read_json(run_dir / "manifest.json")
     claims_out = runtime.read_json(run_dir / "claims.json")
@@ -282,7 +350,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json`, `lengths.json` in this run directory.")
+        md = md.replace("Full numbers: `claims.json` in this run directory.", extra + "\nFull numbers: `claims.json`, `formulas.json`, `baselines.json`, `nn.json`, `scale.json`, `lengths.json`, `zeros.json`, `whisky.json` in this run directory.")
     (run_dir / "report.md").write_text(md)
     runtime.write_json(
         run_dir / "report.json",

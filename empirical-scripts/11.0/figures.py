@@ -257,6 +257,29 @@ def fig_c9_by_baseline(lengths: Dict[str, Any], out: Path) -> Optional[Tuple[str
                                                          "tick labels give the baselines' own accuracies in the same order (step 7a).")
 
 
+def fig_zeros_by_omega(zeros: Dict[str, Any], out: Path) -> Optional[Tuple[str, str]]:
+    bins = [b for b in (zeros.get("describe") or {}).get("by_bin", []) if b["by_omega"]]
+    if not bins:
+        return None
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(7.2, 4.4))
+    for j, b in enumerate(bins[:3]):
+        w = np.array(sorted(int(k) for k in b["by_omega"]))
+        v = np.array([b["by_omega"][str(k)] if str(k) in b["by_omega"] else b["by_omega"][k] for k in w]) * 100
+        name = _decade_label(*b["bin"])
+        ax.plot(w, v, marker=MARKERS[j], ms=6, lw=2, color=SERIES[j], label=f"n in {name}")
+        ax.annotate(name, (w[-1], v[-1]), xytext=(8, (1 - j) * 9), textcoords="offset points", color=TEXT, fontsize=9, va="center")
+    ax.set_xlabel("distinct prime factors ω(n)")
+    ax.set_ylabel("(n, b) pairs with extra spectral zeros (%)")
+    ax.set_xticks(sorted({int(k) for b in bins for k in b["by_omega"]}))
+    ax.set_ylim(bottom=0)
+    ax.set_title("Exact zeros beyond Midy's appear with more prime factors")
+    ax.legend(loc="upper left", fontsize=8)
+    ax.set_xlim(right=ax.get_xlim()[1] + 0.5)
+    return _save(fig, out / "spectral_zeros_by_omega.png"), ("Share of (n, b) pairs (19 v8/v10/primes31 bases) whose NDR spectrum has a vanishing frequency class other than Midy's even bins, "
+                                                              "by ω and n-range (step 8a). Imprimitive characters contribute Euler factors (1 − χ*(p)) that vanish at the prime factors of n.")
+
+
 def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -> List[Tuple[str, str]]:
     out = run_dir / "figures"
     made: List[Tuple[str, str]] = []
@@ -282,4 +305,6 @@ def make_figures(run_dir: Path, table: Optional[Dict[str, np.ndarray]] = None) -
         ln = runtime.read_json(run_dir / "lengths.json")
         add(fig_c9_by_baseline(ln, out))
         add(fig_midy_gap(ln, out))
+    if (run_dir / "zeros.json").is_file():
+        add(fig_zeros_by_omega(runtime.read_json(run_dir / "zeros.json"), out))
     return made
