@@ -175,6 +175,18 @@ def formula_expression(genome, input_names: Sequence[str], output_index: int) ->
     return env.get((int(Category.VARIABLE), int(DataType.DECIMAL), output_index), "0")
 
 
+def gfsl_code(inputs: Sequence[str], instructions: Sequence[str], output_index: int) -> List[str]:
+    """GFSL listing of a selected program: input legend, the effective instructions in execution order, output.
+
+    ``instructions`` are the ``✓`` lines of ``GFSLGenome.to_human_readable()`` (dropping the non-effective
+    instructions does not change the output register)."""
+    body = [line.lstrip().lstrip("✓").strip() for line in instructions]
+    lines = [f"# d${i} = {name}" for i, name in enumerate(inputs)]
+    lines += body
+    lines.append(f"RESULT d${output_index}")
+    return lines
+
+
 # ---------------------------------------------------------------------------------------------
 # Data preparation (parent process)
 # ---------------------------------------------------------------------------------------------

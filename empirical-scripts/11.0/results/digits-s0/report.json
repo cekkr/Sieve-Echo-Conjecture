@@ -1,0 +1,25 @@
+{
+  "run_id": "digits-s0",
+  "seed": 0,
+  "config_path": "empirical-scripts/11.0/config/digits.json",
+  "git_root": {
+    "sha": "7de8a72699a0bf90982a1fa519186cc32c3975a5",
+    "dirty": true,
+    "changed_paths": [
+      "M empirical-scripts/11.0/prime_order_formulas.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/search_formulas.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/config/digits.json",
+      "?? empirical-scripts/11.0/digit_primes.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "b7801aa892828c455f72fa9bc22774d60d1430690a7308d02c9aa19a9d6c6d38",
+  "ndr_version": null,
+  "verdicts": {}
+}

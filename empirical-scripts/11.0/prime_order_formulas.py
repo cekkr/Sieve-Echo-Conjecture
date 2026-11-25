@@ -183,6 +183,7 @@ def run_cases(tasks: dict, cfg: dict, seed: int, run_dir: Path, log, test_end: i
             raise ArithmeticError(f"saved GFSL program does not reproduce validation for {name}")
         summary[name] = {
             "baseline": baselines[name], "selected_seed": best["seed"], **best["selected"],
+            "gfsl": search_formulas.gfsl_code(program["inputs"], best["selected"]["instructions"], program["output_index"]),
             "runs": [{
                 "seed": r["seed"], "expression": r["selected"]["expression"],
                 "validation": r["selected"]["val"], "held_out": r["selected"]["test"],

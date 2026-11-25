@@ -8,7 +8,7 @@ The work ends at two classical problems.
 - **Full-period repetends** ($1/p$ repeats with the maximal length $p-1$) are Artin's primitive-root problem. Through $10^8$, the counts for all 19 bases match Hooley's densities, which assume GRH. That includes the Lehmer–Heilbronn correction: base 5 is 98 standard deviations from Artin's original constant and 0.65 from the corrected value (`artin-s0`, §8).
 - **Halved repetends** (length dividing $(p-1)/2$) form a quadratic character. Their log-weighted count is a sum over the zeros of a Dirichlet L-function. After smoothing, the prime data through $10^8$ and the zeros up to height 150 agree to $10^{-13}$ (`explicit-s0`, §9).
 
-§10 says exactly what this does and does not mean for the Riemann hypothesis. In short, these are verified consequences of known theorems and hypotheses. They are not a step toward a proof.
+§11 extends Evolvo to the digits of $n$ itself and to prime-density predictions, and lists the practical conclusions: a probable-prime test read off $1/n$, the calibrated prime probability from the digits of $n$, and elementary prime-count and gap formulas, each with GFSL code. §10 says exactly what this does and does not mean for the Riemann hypothesis. In short, these are verified consequences of known theorems and hypotheses. They are not a step toward a proof.
 
 The v11 runs are in [`empirical-scripts/11.0/results/`](empirical-scripts/11.0/results). The [v11 conclusions](empirical-scripts/11.0/conclusions.md) give the full experimental record, and [revision 9](studies/9/sieve-echo-conjecture-9.md) gives the proofs. The [best Evolvo algorithms and reproduction commands](#7-best-evolvo-algorithms) are below.
 
@@ -106,6 +106,26 @@ The Evolvo formula search of step 4 (`full-s0-step4`, inputs z-scored, selected 
 | --- | --- | --- |
 | is_prime | `[lcm divides n−1] ^ (2 % ([mean digit] / 10))` | **99.99%** — Fermat's little theorem in repetend form |
 | ω | `([log n − log lcm] · |lcm divides n−1|^(1/4)) + e` | 65.5% |
+
+The same two programs as Evolvo wrote them in GFSL. Each line is one slot-encoded instruction, and `d$k` are decimal registers. The inputs `d$0…d$11` are the z-scored features of step 4, of which only the used ones are listed. Saved in [`full-s0-step4/formulas.json`](empirical-scripts/11.0/results/full-s0-step4/formulas.json).
+
+```gfsl
+# is_prime — d$7 = mean digit (v8 bases), d$10 = [lcm of the lengths divides n − 1]
+d$12 = DIV(d$7, 10.0)
+d$12 = MOD(2.0, d$12)
+d$12 = POW(d$10, d$12)
+RESULT d$12
+```
+
+```gfsl
+# ω — d$9 = log n − log lcm(L_b), d$10 = [lcm divides n − 1]
+d$2 = ABS(d$10)
+d$2 = SQRT(d$2)
+d$2 = SQRT(d$2)
+d$1 = MUL(d$9, d$2)
+d$12 = ADD(d$1, 2.71828)
+RESULT d$12
+```
 
 For ω the best evolved formula is essentially log(n/λ(n)). Gradient boosting on the same inputs reaches 89.6%, the length-arithmetic model 98.2%, and the decoder recovers ω on every integer in the `decode-s0` exhaustive range when the pre-period checks are included. Evolvo found the right ingredients — the lcm of the lengths and its relation to *n* — but a formula over aggregate features cannot express "split *n* by gcds". That step had to be derived.
 
@@ -244,6 +264,45 @@ def kummer_local_factor(q):
 - **The Kummer degree.** Regressing $q^2$ times the measured share of $q\mid I_b(p)$ over the 79 primes $q\le401$ gave $q/(q-1)$ on three of four seeds. The held-out mean squared standardized residual is 1.21, consistent with counting noise. The implied degree is $q(q-1)$ to machine precision, and $\prod_q(1-1/(q(q-1)))$ is Artin's constant.
 - **Congruences are not enough.** From $[(10/p)=-1]$, $[p\equiv1\bmod3]$, $[p\equiv1\bmod5]$, $[p\equiv1\bmod7]$ and $p\bmod840$, the best evolved formula reaches accuracy 0.825. The train-only lookup reaches 0.875. Any rule of $p\bmod840$ must miss at least 64 411 of the 515 646 held-out primes, because 96 of the 192 classes contain both outcomes. [Step-20 report](empirical-scripts/11.0/results/artin-s0/report.md)
 
+### The same rules as GFSL programs
+
+These are the selected Evolvo programs exactly as saved: the effective instructions in execution order, with the full slot vectors in the linked JSON files. `replay(program, X)` in [`prime_order_formulas.py`](empirical-scripts/11.0/prime_order_formulas.py) runs them. Inputs are numbered `d$0, d$1, …` in the order listed, and constants such as `2.71828` come from Evolvo's value table.
+
+```gfsl
+# quadratic_base2 (prime-orders-confirm-s10) — d$0 = |(p mod 8) − 4|, d$1 = 1, d$2 = 2, d$3 = 4
+d$4 = MOD(d$3, d$0)
+RESULT d$4
+
+# quadratic_joint (prime-orders-confirm-s10) — d$0, d$1, d$2 = [2 | I_2], [2 | I_3], [2 | I_5], d$3 = [p ≡ 1 mod 3]
+d$4 = MUL(d$0, d$2)
+d$4 = MUL(d$4, d$1)
+RESULT d$4
+
+# cubic_joint (prime-orders-s0) — d$0 = [3 | I_2], d$1 = [3 | I_3], d$2 = [p ≡ 1 mod 5]
+d$3 = MUL(d$0, d$1)
+RESULT d$3
+
+# mixed_joint (prime-orders-s0) — d$0 = [2 | I_5], d$1 = [5 | I_2], d$2 = [p ≡ 1 mod 3]
+d$3 = ABS(d$1)
+RESULT d$3
+
+# artin_criterion (artin-s0) — d$0…d$3 = [q ∤ I_10] for q = 2, 3, 5, 7, d$4 = [no prime q ≥ 11 divides I_10], d$5 = [p ≡ 1 mod 4]
+d$0 = MUL(d$0, d$4)
+d$0 = MUL(d$0, d$3)
+d$0 = MUL(d$0, d$1)
+d$6 = MUL(d$2, d$0)
+RESULT d$6
+
+# lehmer_nesting (artin-s0) — d$0 = [2 | I_5], d$1 = [5 | I_5], d$2 = [p ≡ 1 mod 3]
+d$3 = ABS(d$1)
+RESULT d$3
+
+# kummer_degree (artin-s0) — d$0 = q, d$1 = 1; output q²·P(q | I_b(p)) = q/(q − 1)
+d$1 = ADD(-1.0, d$0)
+d$2 = DIV(d$0, d$1)
+RESULT d$2
+```
+
 Run the step-20 and step-21 analyses with:
 
 ```bash
@@ -350,3 +409,121 @@ What the work does contribute:
 - **Exact formulas** that the Evolvo searches recover when the inputs carry the arithmetic, and their stated limits when the inputs do not.
 
 That is a finished, reproducible piece of experimental number theory. It is not, and cannot become through more computation, a proof of RH.
+
+## 11. Digits of n, prime densities and practical conclusions
+
+Step 22 extends the Evolvo searches to three new kinds of input. The first is the decimal digits of $n$ itself, with no $1/n$: last digit, digit sum, alternating digit sum, sum and alternating sum of 3-digit blocks, digit count, and $\log n$. The second is the repetend lengths $L_2(n), L_{10}(n)$ of $1/n$. The third is **prime-density predictions as Evolvo variables**:
+- the Cramér density $1/\log n$;
+- the digit-sieve density $W(n)=[\gcd(n,2\cdot3\cdot5\cdot7\cdot11\cdot13\cdot37)=1]\cdot5.358362/\log n$;
+- the Hardy–Ramanujan mean $\log\log n+B_1$ and its sieve version $M(n)=\sum_{p\in S}[p\mid n]+\log\log n+B_1-\sum_{p\in S}1/p$;
+- $\mathrm{li}(x)\log x/x$ and $\mathrm{li}(\sqrt x)\log x/x$.
+
+The primes $S=\{2,3,5,7,11,13,37\}$ are exactly those that base-10 digit sums can see, because they divide $10$, $9$, $11$, $999$ or $1001$. Each target runs with and without the density inputs.
+
+Two runs, both with the PyTorch policy guide and size-separated train, validation and test ranges:
+- `digits-s0`: `config/digits.json`, seed 0, 6 policy seeds, population 200 × 120 generations.
+- `digits-confirm-s1`: `config/digits-confirm.json`, seed 1, 8 policy seeds, population 400 × 300 generations, on the six cases that still had room.
+
+The table gives, per case, the program with the lowest validation error across both runs, scored once on the test range. All counts are independently checked:
+- the digit sums reproduce the residues modulo 3, 11, 37, 7 and 13 on every row;
+- $\omega$ is checked against SymPy on a sample;
+- the repetend lengths are checked as periods on every row and against SymPy's `n_order` on a sample;
+- $\pi(x)$ is computed by SymPy at every point and by the sieve wherever $x\le10^8$.
+
+[Report `digits-s0`](empirical-scripts/11.0/results/digits-s0/report.md) · [Report `digits-confirm-s1`](empirical-scripts/11.0/results/digits-confirm-s1/report.md) · [Saved programs](empirical-scripts/11.0/results/digits-confirm-s1/digits.json)
+
+| Target (test range) | Selected Evolvo formula | Held-out score | Best control |
+| --- | --- | --- | --- |
+| $n$ prime, digits only ($10^6$–$2\cdot10^6$) | last-digit rule (GFSL below) | Brier 0.0593, AUC 0.823 | $W(n)$: Brier 0.0439, AUC 0.938; gradient boosting 0.0527 |
+| $n$ prime, digits + densities | $W(n)$ | Brier 0.0439; predicts 70 428 primes, actual 70 435 | Cramér $1/\log n$: 0.0655 |
+| $n$ prime, repetend lengths of $1/n$ | $1/(n \bmod L_2)^{10}$ = Fermat base 2 | 93 errors / 400 000 = the 93 base-2 pseudoprimes | Fermat in bases 2 and 10: 22 errors |
+| $\omega(n)$, digits only | $e+(-\log2)^{d_0}$ ($d_0$ = last digit) | MSE 0.828 | gradient boosting 0.492 |
+| $\omega(n)$, digits + densities | $M+e^{-M}$ | MSE **0.371** | sieve mean $M$: 0.381; gradient boosting 0.375 |
+| $\pi(x)$, from $\log x$ ($1.3\cdot10^8$–$10^{12}$) | $\dfrac{x(\log x-1)}{\log x\,(\log x-2)}$ (simplest candidate) | max rel. error $3.8\cdot10^{-4}$ | Legendre $1.6\cdot10^{-3}$; $\mathrm{li}$ $1.1\cdot10^{-4}$ |
+| $\pi(x)$, with density inputs | $\mathrm{li}(x)\big/\sqrt{1+\mathrm{li}(\sqrt x)\log x/x}$ | max rel. error **$1.26\cdot10^{-5}$** | Riemann $R(x)$: $1.31\cdot10^{-5}$; $\mathrm{li}(x)-\tfrac12\mathrm{li}(\sqrt x)$: $1.68\cdot10^{-5}$ |
+| gap to the next prime ($10^7$–$10^8$) | $\log p$ | mean 17.656 vs actual 17.658, MSE 226 | train mean: MSE 250 |
+| next prime ends in the same digit | $0.1+1/\log p$ | Brier 0.1433 | train fit $0.2208-0.8475/\log p$: 0.1430; equidistribution 1/4: 0.1490 |
+
+### The programs in GFSL
+
+Each block is the selected program exactly as Evolvo saved it: the effective instructions in execution order, then the output register. `replay(program, X)` in [`prime_order_formulas.py`](empirical-scripts/11.0/prime_order_formulas.py) runs the saved slot vectors from `digits.json`.
+
+```gfsl
+# n prime from the digits of n (digits-confirm-s1, seed 6) — d$0 = last decimal digit
+d$8 = MOD(d$0, 2.0)
+d$5 = MUL(d$8, 2.71828)
+d$8 = MOD(d$0, 2.71828)
+d$5 = MUL(d$8, d$5)
+d$8 = DIV(0.5, d$5)
+d$8 = MOD(d$8, 0.5)
+RESULT d$8
+
+# n prime from digits + densities (digits-s0, seed 0) — d$9 = sieve density W(n)
+d$10 = DIV(d$9, 1.0)
+RESULT d$10
+
+# n prime from the repetend lengths of 1/n (digits-confirm-s1, seed 3) — d$0 = n, d$1 = L_2(n)
+d$2 = MOD(d$0, d$1)
+d$0 = POW(d$2, 10.0)
+d$2 = LOG(2.71828)
+d$4 = DIV(d$2, d$0)
+RESULT d$4
+
+# ω(n) from digits + densities (digits-s0, seed 2) — d$9 = sieve mean M(n)
+d$1 = POW(2.71828, d$9)
+d$10 = DIV(-1.0, d$1)
+d$10 = SUB(d$9, d$10)
+RESULT d$10
+
+# ω(n) from the digits of n (digits-confirm-s1, seed 5) — d$0 = last digit, d$2 = alternating digit sum
+d$2 = MUL(d$2, d$0)
+d$0 = DIV(d$2, d$0)
+d$0 = DIV(d$2, d$0)
+d$7 = MOD(0.5, 1.0)
+d$5 = LOG(d$7)
+d$5 = POW(d$5, d$0)
+d$8 = ADD(d$5, 2.71828)
+RESULT d$8
+
+# π(x)·log x / x from log x (digits-confirm-s1, seed 2) — d$0 = log x, d$1 = 1
+d$0 = SUB(d$1, d$0)
+d$1 = ADD(1.0, d$0)
+d$2 = DIV(d$0, d$1)
+RESULT d$2
+
+# π(x)·log x / x with density inputs (digits-confirm-s1, seed 3) — d$1 = 1, d$3 = li(x)·log x/x, d$4 = li(√x)·log x/x
+d$1 = ADD(d$4, d$1)
+d$1 = SQRT(d$1)
+d$5 = DIV(d$3, d$1)
+RESULT d$5
+
+# gap to the next prime (digits-s0, seed 0) — d$0 = log p
+d$4 = ADD(0.0, d$0)
+RESULT d$4
+
+# P(next prime ends in the same digit as p) (digits-confirm-s1, seed 4) — d$1 = 1/log p, d$3 = 1
+d$4 = DIV(d$3, 10.0)
+d$4 = ADD(d$4, d$1)
+RESULT d$4
+```
+
+**Two selection caveats:**
+- **The $\pi(x)$ formula without densities.** By the selection rule, which uses lowest validation error, `digits-s0` wins. Its 12-instruction program built from powers of $\log x$ has validation NMSE $2.96\cdot10^{-4}$ but held-out maximum error $1.09\cdot10^{-3}$. The table shows the 3-instruction candidate from `digits-confirm-s1`, whose validation NMSE is $3.68\cdot10^{-4}$, because it is the one that explains something: $(u-1)/(u-2)=1+1/u+2/u^2+4/u^3+\dots$ with $u=\log x$ matches the asymptotic series of $\mathrm{li}$, $1+1/u+2/u^2+6/u^3+\dots$, to second order. Choosing it on its test error would be test leakage, so it is labelled as a candidate.
+- **The last-digit rule.** The validation-selected $0.1+1/\log p$ predicts 798 695 same-digit pairs against 881 553 actual. The one-parameter train fit is better calibrated, with 880 208 predicted. Evolvo found the direction of the effect but not its size.
+
+### Practical conclusions
+
+1. **Reading primality off $1/n$.** If the repetend length of $1/n$ divides $n-1$, then $n$ is prime or a Fermat pseudoprime. That is Fermat's test, and Evolvo found it from the raw lengths: $(n \bmod L_2)=1$. In $(10^6,2\cdot10^6]$ with $\gcd(n,10)=1$, base 2 alone misses 93 composites, base 10 alone 110, and bases 2 and 10 together 22. All three counts were recounted directly with modular powers and SymPy. To remove those 22, use the step-13 decoder, which factors $n$ from the same lengths. So the repetend gives a working probable-prime test, and with 19 bases an exact factorization through $3.7\cdot10^9$.
+2. **The digits of $n$ only reveal divisibility.** Digit sums in base 10 are divisibility tests for $2,3,5,7,11,13,37$, because $10^k\equiv\pm1$ modulo $9, 11, 999, 1001$. Beyond that they say nothing about primality. The best calibrated probability from the digits is therefore the sieve density $W(n)$. It predicted 70 428 primes in $(10^6,2\cdot10^6]$ against 70 435 actual, an error of 0.01%. Neither Evolvo nor gradient boosting beat it. Given $W(n)$ as a variable, Evolvo keeps it unchanged. Without it, Evolvo finds only the last-digit rule, so composing the digit-sum indicators is beyond what the searches built unaided.
+3. **Counting primes with an elementary formula.** $\pi(x)\approx x(\log x-1)/(\log x(\log x-2))$ was fitted only on $x\le10^6$. It stays within $3.8\cdot10^{-4}$ up to $10^{12}$, four times closer than Legendre's $x/(\log x-1.08366)$. With the density inputs Evolvo writes Riemann's correction in its own form, $\mathrm{li}(x)/\sqrt{1+\mathrm{li}(\sqrt x)\log x/x}\approx\mathrm{li}(x)-\tfrac12\mathrm{li}(\sqrt x)$. It reaches the accuracy of $R(x)$: maximum error $1.26\cdot10^{-5}$ against $1.31\cdot10^{-5}$ over $1.3\cdot10^8$–$10^{12}$. Fitting a Legendre-type constant on $x\le10^6$ gives $A=1.040$, not Legendre's 1.08366; the best constant drifts toward 1 as $x$ grows.
+4. **Expected gap and ω.** The expected gap after $p$ is $\log p$. Evolvo selects exactly that, and it matches the mean of 5.1 million gaps in $(10^7,10^8]$ to 0.01%. The best formula for $\omega(n)$ is the sieve mean plus a small correction, $M+e^{-M}$.
+5. **The next prime's last digit.** In $(10^7,10^8]$ the next prime ends in the same digit as $p$ only 17.3% of the time, not 25%. The bias shrinks slowly with $\log p$, as Lemke Oliver and Soundararajan conjectured (PNAS 113, 2016). A forecaster that assumes 25% overestimates repeats by 45%.
+
+None of these goes beyond known theory. Each says which classical statement the data and Evolvo land on, and how accurate it is on a stated range. The density functions are reusable in [`digit_primes.py`](empirical-scripts/11.0/digit_primes.py): `cramer_density`, `sieve_density`, `hardy_ramanujan_mean`, `sieve_omega_mean` and `li_ratio`. They are the starting variables for the next step.
+
+Run both searches, about 18 and 88 minutes on 7 workers:
+
+```bash
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/digits.json --run-id digits-s0-repro --stages digits,report
+.venv/bin/python empirical-scripts/11.0/sieve_echo_v11.py --config empirical-scripts/11.0/config/digits-confirm.json --run-id digits-confirm-s1-repro --stages digits,report
+```

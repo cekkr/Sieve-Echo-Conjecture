@@ -176,3 +176,20 @@ Steps 17–19 count primes satisfying joint divisibility conditions on the indic
 ## 12. Full periods and L-function zeros
 
 Step 20 identifies full-period repetends with Artin's primitive-root problem. Through $10^8$ the counts for all 19 bases agree with Hooley's GRH-conditional densities. That agreement covers the Lehmer–Heilbronn correction for bases 5, 13, 17 and 29 and the index law for $t\le12$. Evolvo recovers Artin's criterion, the nesting behind the factor $\tfrac{20}{19}$ and the Kummer degree $q(q-1)$. Step 21 shows that the halved-repetend counts for bases 2, 3, 5 and 10 are, after smoothing, the explicit-formula sums over the zeros of $L(s,\chi_\Delta)$ to $10^{-13}$. It also computes the Rubinstein–Sarnak bias from those zeros. These are verified consequences of known theorems and stated hypotheses; they say nothing new about RH. [Artin run](results/artin-s0/report.md) · [Explicit-formula run](results/explicit-s0/report.md) · [What this means for RH](../../conclusion.md#10-what-this-means-for-the-riemann-hypothesis)
+
+## 13. Digits of n and prime densities
+
+Step 22 (`digits-s0`, `digits-confirm-s1`, `config/digits.json` and `config/digits-confirm.json`) runs Evolvo on three kinds of input: the decimal digit statistics of $n$ itself, the repetend lengths $L_2, L_{10}$ of $1/n$, and prime-density variables.
+
+From the repetend lengths, Evolvo selects Fermat's test in base 2. Its 93 errors in $(10^6,2\cdot10^6]$ are exactly the base-2 pseudoprimes coprime to 10.
+
+From the digits, primality is bounded by the sieve density $W(n)$ over the primes that digit sums can see, 2, 3, 5, 7, 11, 13 and 37:
+- $W(n)$ itself: Brier 0.0439, predicting 70 428 primes against 70 435.
+- Evolvo alone: Brier 0.0593, from a last-digit rule.
+- Evolvo with $W(n)$ as a variable: keeps $W(n)$ unchanged.
+
+With $\mathrm{li}(x)$ and $\mathrm{li}(\sqrt x)$ as variables, Evolvo writes $\mathrm{li}(x)/\sqrt{1+\mathrm{li}(\sqrt x)\log x/x}$. Its maximum relative error on $(1.3\cdot10^8,10^{12}]$ is $1.26\cdot10^{-5}$, against $1.31\cdot10^{-5}$ for $R(x)$. From $\log x$ alone the simplest candidate is $x(\log x-1)/(\log x(\log x-2))$, with error $3.8\cdot10^{-4}$, against $1.6\cdot10^{-3}$ for Legendre's formula.
+
+The mean gap is $\log p$. The best $\omega$ formula is the sieve mean $M$ plus $e^{-M}$. The next prime repeats the last digit of $p$ 17.3% of the time in $(10^7,10^8]$.
+
+The GFSL programs, the controls and the selection caveats are in [`conclusion.md` §11](../../conclusion.md#11-digits-of-n-prime-densities-and-practical-conclusions).

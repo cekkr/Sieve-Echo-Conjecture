@@ -1,0 +1,24 @@
+{
+  "seed": 0,
+  "digits": {
+    "n_min": 1001,
+    "n_max": 2000000,
+    "split_at": [400000, 1000000],
+    "prime_limit": 100000000,
+    "prime_split_at": [1000000, 10000000],
+    "pi_min_exponent": 3,
+    "pi_max_exponent": 12,
+    "pi_per_decade": 10,
+    "pi_split_at": [1000000, 100000000],
+    "gbm_rows": 200000,
+    "sympy_order_sample": 3000,
+    "order_workers": 7,
+    "seed_offsets": [0, 1, 2, 3, 4, 5],
+    "population": 200,
+    "generations": 120,
+    "initial_instructions": 8,
+    "max_instructions": 32,
+    "max_effective_instructions": 16,
+    "workers": 6
+  }
+}

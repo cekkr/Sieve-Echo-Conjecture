@@ -205,7 +205,41 @@ def step4_markdown(run_dir: Path) -> str:
     ef = run_dir / "explicit.json"
     if ef.is_file():
         lines += explicit_markdown(runtime.read_json(ef))
+    df = run_dir / "digits.json"
+    if df.is_file():
+        lines += digits_markdown(runtime.read_json(df))
     return "\n".join(lines)
+
+
+def _digit_metric(name: str, s: dict) -> str:
+    if name.startswith("prime_count"):
+        return f"max rel. error {s['max_relative_error']:.2e}; at x = {s['largest_x']:.0e}: {s['relative_error_at_largest_x']:.2e}"
+    if name.startswith("omega"):
+        return f"MSE {s['mse']:.4f}; rounded accuracy {s['rounded_accuracy']:.4f}"
+    if name == "prime_gap":
+        return f"MSE {s['mse']:.3f}; mean {s['mean_prediction']:.3f} vs {s['mean_target']:.3f}"
+    auc = "–" if s.get("auc") is None else f"{s['auc']:.4f}"
+    return (f"Brier {s['brier']:.5f}; log loss {s['log_loss']:.4f}; AUC {auc}; "
+            f"predicted {s['predicted_count']:,.0f} of {s['actual_count']:,}; errors at 0.5: {s['errors_at_half']:,}")
+
+
+def digits_markdown(d: dict) -> list[str]:
+    lines = ["## Step 22 — Evolvo on the digits of n, repetend lengths and prime densities", "",
+             f"Sieve density W(n) = [gcd(n, {'·'.join(map(str, d['digit_primes']))}) = 1] · {d['sieve_factor']:.6f} / log n. "
+             "Checks: " + _compact(d["checks"]) + ".", ""]
+    for name, row in d["targets"].items():
+        r = row["ranges"]
+        lines += [f"### {name}", "",
+                  f"Train {r['train'][0]:,}…{r['train'][1]:,} ({r['train'][2]:,} rows), validation …{r['validation'][1]:,}, "
+                  f"test {r['test'][0]:,}…{r['test'][1]:,} ({r['test'][2]:,} rows). Selected seed {row['selected_seed']}, "
+                  f"{row['effective_instructions']} effective instructions.", "",
+                  f"Formula: `{row['expression']}`", "", "```gfsl", *row["gfsl"], "```", "",
+                  "| Predictor | Held-out score |", "| --- | --- |",
+                  f"| **Evolvo (GFSL above)** | {_digit_metric(name, row['held_out'])} |"]
+        for k, v in row["controls"].items():
+            lines.append(f"| {k} | {_digit_metric(name, v)} |")
+        lines.append("")
+    return lines
 
 
 def artin_markdown(d: dict) -> list[str]:
@@ -743,7 +777,7 @@ def write_report(run_dir: Path, table=None) -> dict:
         md = md.replace("## Verdicts", "\n".join(block) + "\n## Verdicts", 1)
     extra = step4_markdown(run_dir)
     if extra:
-        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "prime_orders.json", "artin.json", "explicit.json")
+        present = [f for f in ("claims.json", "formulas.json", "baselines.json", "nn.json", "scale.json", "lengths.json", "zeros.json", "whisky.json", "euler.json", "orders.json", "tworank.json", "decode.json", "subgroup.json", "failures.json", "validate.json", "prime_orders.json", "artin.json", "explicit.json", "digits.json")
                    if (run_dir / f).is_file()]
         footer = "Full numbers: " + ", ".join(f"`{f}`" for f in present) + " in this run directory."
         if "Full numbers: `claims.json` in this run directory." in md:

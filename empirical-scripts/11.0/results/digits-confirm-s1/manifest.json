@@ -1,0 +1,135 @@
+{
+  "run_id": "digits-confirm-s1",
+  "created": "2026-11-25T01:28:21+01:00",
+  "config_path": "empirical-scripts/11.0/config/digits-confirm.json",
+  "config_sha256": "73607907144658dc1275e7b79407e2bdc64981f9cad04734ae25035161911e3a",
+  "config": {
+    "seed": 1,
+    "digits": {
+      "n_min": 1001,
+      "n_max": 2000000,
+      "split_at": [
+        400000,
+        1000000
+      ],
+      "prime_limit": 100000000,
+      "prime_split_at": [
+        1000000,
+        10000000
+      ],
+      "pi_min_exponent": 3,
+      "pi_max_exponent": 12,
+      "pi_per_decade": 10,
+      "pi_split_at": [
+        1000000,
+        100000000
+      ],
+      "cases": [
+        "prime_digits",
+        "prime_repetend",
+        "omega_digits",
+        "prime_count",
+        "prime_count_density",
+        "last_digit_repeat"
+      ],
+      "gbm_rows": 200000,
+      "sympy_order_sample": 3000,
+      "order_workers": 7,
+      "seed_offsets": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "population": 400,
+      "generations": 300,
+      "initial_instructions": 10,
+      "max_instructions": 40,
+      "max_effective_instructions": 24,
+      "workers": 7
+    }
+  },
+  "seed": 1,
+  "stages": {
+    "digits": {
+      "status": "done",
+      "finished": "2026-11-25T02:56:12+01:00",
+      "seconds": 5267.97,
+      "digits_file": "digits.json",
+      "cases": [
+        "prime_digits",
+        "prime_repetend",
+        "omega_digits",
+        "prime_count",
+        "prime_count_density",
+        "last_digit_repeat"
+      ]
+    },
+    "report": {
+      "status": "done",
+      "finished": "2026-11-25T02:56:12+01:00",
+      "seconds": 0.02,
+      "report": "report.md",
+      "report_json": "report.json",
+      "figures": []
+    }
+  },
+  "argv": [
+    "empirical-scripts/11.0/sieve_echo_v11.py",
+    "--config",
+    "empirical-scripts/11.0/config/digits-confirm.json",
+    "--run-id",
+    "digits-confirm-s1",
+    "--stages",
+    "digits,report"
+  ],
+  "environment": {
+    "python": "3.15.2",
+    "executable": "python3.15",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "packages": {
+      "numpy": "2.5.5",
+      "scipy": "1.18.1",
+      "sklearn": "1.9.1",
+      "sympy": "1.14.0",
+      "torch": "2.15.0",
+      "matplotlib": "3.11.2",
+      "psutil": "7.2.2"
+    },
+    "devices": {
+      "torch": true,
+      "cuda": false,
+      "mps": true
+    },
+    "git_root": {
+      "sha": "7de8a72699a0bf90982a1fa519186cc32c3975a5",
+      "dirty": true,
+      "changed_paths": [
+        "M empirical-scripts/11.0/prime_order_formulas.py",
+        " M empirical-scripts/11.0/report.py",
+        " M empirical-scripts/11.0/search_formulas.py",
+        " M empirical-scripts/11.0/sieve_echo_v11.py",
+        "?? empirical-scripts/11.0/config/digits-confirm.json",
+        "?? empirical-scripts/11.0/config/digits.json",
+        "?? empirical-scripts/11.0/digit_primes.py",
+        "?? empirical-scripts/11.0/tests/test_digit_primes.py"
+      ]
+    },
+    "git_evolvo": {
+      "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "git_sinwhisky": {
+      "sha": "4fa78f31c6e5ce4b9027b39c0cde58da104f80f7",
+      "dirty": false,
+      "changed_paths": []
+    },
+    "v11_code_sha256": "fe0d50eb8950e6058bd7f16d5bb11b2ca9468c05af872010541494ad8676939f"
+  },
+  "ndr_version": "ndr-v11.1"
+}

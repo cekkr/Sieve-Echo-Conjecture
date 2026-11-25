@@ -1,6 +1,6 @@
 # Sieve Echo Conjecture — Research roadmap
 
-The current research phase studies the joint distribution of repetend lengths over primes. Steps 17–19 provide reproducible quadratic and cubic benchmarks and recover exact GFSL rules on four specified domains. Step 20 identifies full-period repetends with Artin's primitive-root problem and checks Hooley's GRH-conditional densities through $10^8$. Step 21 shows that the halved-repetend counts are sums over the zeros of four named Dirichlet L-functions, and it computes the Chebyshev bias those zeros predict. The earlier v11 steps document how the project tested the [revision-8 entropy claims](studies/8/sieve-echo-conjecture-8.md) and isolated the arithmetic of multiplicative orders. The v11 program lives in [`empirical-scripts/11.0/`](empirical-scripts/11.0). Rules and context are in [`AGENTS.md`](AGENTS.md).
+The current research phase studies the joint distribution of repetend lengths over primes. Steps 17–19 provide reproducible quadratic and cubic benchmarks and recover exact GFSL rules on four specified domains. Step 20 identifies full-period repetends with Artin's primitive-root problem and checks Hooley's GRH-conditional densities through $10^8$. Step 21 shows that the halved-repetend counts are sums over the zeros of four named Dirichlet L-functions, and it computes the Chebyshev bias those zeros predict. Step 22 runs Evolvo on the digits of $n$ itself, the repetend lengths of $1/n$ and prime-density variables, with every selected program given as GFSL code. The earlier v11 steps document how the project tested the [revision-8 entropy claims](studies/8/sieve-echo-conjecture-8.md) and isolated the arithmetic of multiplicative orders. The v11 program lives in [`empirical-scripts/11.0/`](empirical-scripts/11.0). Rules and context are in [`AGENTS.md`](AGENTS.md).
 
 Update this file while implementing (directive D4): change a step's status only after its "Done when" check passes, add discovered work under the right step or under [Discovered work](#discovered-work), and record results with the run id that produced them.
 
@@ -90,7 +90,32 @@ mid840$, so no congruence rule is exact at any modulus. Full period is a splitti
 - **RH-equivalent bound.** Schoenfeld (1976) showed that RH implies $|	heta(x)-x|<\sqrt x\log^2x/(8\pi)$ for $x\ge599$, and any bound $O(x^{1/2+arepsilon})$ implies RH. On $[599,10^8]$ the largest ratio is 0.9836, near $x=797$. A finite range can find a counterexample but cannot prove the bound. RH is verified far beyond this range: Platt and Trudgian checked the zeros to height $3\cdot10^{12}$.
 - **Done when** the parity, constant and zero-list checks pass and the smoothed identity holds to near machine precision for every L-function. All met.
 
-The finite computations of steps 17–21 end this research phase. Each rests on a named theorem or hypothesis. None of them gives information about the zeros of $\zeta(s)$ or $L(s,\chi)$ beyond the long-verified range. A new experiment would need an observable that is not a consequence of known zero computations.
+### Step 22 — Evolvo on the digits of n, the repetend lengths of 1/n and prime densities
+
+**DONE** (verified: runs [`digits-s0`](empirical-scripts/11.0/results/digits-s0/report.md) and [`digits-confirm-s1`](empirical-scripts/11.0/results/digits-confirm-s1/report.md), 112 v11 tests, 2026-11-25). The stage is `digits`, in [`digit_primes.py`](empirical-scripts/11.0/digit_primes.py). It runs nine Evolvo cases through `prime_order_formulas.run_cases` with the PyTorch policy guide. The inputs are:
+- the decimal digit statistics of $n$ itself (no $1/n$);
+- the repetend lengths $L_2(n), L_{10}(n)$;
+- prime-density predictions as optional variables: $1/\log n$, the digit-sieve density $W(n)$ for $S=\{2,3,5,7,11,13,37\}$, the Hardy–Ramanujan and sieve means of $\omega$, and $\mathrm{li}(x)\log x/x$, $\mathrm{li}(\sqrt x)\log x/x$.
+
+Every selected program is stored with its GFSL listing (`gfsl` field, `search_formulas.gfsl_code`) and replayed on the test range.
+
+- **Checks.** The digit sums reproduce $n$ modulo 3, 11, 37, 7, 13, 2 and 5 on every row. $\omega$ from the sieve equals SymPy on 3 000 sampled integers. $L_b$ is a period on all 799 600 rows and equals `n_order` on 3 000. $\pi(x)$ comes from SymPy at all 91 points and equals the sieve on the 51 points $\le10^8$. The Fermat-pseudoprime counts in $(10^6,2\cdot10^6]$ (93 base 2, 110 base 10, 22 both) were recounted by modular powers and `isprime`.
+- **Results**, best validation program per case over both runs, test range scored once:
+  - *Primality from digits only.* A last-digit rule with Brier 0.0593, against $W(n)$ at 0.0439 and gradient boosting at 0.0527. Evolvo did not compose the digit-sum indicators.
+  - *Primality with density inputs.* $W(n)$ itself, Brier 0.0439, predicting 70 428 primes against 70 435.
+  - *Primality from repetend lengths.* Fermat base 2, $1/(n\bmod L_2)^{10}$, with exactly the 93 base-2 pseudoprimes as errors.
+  - *$\omega$ with density inputs.* $M+e^{-M}$, MSE 0.371, against the sieve mean at 0.381 and gradient boosting at 0.375.
+  - *$\pi(x)$ with density inputs.* $\mathrm{li}(x)/\sqrt{1+\mathrm{li}(\sqrt x)\log x/x}$, maximum relative error $1.26\cdot10^{-5}$ on $(1.3\cdot10^8,10^{12}]$, against $1.31\cdot10^{-5}$ for $R(x)$.
+  - *$\pi(x)$ from $\log x$.* By validation, the 12-instruction `digits-s0` program, with error $1.09\cdot10^{-3}$. The 3-instruction candidate $(u-1)/(u-2)$ reaches $3.8\cdot10^{-4}$, against Legendre at $1.6\cdot10^{-3}$.
+  - *Prime gaps.* $\log p$, mean 17.656 against 17.658.
+  - *Same last digit.* $0.1+1/\log p$, Brier 0.1433. The train fit $0.2208-0.8475/\log p$ scores 0.1430; the actual rate is 17.3%.
+- **Done when** every case has a replayed GFSL program, independent data checks and the controls, and the larger-budget run has been compared by validation. All met. The practical conclusions are in [`conclusion.md` §11](conclusion.md#11-digits-of-n-prime-densities-and-practical-conclusions).
+- **Planned next (step 23 candidates).** Use the density variables of `digit_primes.py` as Evolvo inputs for residual targets with a theoretical comparison:
+  - $\pi(x)-R(x)$ against the explicit-formula zero sum of step 21;
+  - the same-last-digit rate against the Lemke Oliver–Soundararajan main terms;
+  - a primality target from $W(n)$ plus Fermat bits in several bases, against the exact pseudoprime counts.
+
+The finite computations of steps 17–22 end this research phase. Each rests on a named theorem or hypothesis. None of them gives information about the zeros of $\zeta(s)$ or $L(s,\chi)$ beyond the long-verified range. A new experiment would need an observable that is not a consequence of known zero computations.
 
 ---
 
@@ -377,6 +402,8 @@ Add items found during implementation here, with the step they affect.
 - **The Midy flag is the residual entropy signal's carrier** (step 7 probe, then `scale-s0-step7`): see Step 7. DC-free entropies lose log 2 when b^(L/2) ≡ −1 (mod n).
 - **mpmath stalls at s = 1 for conductor 40** (step 21). `mpmath.dirichlet(1, χ₄₀)` did not return within minutes, while 1 ± 10⁻¹⁶ evaluates in milliseconds; `mpmath.dirichlet(0, χ, 2)` returned 0 for the second derivative. `explicit.b_constant` uses central differences at 0 and at 1 ± h for both routes.
 - **A size split over q hides the form of the Kummer degree** (step 20). Validation primes above 23 cannot separate $q(q-1)$ from $q(q-1)+1$; the first search selected the offset by noise. The bounded target $q^2r_q$ with an alternating split selects $q/(q-1)$.
+- **Evolvo does not compose digit-sum divisibility indicators** (step 22). From the digit statistics of $n$, both budgets (population 200 × 120 and 400 × 300) select last-digit rules: Brier 0.0603 and 0.0593, against 0.0439 for the sieve density. The indicator $[p\mid n]$ needs a MOD and a POW(0, ·) per prime and a product, about 10 instructions. With $W(n)$ as a density variable the search keeps it unchanged.
+- **Twenty validation points can select a worse extrapolation** (step 22). For $\pi(x)$ from $\log x$, validation on $(10^6,10^8]$ picks a 12-instruction program with held-out error $1.09\cdot10^{-3}$ over a 3-instruction one with $3.8\cdot10^{-4}$. Both are reported; selection by test error would be leakage.
 - **The DC bin dominates the paper entropy.** Quick run, `primes31` mean over integers: ω = 1 → H_paper 2.65, H_nodc 6.40, log L 7.31; ω = 4 → 1.85, 3.91, 4.39. Mean H falls with ω, and so does log L; whether anything is left after controlling for log L is C9. (Descriptive, all integers, no split; not a claim.)
 
 ## Results log
@@ -392,6 +419,8 @@ Record verified results as `run-id — config — headline numbers — verdict`.
 - [`prime-orders-s0`](empirical-scripts/11.0/results/prime-orders-s0/prime_orders.json) uses the v11 `prime_orders,report` stages and `config/prime-orders.json`, root seed 0, policy seeds 0–2. It records the fixed counts through $10^6$, the first quadratic searches, the exact cubic and mixed formulas, and the cubic congruence-only control.
 - [`prime-orders-confirm-s10`](empirical-scripts/11.0/results/prime-orders-confirm-s10/prime_orders.json) uses the same stages and `config/prime-orders-confirm.json`, root seed 10, policy seeds 10–12. It extends the exact counts to $2\cdot10^6$ and records the two exact quadratic formulas on a held-out interval beyond the first run's coverage. Both manifests record the executed v11 source hash and pinned Evolvo SHA.
 - [`artin-s0`](empirical-scripts/11.0/results/artin-s0/artin.json) uses the v11 `artin` stage and `config/artin.json`, seed 0, policy seeds 0–3, root `e68d439` plus the then-uncommitted step-20 sources (v11 code sha256 `fae15e3c1b1e`), libs/evolvo `d211185`. It took 219 s; the report was regenerated with `report.py`. It records the full-period counts, densities, index law, local rates and four Evolvo cases of step 20.
+- [`digits-s0`](empirical-scripts/11.0/results/digits-s0/digits.json) uses the v11 `digits,report` stages and `config/digits.json`. Settings: seed 0, policy seeds 0–5, root `7de8a72` plus the then-uncommitted step-22 sources (v11 code sha256 `b7801aa89282`), libs/evolvo `d211185`. It took 1 098 s and covers all nine step-22 cases.
+- [`digits-confirm-s1`](empirical-scripts/11.0/results/digits-confirm-s1/digits.json) uses the same stages and `config/digits-confirm.json`. Settings: seed 1, policy seeds 1–8, population 400 × 300 generations, root `7de8a72` plus the step-22 sources with the $\mathrm{li}(\sqrt x)$ input (v11 code sha256 `fe0d50eb8950`). It took 5 268 s and covers the six cases with room left. Its `prime_count_density` case has one more input than in `digits-s0`.
 - [`explicit-s0`](empirical-scripts/11.0/results/explicit-s0/explicit.json) uses the v11 `explicit` stage and `config/explicit.json`, seed 0, root `e68d439` plus the then-uncommitted step-21 sources (v11 code sha256 `3087954aa1d6`). It took 208 s; the report was regenerated with `report.py`. It records the zeros, the smoothed explicit formula, the bias values and the Schoenfeld ratio of step 21.
 
 - `full-s0` — `config/full.json` — data stage only: 162 007 integers, 2 340 678 pairs, 1 225 s.

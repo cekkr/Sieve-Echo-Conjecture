@@ -1,0 +1,27 @@
+{
+  "run_id": "digits-confirm-s1",
+  "seed": 1,
+  "config_path": "empirical-scripts/11.0/config/digits-confirm.json",
+  "git_root": {
+    "sha": "7de8a72699a0bf90982a1fa519186cc32c3975a5",
+    "dirty": true,
+    "changed_paths": [
+      "M empirical-scripts/11.0/prime_order_formulas.py",
+      " M empirical-scripts/11.0/report.py",
+      " M empirical-scripts/11.0/search_formulas.py",
+      " M empirical-scripts/11.0/sieve_echo_v11.py",
+      "?? empirical-scripts/11.0/config/digits-confirm.json",
+      "?? empirical-scripts/11.0/config/digits.json",
+      "?? empirical-scripts/11.0/digit_primes.py",
+      "?? empirical-scripts/11.0/tests/test_digit_primes.py"
+    ]
+  },
+  "git_evolvo": {
+    "sha": "d2111859f0a68d0cf246ed4ed12442fdffae7eb1",
+    "dirty": false,
+    "changed_paths": []
+  },
+  "v11_code_sha256": "fe0d50eb8950e6058bd7f16d5bb11b2ca9468c05af872010541494ad8676939f",
+  "ndr_version": null,
+  "verdicts": {}
+}
