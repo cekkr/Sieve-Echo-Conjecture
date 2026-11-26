@@ -334,7 +334,7 @@ The correction comes from $\sqrt\Delta\in\mathbb Q(\zeta_\Delta)$. When the Lehm
 
 - All 15 bases with density $A$ are within 1.26 binomial standard deviations of it.
 - The four corrected bases sit 98.3, 11.9, 6.7 and 2.6 standard deviations from $A$, and within 0.65 of the corrected densities.
-- The full index law $\#\{p:I_b(p)=t\}$, computed from the Kummer degrees $[\mathbb Q(\zeta_m,b^{1/m}):\mathbb Q]=m\varphi(m)/\varepsilon(m)$, agrees for $t\le12$ and all 16 non-square bases (largest $|z|$ 2.14).
+- The full index law $\lvert\{p:I_b(p)=t\}\rvert$, computed from the Kummer degrees $[\mathbb Q(\zeta_m,b^{1/m}):\mathbb Q]=m\varphi(m)/\varepsilon(m)$, agrees for $t\le12$ and all 16 non-square bases (largest $|z|$ 2.14).
 - It predicts a density of zero for $I_5(p)=5$, and no prime has that index.
 - Both 2 and 3 are primitive roots for 0.147315 of the primes, against the Kummer-degree product 0.147349.
 
