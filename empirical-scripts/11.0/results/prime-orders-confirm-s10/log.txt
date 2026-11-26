@@ -1,0 +1,11 @@
+[23:41:24] run prime-orders-confirm-s10 seed=10 stages=['prime_orders', 'report'] dir=empirical-scripts/11.0/results/prime-orders-confirm-s10
+[23:41:25]   verified quadratic/cubic flags on 148,930/148,931 primes
+[23:41:25]   evolving 6 formulas with the PyTorch policy guide
+[23:42:01]     1/6 runs done
+[23:42:01]     2/6 runs done
+[23:42:01]     3/6 runs done
+[23:42:05]     4/6 runs done
+[23:42:20]     5/6 runs done
+[23:42:28]     6/6 runs done
+[23:42:29] prime_orders: done in 65.8s
+[23:42:29] report: done in 0.0s

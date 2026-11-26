@@ -1,0 +1,87 @@
+[01:09:27] run digits-s0 seed=0 stages=['digits', 'report'] dir=empirical-scripts/11.0/results/digits-s0
+[01:09:27]   sieving primes ≤ 100,000,000
+[01:09:28]   repetend lengths in bases 2 and 10 for 799,600 integers
+[01:09:40]   π(x) at 91 points up to 1e+12
+[01:10:56]   case prime_digits: 1,999,000 rows, inputs ['last digit', 'digit sum', 'alternating digit sum', '3-digit block sum', 'alternating 3-digit block sum', 'digit count', 'log n', '1']
+[01:10:56]   evolving 6 formulas with the PyTorch policy guide
+[01:12:50]     1/6 runs done
+[01:12:50]     2/6 runs done
+[01:13:09]     3/6 runs done
+[01:13:09]     4/6 runs done
+[01:13:09]     5/6 runs done
+[01:13:09]     6/6 runs done
+[01:13:17]     prime_digits: (((10 * [last digit]) * [last digit]) % (2.71828 % 0.5))  held-out Brier 0.06029, AUC 0.7960, errors 70,435
+[01:13:17]   case prime_digits_density: 1,999,000 rows, inputs ['last digit', 'digit sum', 'alternating digit sum', '3-digit block sum', 'alternating 3-digit block sum', 'digit count', 'log n', '1', 'Cramér density 1/log n', 'sieve density W(n)']
+[01:13:17]   evolving 6 formulas with the PyTorch policy guide
+[01:15:26]     1/6 runs done
+[01:15:27]     2/6 runs done
+[01:15:27]     3/6 runs done
+[01:15:27]     4/6 runs done
+[01:15:27]     5/6 runs done
+[01:15:27]     6/6 runs done
+[01:15:31]     prime_digits_density: ([sieve density W(n)] / 1)  held-out Brier 0.04385, AUC 0.9383, errors 70,435
+[01:15:31]   case prime_repetend: 799,600 rows, inputs ['n', 'L_2 (repetend length of 1/n in base 2)', 'L_10 (repetend length of 1/n in base 10)', '1']
+[01:15:31]   evolving 6 formulas with the PyTorch policy guide
+[01:17:12]     1/6 runs done
+[01:17:12]     2/6 runs done
+[01:17:27]     3/6 runs done
+[01:17:27]     4/6 runs done
+[01:18:44]     5/6 runs done
+[01:18:44]     6/6 runs done
+[01:18:51]     prime_repetend: ((3.14159 / (3.14159 ^ ([n] % [L_2 (repetend length of 1/n in base 2)]))) ^ [L_10 (repetend length of 1/n in base 10)])  held-out Brier 0.00023, AUC 0.9999, errors 93
+[01:18:51]   case omega_digits: 1,999,000 rows, inputs ['last digit', 'digit sum', 'alternating digit sum', '3-digit block sum', 'alternating 3-digit block sum', 'digit count', 'log n', '1']
+[01:18:51]   evolving 6 formulas with the PyTorch policy guide
+[01:20:40]     1/6 runs done
+[01:20:40]     2/6 runs done
+[01:20:41]     3/6 runs done
+[01:20:47]     4/6 runs done
+[01:20:47]     5/6 runs done
+[01:20:47]     6/6 runs done
+[01:20:56]     omega_digits: (3.14159 - ([last digit] % 2))  held-out MSE 0.9484, rounded accuracy 0.3855
+[01:20:56]   case omega_digits_density: 1,999,000 rows, inputs ['last digit', 'digit sum', 'alternating digit sum', '3-digit block sum', 'alternating 3-digit block sum', 'digit count', 'log n', '1', 'Hardy–Ramanujan mean log log n + B1', 'sieve mean of ω']
+[01:20:56]   evolving 6 formulas with the PyTorch policy guide
+[01:23:10]     1/6 runs done
+[01:23:10]     2/6 runs done
+[01:23:10]     3/6 runs done
+[01:23:10]     4/6 runs done
+[01:23:10]     5/6 runs done
+[01:23:10]     6/6 runs done
+[01:23:13]     omega_digits_density: ([sieve mean of ω] - (-1 / (2.71828 ^ [sieve mean of ω])))  held-out MSE 0.3707, rounded accuracy 0.4538
+[01:23:13]   case prime_count: 91 rows, inputs ['log x', '1']
+[01:23:13]   evolving 6 formulas with the PyTorch policy guide
+[01:24:11]     1/6 runs done
+[01:24:11]     2/6 runs done
+[01:24:11]     3/6 runs done
+[01:24:11]     4/6 runs done
+[01:24:11]     5/6 runs done
+[01:24:11]     6/6 runs done
+[01:24:12]     prime_count: (((((([log x] ^ (1 / [log x])) ^ 1) ^ ((([log x] ^ (1 / [log x])) ^ 1) / log((10 + [log x])))) ^ (((([log x] ^ (1 / [log x])) ^ 1) ^ ((([log x] ^ (1 / [log x])) ^ 1) / log((10 + [log x])))) / sqrt(((([log x] ^ (1 / [log x])) ^ 1) ^ ((([log x] ^ (1 / [log x])) ^ 1) / log((10 + [log x]))))))) ^ (((([log x] ^ (1 / [log x])) ^ 1) ^ ((([log x] ^ (1 / [log x])) ^ 1) / log((10 + [log x])))) / sqrt(((([log x] ^ (1 / [log x])) ^ 1) ^ ((([log x] ^ (1 / [log x])) ^ 1) / log((10 + [log x]))))))) ^ (((([log x] ^ (1 / [log x])) ^ 1) ^ ((([log x] ^ (1 / [log x])) ^ 1) / log((10 + [log x])))) / sqrt(((([log x] ^ (1 / [log x])) ^ 1) ^ ((([log x] ^ (1 / [log x])) ^ 1) / log((10 + [log x])))))))  held-out max rel. error 1.09e-03
+[01:24:12]   case prime_count_density: 91 rows, inputs ['log x', '1', 'Cramér density 1/log x', 'li(x)·log x / x']
+[01:24:12]   evolving 6 formulas with the PyTorch policy guide
+[01:25:09]     1/6 runs done
+[01:25:09]     2/6 runs done
+[01:25:09]     3/6 runs done
+[01:25:09]     4/6 runs done
+[01:25:09]     5/6 runs done
+[01:25:09]     6/6 runs done
+[01:25:10]     prime_count_density: ((sqrt([li(x)·log x / x]) + 2) ^ [Cramér density 1/log x])  held-out max rel. error 1.60e-03
+[01:25:10]   case prime_gap: 5,761,286 rows, inputs ['log p', 'Cramér density 1/log p', 'p mod 6', '1']
+[01:25:10]   evolving 6 formulas with the PyTorch policy guide
+[01:26:17]     1/6 runs done
+[01:26:17]     2/6 runs done
+[01:26:17]     3/6 runs done
+[01:26:17]     4/6 runs done
+[01:26:18]     5/6 runs done
+[01:26:24]     6/6 runs done
+[01:26:27]     prime_gap: (0 + [log p])  held-out MSE 225.95
+[01:26:27]   case last_digit_repeat: 5,761,286 rows, inputs ['log p', 'Cramér density 1/log p', 'last digit of p', '1']
+[01:26:27]   evolving 6 formulas with the PyTorch policy guide
+[01:27:35]     1/6 runs done
+[01:27:35]     2/6 runs done
+[01:27:35]     3/6 runs done
+[01:27:35]     4/6 runs done
+[01:27:35]     5/6 runs done
+[01:27:40]     6/6 runs done
+[01:27:45]     last_digit_repeat: (0.5 / 3.14159)  held-out Brier 0.14324, AUC 0.5000, errors 881,553
+[01:27:45] digits: done in 1097.5s
+[01:27:45] report: done in 0.0s

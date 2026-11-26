@@ -2,7 +2,7 @@
 
 Version 11 finds that the relationship between digit entropy and the number of distinct prime factors is largely explained by repetend length. Length and integer size account for 95.9% of held-out entropy variance (`full-s0-step4`). With a baseline of 98 repetend lengths and their Midy symmetry flags, entropy changes prediction accuracy by −0.07 percentage points (95% CI [−0.33, +0.24], `scale-s0-step7`).
 
-The repeating block of $1/n$ has length $\operatorname{ord}_n(b)$ in every base $b$ coprime to $n$. This identifies an exact object to study across bases. At composite denominators, comparing orders gives a finite reconstruction experiment. At prime denominators, divisibility conditions on the orders lead to counts of primes in residue classes and to splitting conditions in number fields.
+The repeating block of $1/n$ has length $\mathrm{ord}_n(b)$ in every base $b$ coprime to $n$. This identifies an exact object to study across bases. At composite denominators, comparing orders gives a finite reconstruction experiment. At prime denominators, divisibility conditions on the orders lead to counts of primes in residue classes and to splitting conditions in number fields.
 
 The work ends at two classical problems.
 - **Full-period repetends** ($1/p$ repeats with the maximal length $p-1$) are Artin's primitive-root problem. Through $10^8$, the counts for all 19 bases match Hooley's densities, which assume GRH. That includes the Lehmer–Heilbronn correction: base 5 is 98 standard deviations from Artin's original constant and 0.65 from the corrected value (`artin-s0`, §8).
@@ -197,7 +197,7 @@ The decoder applies the classical relation between periods and factorization. Th
 
 ## 6. Prime counts and what Evolvo recovers
 
-For prime $p$ and $p\nmid b$, the index $I_b(p)=(p-1)/\operatorname{ord}_p(b)$ measures the gap between the observed period and its maximal length. For odd $p$, the condition $2\mid I_b(p)$ says that $b$ is a square modulo $p$. Joint conditions across bases yield explicit unions of residue classes. Counting primes in those classes gives a concrete way to compare arithmetic data with the predictions of the corresponding Dirichlet characters.
+For prime $p$ and $p\nmid b$, the index $I_b(p)=(p-1)/\mathrm{ord}_p(b)$ measures the gap between the observed period and its maximal length. For odd $p$, the condition $2\mid I_b(p)$ says that $b$ is a square modulo $p$. Joint conditions across bases yield explicit unions of residue classes. Counting primes in those classes gives a concrete way to compare arithmetic data with the predictions of the corresponding Dirichlet characters.
 
 For higher divisors of the indices, the relevant counts come from splitting in number fields. The implemented benchmarks compare independently computed flags with fixed densities. The cubic joint count through $10^6$ is 4,318, about 50 below its integral main term and within the published GRH-conditional error bound. This measures an explicit prime-counting discrepancy. The finite counts give no implication for the location of the zeros of $\zeta(s)$. [Benchmark report](empirical-scripts/11.0/results/prime-orders-s0/report.md) · [Counting theorems](ROADMAP.md#step-18--cubic-residue-benchmark-and-dependence)
 
