@@ -1,6 +1,6 @@
 # Sieve Echo Conjecture
 
-Sieve Echo studies how the arithmetic of the repeating digits of $1/n$ reflects the structure of the multiplicative group modulo $n$. The project began by testing whether digit spectral entropy reveals the number of distinct prime factors. Version 11 follows the arithmetic through the repetend length, which is the multiplicative order $\operatorname{ord}_n(b)$ in each base $b$ coprime to $n$. It now includes checked prime counts and symbolic formulas for joint conditions on those orders. At prime denominators it ends at two classical problems. Full-period repetends are Artin's primitive-root problem, and halved repetends are counted by the zeros of Dirichlet L-functions.
+Sieve Echo studies how the arithmetic of the repeating digits of $1/n$ reflects the structure of the multiplicative group modulo $n$. The project began by testing whether digit spectral entropy reveals the number of distinct prime factors. Version 11 follows the arithmetic through the repetend length, which is the multiplicative order $\mathrm{ord}_n(b)$ in each base $b$ coprime to $n$. It now includes checked prime counts and symbolic formulas for joint conditions on those orders. At prime denominators it ends at two classical problems. Full-period repetends are Artin's primitive-root problem, and halved repetends are counted by the zeros of Dirichlet L-functions.
 
 ## What v11 established
 
@@ -26,7 +26,7 @@ What the computations let you do, each from a stated run and range ([§11 of the
 
 ## Prime-order benchmarks
 
-For a prime $p$ and a base $b$ with $p\nmid b$, the index $I_b(p)=(p-1)/\operatorname{ord}_p(b)$ measures how much shorter the repetend is than its maximum possible length. Divisibility conditions on these indices turn the digit question into a prime-counting question. For example, $2\mid I_b(p)$ means that $b$ is a quadratic residue modulo an odd prime $p$. Imposing the condition for several bases counts primes in specified residue classes.
+For a prime $p$ and a base $b$ with $p\nmid b$, the index $I_b(p)=(p-1)/\mathrm{ord}_p(b)$ measures how much shorter the repetend is than its maximum possible length. Divisibility conditions on these indices turn the digit question into a prime-counting question. For example, $2\mid I_b(p)$ means that $b$ is a quadratic residue modulo an odd prime $p$. Imposing the condition for several bases counts primes in specified residue classes.
 
 For higher prime divisors of the index, the same construction leads to primes splitting in explicit number fields. The cubic benchmark finds 4,318 joint hits through $10^6$, or 11.007% after conditioning on $p\equiv1\pmod3$, against the density $1/9$. The count differs from its integral main term by 50.14, inside the GRH-conditional error bound of 2,546.59. This comparison measures a finite discrepancy for a specified field. A consequence for ordinary RH would require a theorem connecting it to the zeros of $\zeta(s)$. [Arithmetic and bounds](ROADMAP.md#next-research-joint-distribution-of-repetend-lengths) · [Benchmark report](empirical-scripts/11.0/results/prime-orders-s0/report.md)
 

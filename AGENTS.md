@@ -107,7 +107,7 @@ Verified against `libs/evolvo` after ROADMAP step 3 (the commit the root repo po
 
 ### [`README.md`](README.md)
 
-Public entry point. Summarizes the entropy controls, exact order results, prime-counting benchmarks, the full-period (Artin) benchmark and the explicit-formula check against L-function zeros, with a section stating what the results do and do not say about the Riemann hypothesis. A Practical conclusions section states what the results let a reader do. Its best-Evolvo-algorithms section lists the exact formulas of steps 19–20 and the step-22 formulas with their held-out scores and controls, each also as GFSL code, with links to the replayable program files. Reproduction includes the prime-order, Artin and explicit-formula run commands.
+Public entry point. Inline math uses `\mathrm{ord}` for multiplicative order. Summarizes the entropy controls, exact order results, prime-counting benchmarks, the full-period (Artin) benchmark and the explicit-formula check against L-function zeros, with a section stating what the results do and do not say about the Riemann hypothesis. A Practical conclusions section states what the results let a reader do. Its best-Evolvo-algorithms section lists the exact formulas of steps 19–20 and the step-22 formulas with their held-out scores and controls, each also as GFSL code, with links to the replayable program files. Reproduction includes the prime-order, Artin and explicit-formula run commands.
 
 ### [`ROADMAP.md`](ROADMAP.md)
 
