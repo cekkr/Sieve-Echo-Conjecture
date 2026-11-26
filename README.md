@@ -126,7 +126,7 @@ Each program is selected on validation and scored once on the test range.
 
 | Target (test range) | Evolvo formula | Held-out | Best control |
 | --- | --- | --- | --- |
-| $n$ prime from $L_2(n)$ ($10^6$–$2\cdot10^6$) | $1/(n\bmod L_2)^{10}$ (Fermat base 2) | 93 errors / 400 000 | Fermat bases 2 + 10: 22 |
+| $n$ prime from $L_2(n)$ ($10^6$ – $2\cdot10^6$) | $1/(n\bmod L_2)^{10}$ (Fermat base 2) | 93 errors / 400 000 | Fermat bases 2 + 10: 22 |
 | $n$ prime, digits + densities | $W(n)$ | Brier 0.0439 | gradient boosting 0.0451 |
 | $n$ prime, digits only | last-digit rule | Brier 0.0593 | gradient boosting 0.0527 |
 | $\omega(n)$, digits + densities | $M+e^{-M}$ | MSE 0.371 | gradient boosting 0.375 |
@@ -206,4 +206,4 @@ The full and scale configurations for the original conjecture are described in [
 
 The Sieve Echo Conjecture, the earlier script generations and the papers are the work of the repository author. [Evolvo](libs/evolvo) and [SinWhisky](libs/sinwhisky) are separate projects included as git submodules.
 
-Version 11 — the reproducible pipeline, the claim-by-claim re-verification, the Evolvo and SinWhisky extensions it needed, the analyses of ROADMAP steps 0–22, the revision-9 draft, the v11 conclusions and the exact decoder of [`conclusion.md`](conclusion.md) — was developed in collaboration with **Claude (Anthropic)**, an AI assistant, working with the author.
+Version 11 — the reproducible pipeline, the claim-by-claim re-verification, the Evolvo and SinWhisky extensions it needed, the analyses of ROADMAP steps 0–22, the revision-9 draft, the v11 conclusions and the exact decoder of [`conclusion.md`](conclusion.md) — was developed in collaboration with **Claude (Anthropic)** and OpenAI AI assistants, working with the author.
